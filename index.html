@@ -141,45 +141,65 @@
             };
 
             return (
-                <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center p-6">
-                    <div className="max-w-md w-full space-y-6">
+                <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 overflow-y-auto">
+                    <div className="max-w-md w-full space-y-6 my-auto">
                         <div className="text-center">
-                            <Icons.Cloud />
-                            <h1 className="text-2xl font-bold mt-4">Configuração Inicial</h1>
-                            <p className="text-slate-400 text-sm mt-2">Para usar este app no seu GitHub, precisamos conectar ao seu banco de dados Firebase.</p>
+                            <div className="inline-flex p-3 rounded-full bg-blue-900/30 mb-2">
+                                <Icons.Cloud />
+                            </div>
+                            <h1 className="text-2xl font-bold">Conectar Banco de Dados</h1>
+                            <p className="text-slate-400 text-sm mt-1">Vincule seu projeto Firebase para salvar os dados.</p>
                         </div>
                         
-                        <div className="bg-slate-800 p-4 rounded-lg border border-slate-700">
-                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Cole sua Configuração Firebase aqui:</label>
+                        <div className="bg-slate-800 p-1 rounded-lg border border-slate-700">
                             <textarea 
                                 value={configStr}
                                 onChange={e => setConfigStr(e.target.value)}
-                                className="w-full h-40 bg-slate-900 border border-slate-700 rounded p-2 text-xs font-mono text-green-400 focus:outline-none focus:border-blue-500"
-                                placeholder='Cole aqui o código que começa com "const firebaseConfig = { ... }"'
+                                className="w-full h-32 bg-slate-900 border-none rounded p-3 text-xs font-mono text-green-400 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                placeholder={`Cole aqui o código do Firebase:\n\nconst firebaseConfig = {\n  apiKey: "AIza...",\n  ...\n};`}
                             />
-                            {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
                         </div>
+                        {error && <p className="text-red-400 text-xs text-center bg-red-900/20 p-2 rounded border border-red-900/50">{error}</p>}
 
                         <button 
                             onClick={handleSave}
-                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold transition-colors"
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold transition-all active:scale-95 shadow-lg shadow-blue-900/20"
                         >
-                            Salvar e Conectar
+                            Salvar Configuração
                         </button>
                         
-                        <div className="text-xs text-slate-400 text-left space-y-2 bg-slate-800/50 p-4 rounded border border-slate-700">
-                            <p className="font-bold text-white">Como obter este código:</p>
-                            <ol className="list-decimal pl-4 space-y-1">
-                                <li>Acesse <a href="https://console.firebase.google.com" target="_blank" className="text-blue-400 underline">console.firebase.google.com</a></li>
-                                <li>Crie um projeto e clique no ícone <strong>&lt;/&gt; (Web)</strong></li>
-                                <li>Copie o trecho de código <code>firebaseConfig</code> gerado</li>
-                                <li>Cole na caixa acima e clique em Salvar</li>
-                            </ol>
+                        {/* Tutorial Visual */}
+                        <div className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
+                            <div className="bg-slate-800 p-3 border-b border-slate-700 flex justify-between items-center">
+                                <span className="font-bold text-xs uppercase tracking-wider text-slate-400">Como obter o código?</span>
+                                <a href="https://console.firebase.google.com" target="_blank" className="text-xs bg-blue-600 px-2 py-1 rounded text-white font-bold hover:bg-blue-500">Abrir Console ↗</a>
+                            </div>
+                            <div className="p-4 space-y-4 text-xs text-slate-300">
+                                <div className="flex gap-3">
+                                    <div className="bg-slate-700 h-5 w-5 rounded-full flex items-center justify-center font-bold text-white shrink-0">1</div>
+                                    <p>Crie um projeto no <strong>Firebase Console</strong>.</p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="bg-slate-700 h-5 w-5 rounded-full flex items-center justify-center font-bold text-white shrink-0">2</div>
+                                    <p>Clique no ícone de <strong>Web (&lt;/&gt;)</strong> para registrar o app.</p>
+                                </div>
+                                <div className="flex gap-3">
+                                    <div className="bg-slate-700 h-5 w-5 rounded-full flex items-center justify-center font-bold text-white shrink-0">3</div>
+                                    <div>
+                                        <p className="mb-2">Copie o objeto <code>firebaseConfig</code> e cole acima:</p>
+                                        <div className="bg-black/40 p-2 rounded border border-slate-600/50 font-mono text-[10px] text-slate-400">
+                                            const firebaseConfig = &#123;<br/>
+                                            &nbsp;&nbsp;apiKey: "...",<br/>
+                                            &nbsp;&nbsp;authDomain: "..."<br/>
+                                            &#125;;
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="bg-blue-900/50 p-4 rounded-lg border border-blue-800 text-xs text-blue-200 text-left">
-                            <p className="font-bold mb-1">Nota sobre Permissões (GitHub):</p>
-                            <p>Se você criou um projeto novo no Firebase, vá em <strong>Firestore Database &gt; Regras</strong> e altere para permitir leitura/escrita (Modo Teste) ou configure as regras de segurança, senão você verá erros de "Permission Denied".</p>
+                        <div className="text-[10px] text-slate-500 text-center px-4">
+                            Nota: Certifique-se de habilitar o <strong>Firestore Database</strong> no modo de teste ou configurar as regras de segurança no console.
                         </div>
                     </div>
                 </div>
