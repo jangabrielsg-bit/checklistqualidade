@@ -3,25 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IMAC - Gestão Semanal de Qualidade</title>
+    <title>IMAC - Gestão Semanal (Offline)</title>
     
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Firebase SDKs (Modular) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, writeBatch, query, onSnapshot, where, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        window.firebaseModules = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, writeBatch, query, onSnapshot, where, Timestamp };
-        
-        // Disparar evento quando módulos carregarem
-        window.dispatchEvent(new Event('firebase-ready'));
-    </script>
 
     <style>
         body { -webkit-tap-highlight-color: transparent; background-color: #f8fafc; }
@@ -42,43 +30,43 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo, useRef } = React;
 
-        // --- DADOS PADRÃO (Backup) ---
+        // --- DADOS PADRÃO (Para Reset/Inicialização) ---
         const STATIC_DB_PERGUNTAS = [
-            { setor: "ESTOQUE", grupo: "MANIPULADOR", pergunta: "Manipuladores com fardamento completo e conservado?" },
-            { setor: "ESTOQUE", grupo: "MANIPULADOR", pergunta: "Higiene pessoal adequada (unhas curtas, barba feita)?" },
-            { setor: "ESTOQUE", grupo: "GERAL", pergunta: "Setor limpo (piso/parede/teto/portas)?" },
-            { setor: "ESTOQUE", grupo: "GERAL", pergunta: "Produtos organizados e identificados (PVPS)?" },
-            { setor: "ESTOQUE", grupo: "CÂMARA", pergunta: "Temperaturas adequadas e registradas?" },
-            { setor: "PRE_PESAGEM", grupo: "MANIPULADOR", pergunta: "Uso correto de EPIs?" },
-            { setor: "PRE_PESAGEM", grupo: "GERAL", pergunta: "Bancadas limpas e organizadas?" },
-            { setor: "PRE_PESAGEM", grupo: "CLIMA", pergunta: "Temperatura entre 17º e 20ºC?" },
-            { setor: "CONFEITARIA", grupo: "MANIPULADOR", pergunta: "Fardamento limpo e completo?" },
-            { setor: "CONFEITARIA", grupo: "EQUIPAMENTOS", pergunta: "Fornos e batedeiras higienizados?" },
-            { setor: "CONFEITARIA", grupo: "GERAL", pergunta: "Piso livre de resíduos e gordura?" },
-            { setor: "SALGADO", grupo: "MANIPULADOR", pergunta: "Higiene das mãos realizada frequentemente?" },
-            { setor: "SALGADO", grupo: "PRODUÇÃO", pergunta: "Fluxo organizado sem cruzamento?" },
-            { setor: "PÃO DE QUEIJO", grupo: "GERAL", pergunta: "Utensílios específicos organizados?" },
-            { setor: "PÃO DE QUEIJO", grupo: "EQUIPAMENTOS", pergunta: "Freezers limpos e sem gelo excessivo?" },
-            { setor: "PRODUÇÃO", grupo: "GERAL", pergunta: "Mesas e bancadas íntegras?" },
-            { setor: "PRODUÇÃO", grupo: "GERAL", pergunta: "Ausência de objetos pessoais na área?" },
-            { setor: "EMBALADORA", grupo: "EQUIPAMENTOS", pergunta: "Máquina seladora limpa?" },
-            { setor: "EMBALADORA", grupo: "PROCESSO", pergunta: "Etiquetas com data e validade corretas?" },
-            { setor: "EXPEDIÇÃO", grupo: "GERAL", pergunta: "Área de despacho limpa?" },
-            { setor: "EXPEDIÇÃO", grupo: "GERAL", pergunta: "Caixas organizadas por rota/cliente?" },
-            { setor: "PLATAFORMA", grupo: "GERAL", pergunta: "Corredor livre e limpo?" },
-            { setor: "PLATAFORMA", grupo: "CAIXAS", pergunta: "Caixas plásticas higienizadas?" },
-            { setor: "BANHEIRO FEMININO", grupo: "GERAL", pergunta: "Sanitários limpos e com descarga funcionando?" },
-            { setor: "BANHEIRO FEMININO", grupo: "INSUMOS", pergunta: "Papel, sabonete e lixeira com pedal disponíveis?" },
-            { setor: "BANHEIRO MASCULINO", grupo: "GERAL", pergunta: "Sanitários limpos e com descarga funcionando?" },
-            { setor: "BANHEIRO MASCULINO", grupo: "INSUMOS", pergunta: "Papel, sabonete e lixeira com pedal disponíveis?" },
-            { setor: "REFEITORIO-COZINHA", grupo: "GERAL", pergunta: "Mesas e cadeiras limpas?" },
-            { setor: "REFEITORIO-COZINHA", grupo: "COZINHA", pergunta: "Pias e bancadas higienizadas?" },
-            { setor: "CENTRO TÉCNICO", grupo: "GERAL", pergunta: "Organização geral do ambiente?" },
-            { setor: "CENTRO TÉCNICO", grupo: "GERAL", pergunta: "Equipamentos de medição calibrados/limpos?" },
-            { setor: "TODOS", grupo: "ESTRUTURAL", pergunta: "Piso/paredes/teto livres de frestas e buracos?" },
-            { setor: "TODOS", grupo: "HIGIENE", pergunta: "Lixeiras com tampa, pedal e limpas?" },
-            { setor: "TODOS", grupo: "PRAGAS", pergunta: "Ausência de vetores e pragas?" },
-            { setor: "TODOS", grupo: "DOCUMENTAÇÃO", pergunta: "Planilhas de controle preenchidas?" }
+            { id: "def_1", setor: "ESTOQUE", grupo: "MANIPULADOR", pergunta: "Manipuladores com fardamento completo e conservado?" },
+            { id: "def_2", setor: "ESTOQUE", grupo: "MANIPULADOR", pergunta: "Higiene pessoal adequada (unhas curtas, barba feita)?" },
+            { id: "def_3", setor: "ESTOQUE", grupo: "GERAL", pergunta: "Setor limpo (piso/parede/teto/portas)?" },
+            { id: "def_4", setor: "ESTOQUE", grupo: "GERAL", pergunta: "Produtos organizados e identificados (PVPS)?" },
+            { id: "def_5", setor: "ESTOQUE", grupo: "CÂMARA", pergunta: "Temperaturas adequadas e registradas?" },
+            { id: "def_6", setor: "PRE_PESAGEM", grupo: "MANIPULADOR", pergunta: "Uso correto de EPIs?" },
+            { id: "def_7", setor: "PRE_PESAGEM", grupo: "GERAL", pergunta: "Bancadas limpas e organizadas?" },
+            { id: "def_8", setor: "PRE_PESAGEM", grupo: "CLIMA", pergunta: "Temperatura entre 17º e 20ºC?" },
+            { id: "def_9", setor: "CONFEITARIA", grupo: "MANIPULADOR", pergunta: "Fardamento limpo e completo?" },
+            { id: "def_10", setor: "CONFEITARIA", grupo: "EQUIPAMENTOS", pergunta: "Fornos e batedeiras higienizados?" },
+            { id: "def_11", setor: "CONFEITARIA", grupo: "GERAL", pergunta: "Piso livre de resíduos e gordura?" },
+            { id: "def_12", setor: "SALGADO", grupo: "MANIPULADOR", pergunta: "Higiene das mãos realizada frequentemente?" },
+            { id: "def_13", setor: "SALGADO", grupo: "PRODUÇÃO", pergunta: "Fluxo organizado sem cruzamento?" },
+            { id: "def_14", setor: "PÃO DE QUEIJO", grupo: "GERAL", pergunta: "Utensílios específicos organizados?" },
+            { id: "def_15", setor: "PÃO DE QUEIJO", grupo: "EQUIPAMENTOS", pergunta: "Freezers limpos e sem gelo excessivo?" },
+            { id: "def_16", setor: "PRODUÇÃO", grupo: "GERAL", pergunta: "Mesas e bancadas íntegras?" },
+            { id: "def_17", setor: "PRODUÇÃO", grupo: "GERAL", pergunta: "Ausência de objetos pessoais na área?" },
+            { id: "def_18", setor: "EMBALADORA", grupo: "EQUIPAMENTOS", pergunta: "Máquina seladora limpa?" },
+            { id: "def_19", setor: "EMBALADORA", grupo: "PROCESSO", pergunta: "Etiquetas com data e validade corretas?" },
+            { id: "def_20", setor: "EXPEDIÇÃO", grupo: "GERAL", pergunta: "Área de despacho limpa?" },
+            { id: "def_21", setor: "EXPEDIÇÃO", grupo: "GERAL", pergunta: "Caixas organizadas por rota/cliente?" },
+            { id: "def_22", setor: "PLATAFORMA", grupo: "GERAL", pergunta: "Corredor livre e limpo?" },
+            { id: "def_23", setor: "PLATAFORMA", grupo: "CAIXAS", pergunta: "Caixas plásticas higienizadas?" },
+            { id: "def_24", setor: "BANHEIRO FEMININO", grupo: "GERAL", pergunta: "Sanitários limpos e com descarga funcionando?" },
+            { id: "def_25", setor: "BANHEIRO FEMININO", grupo: "INSUMOS", pergunta: "Papel, sabonete e lixeira com pedal disponíveis?" },
+            { id: "def_26", setor: "BANHEIRO MASCULINO", grupo: "GERAL", pergunta: "Sanitários limpos e com descarga funcionando?" },
+            { id: "def_27", setor: "BANHEIRO MASCULINO", grupo: "INSUMOS", pergunta: "Papel, sabonete e lixeira com pedal disponíveis?" },
+            { id: "def_28", setor: "REFEITORIO-COZINHA", grupo: "GERAL", pergunta: "Mesas e cadeiras limpas?" },
+            { id: "def_29", setor: "REFEITORIO-COZINHA", grupo: "COZINHA", pergunta: "Pias e bancadas higienizadas?" },
+            { id: "def_30", setor: "CENTRO TÉCNICO", grupo: "GERAL", pergunta: "Organização geral do ambiente?" },
+            { id: "def_31", setor: "CENTRO TÉCNICO", grupo: "GERAL", pergunta: "Equipamentos de medição calibrados/limpos?" },
+            { id: "def_32", setor: "TODOS", grupo: "ESTRUTURAL", pergunta: "Piso/paredes/teto livres de frestas e buracos?" },
+            { id: "def_33", setor: "TODOS", grupo: "HIGIENE", pergunta: "Lixeiras com tampa, pedal e limpas?" },
+            { id: "def_34", setor: "TODOS", grupo: "PRAGAS", pergunta: "Ausência de vetores e pragas?" },
+            { id: "def_35", setor: "TODOS", grupo: "DOCUMENTAÇÃO", pergunta: "Planilhas de controle preenchidas?" }
         ];
 
         // --- ÍCONES ---
@@ -89,8 +77,9 @@
             Plus: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
             Trash: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>,
             Edit: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>,
-            Cloud: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19c0-3.037-2.463-5.5-5.5-5.5S6.5 15.963 6.5 19"/><path d="M12 13.5V5"/><path d="m16 9-4-4-4 4"/></svg>,
-            Lock: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
+            Upload: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>,
+            Database: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
         };
 
         const getWeekID = () => {
@@ -112,277 +101,76 @@
             return `${firstday} até ${lastday}`;
         }
 
-        // --- COMPONENTE DE CONFIGURAÇÃO DO FIREBASE ---
-        const ConfigScreen = ({ onSave }) => {
-            const [configStr, setConfigStr] = useState('');
-            const [error, setError] = useState('');
-
-            const handleSave = () => {
-                try {
-                    // Tenta limpar e parsear
-                    const cleanStr = configStr.replace('const firebaseConfig = ', '').replace(';', '').trim();
-                    const configObj = JSON.parse(cleanStr);
-                    
-                    if(!configObj.apiKey) throw new Error("API Key não encontrada");
-                    
-                    localStorage.setItem('imac_firebase_config', JSON.stringify(configObj));
-                    onSave(configObj);
-                } catch (e) {
-                    try {
-                        // Tenta parse direto caso o usuário cole só o JSON
-                        const configObj = JSON.parse(configStr);
-                        if(!configObj.apiKey) throw new Error("API Key não encontrada");
-                        localStorage.setItem('imac_firebase_config', JSON.stringify(configObj));
-                        onSave(configObj);
-                    } catch (e2) {
-                        setError("Formato inválido. Cole o objeto JSON do Firebase completo.");
-                    }
-                }
-            };
-
-            return (
-                <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-6 overflow-y-auto">
-                    <div className="max-w-md w-full space-y-6 my-auto">
-                        <div className="text-center">
-                            <div className="inline-flex p-3 rounded-full bg-blue-900/30 mb-2">
-                                <Icons.Cloud />
-                            </div>
-                            <h1 className="text-2xl font-bold">Conectar Banco de Dados</h1>
-                            <p className="text-slate-400 text-sm mt-1">Vincule seu projeto Firebase para salvar os dados.</p>
-                        </div>
-                        
-                        <div className="bg-slate-800 p-1 rounded-lg border border-slate-700">
-                            <textarea 
-                                value={configStr}
-                                onChange={e => setConfigStr(e.target.value)}
-                                className="w-full h-32 bg-slate-900 border-none rounded p-3 text-xs font-mono text-green-400 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                                placeholder={`Cole aqui o código do Firebase:\n\nconst firebaseConfig = {\n  apiKey: "AIza...",\n  ...\n};`}
-                            />
-                        </div>
-                        {error && <p className="text-red-400 text-xs text-center bg-red-900/20 p-2 rounded border border-red-900/50">{error}</p>}
-
-                        <button 
-                            onClick={handleSave}
-                            className="w-full py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold transition-all active:scale-95 shadow-lg shadow-blue-900/20"
-                        >
-                            Salvar Configuração
-                        </button>
-                        
-                        {/* Tutorial Visual */}
-                        <div className="bg-slate-800/50 rounded-xl border border-slate-700 overflow-hidden">
-                            <div className="bg-slate-800 p-3 border-b border-slate-700 flex justify-between items-center">
-                                <span className="font-bold text-xs uppercase tracking-wider text-slate-400">Como obter o código?</span>
-                                <a href="https://console.firebase.google.com" target="_blank" className="text-xs bg-blue-600 px-2 py-1 rounded text-white font-bold hover:bg-blue-500">Abrir Console ↗</a>
-                            </div>
-                            <div className="p-4 space-y-4 text-xs text-slate-300">
-                                <div className="flex gap-3">
-                                    <div className="bg-slate-700 h-5 w-5 rounded-full flex items-center justify-center font-bold text-white shrink-0">1</div>
-                                    <p>Crie um projeto no <strong>Firebase Console</strong>.</p>
-                                </div>
-                                <div className="flex gap-3">
-                                    <div className="bg-slate-700 h-5 w-5 rounded-full flex items-center justify-center font-bold text-white shrink-0">2</div>
-                                    <p>Clique no ícone de <strong>Web (&lt;/&gt;)</strong> para registrar o app.</p>
-                                </div>
-                                <div className="flex gap-3">
-                                    <div className="bg-slate-700 h-5 w-5 rounded-full flex items-center justify-center font-bold text-white shrink-0">3</div>
-                                    <div>
-                                        <p className="mb-2">Copie o objeto <code>firebaseConfig</code> e cole acima:</p>
-                                        <div className="bg-black/40 p-2 rounded border border-slate-600/50 font-mono text-[10px] text-slate-400">
-                                            const firebaseConfig = &#123;<br/>
-                                            &nbsp;&nbsp;apiKey: "...",<br/>
-                                            &nbsp;&nbsp;authDomain: "..."<br/>
-                                            &#125;;
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="text-[10px] text-slate-500 text-center px-4">
-                            Nota: Certifique-se de habilitar o <strong>Firestore Database</strong> no modo de teste ou configurar as regras de segurança no console.
-                        </div>
-                    </div>
-                </div>
-            );
+        // --- SISTEMA DE ARMAZENAMENTO LOCAL ---
+        const Storage = {
+            KEY: 'imac_offline_data',
+            get: () => {
+                const data = localStorage.getItem(Storage.KEY);
+                return data ? JSON.parse(data) : { questions: [], inspections: [], lastBackup: null };
+            },
+            set: (data) => {
+                localStorage.setItem(Storage.KEY, JSON.stringify(data));
+            },
+            reset: () => {
+                const initialData = { 
+                    questions: STATIC_DB_PERGUNTAS, 
+                    inspections: [],
+                    lastBackup: null 
+                };
+                Storage.set(initialData);
+                return initialData;
+            }
         };
 
-        const PermissionErrorScreen = ({ onRetry }) => (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-center">
-                <div className="max-w-md bg-white p-8 rounded-xl shadow-lg border border-red-100">
-                    <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Icons.Lock />
-                    </div>
-                    <h2 className="text-xl font-bold text-slate-800 mb-2">Acesso Negado (Permissões)</h2>
-                    <p className="text-slate-600 text-sm mb-6">
-                        O aplicativo não tem permissão para ler/escrever no banco de dados.
-                    </p>
-                    
-                    <div className="bg-slate-50 p-4 rounded text-xs text-left text-slate-700 mb-6 font-mono overflow-x-auto">
-                        <p className="font-bold mb-2">Se você é o dono do projeto:</p>
-                        1. Vá no Console do Firebase<br/>
-                        2. Acesse Firestore Database > Regras<br/>
-                        3. Altere temporariamente para:<br/>
-                        <span className="text-blue-600 block mt-1">allow read, write: if true;</span>
-                    </div>
-
-                    <button onClick={onRetry} className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700">
-                        Tentar Novamente
-                    </button>
-                </div>
-            </div>
-        );
-
         function App() {
-            const [view, setView] = useState('loading'); // loading, config, dashboard, inspection, admin, error
-            const [user, setUser] = useState(null);
+            const [view, setView] = useState('loading'); // loading, dashboard, inspection, settings
             const [selectedSetor, setSelectedSetor] = useState('');
             const [responsavel, setResponsavel] = useState('');
-            const [permissionError, setPermissionError] = useState(false);
             
-            // Dados Dinâmicos
-            const [questions, setQuestions] = useState([]);
+            // Estado Global
+            const [data, setData] = useState({ questions: [], inspections: [], lastBackup: null });
+            
+            // Estado Temporário da Inspeção
             const [answers, setAnswers] = useState({});
             const [obs, setObs] = useState({});
-            const [inspectionsThisWeek, setInspectionsThisWeek] = useState([]);
-            const [db, setDb] = useState(null);
-            const [appId, setAppId] = useState('imac-app-v1'); // ID Fixo para o app do usuário
 
-            // Admin States
+            // Admin Filters
             const [editingQ, setEditingQ] = useState(null);
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [adminFilterSetor, setAdminFilterSetor] = useState('TODOS');
 
-            // 1. Tentar conectar ao iniciar
+            // --- INICIALIZAÇÃO ---
             useEffect(() => {
-                const tryConnect = async () => {
-                    // Verifica se estamos no ambiente Canvas (tem variavel global)
-                    let config = null;
-                    let currentAppId = 'imac-app-v1';
-                    
-                    if (typeof __firebase_config !== 'undefined') {
-                        // Ambiente Canvas (automático)
-                        config = JSON.parse(__firebase_config);
-                        if (typeof __app_id !== 'undefined') {
-                            currentAppId = __app_id;
-                        }
-                    } else {
-                        // Ambiente GitHub/Externo (Local Storage)
-                        const stored = localStorage.getItem('imac_firebase_config');
-                        if (stored) config = JSON.parse(stored);
-                    }
-
-                    setAppId(currentAppId);
-
-                    if (config) {
-                        await initFirebase(config, currentAppId);
-                    } else {
-                        setView('config');
-                    }
-                };
+                // Carrega do LocalStorage
+                let localData = Storage.get();
                 
-                // Aguarda scripts do modulo
-                if (window.firebaseModules) {
-                    tryConnect();
-                } else {
-                    window.addEventListener('firebase-ready', tryConnect);
+                // Se estiver vazio (primeiro acesso), carrega padrões
+                if (localData.questions.length === 0) {
+                    localData = Storage.reset();
                 }
+                
+                setData(localData);
+                setView('dashboard');
             }, []);
 
-            const initFirebase = async (config, currentAppId) => {
-                try {
-                    const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore } = window.firebaseModules;
-                    
-                    // Prevenção de reinicialização múltipla
-                    let app;
-                    try {
-                        app = initializeApp(config);
-                    } catch(e) {
-                        // Se já existe app, pega o default (caso de hot reload ou re-init)
-                         // Não há método direto getApp no modular v9 sem importar, mas initializeApp costuma ser idempotente ou throw. 
-                         // Vamos assumir novo app ou ignorar se throw.
-                    }
-                    
-                    const auth = getAuth(); // Pega auth do app default
-                    const firestore = getFirestore();
-                    setDb(firestore);
-
-                    // --- AUTENTICAÇÃO ROBUSTA (FALLBACK) ---
-                    // Tenta Token Customizado -> Falha -> Tenta Anônimo
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                             await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            throw new Error("No custom token provided");
-                        }
-                    } catch (customErr) {
-                        console.warn("Auth Customizada falhou, tentando anônima...", customErr);
-                        try {
-                            await signInAnonymously(auth);
-                        } catch (anonErr) {
-                            console.error("Falha crítica de autenticação:", anonErr);
-                            // Mesmo sem auth, tentamos carregar o app. Se as regras permitirem public, funciona.
-                        }
-                    }
-                    
-                    // Listener de Auth
-                    onAuthStateChanged(auth, (u) => {
-                        if (u) {
-                            setUser(u);
-                            // Só carrega dados se tiver user, para evitar permission denied imediato
-                            loadData(firestore, currentAppId); 
-                            setView('dashboard');
-                        } else {
-                            // Se não tiver user (ex: logout ou falha total), tenta carregar mesmo assim
-                            // loadData(firestore, currentAppId);
-                        }
-                    });
-
-                } catch (err) {
-                    console.error("Erro Conexão Geral:", err);
-                    if(typeof __firebase_config === 'undefined') {
-                         localStorage.removeItem('imac_firebase_config');
-                         setView('config');
-                    }
+            // Salva no LocalStorage sempre que `data` mudar
+            useEffect(() => {
+                if (view !== 'loading') {
+                    Storage.set(data);
                 }
-            };
-
-            const loadData = (firestore, currentAppId) => {
-                const { collection, query, where, onSnapshot } = window.firebaseModules;
-                
-                // Perguntas - Adicionando callback de erro
-                const qQuestions = query(collection(firestore, 'artifacts', currentAppId, 'public', 'data', 'questions'));
-                onSnapshot(qQuestions, (snapshot) => {
-                    const data = [];
-                    snapshot.forEach((doc) => data.push({ id: doc.id, ...doc.data() }));
-                    setQuestions(data);
-                    setPermissionError(false); // Sucesso limpa erro
-                }, (error) => {
-                    console.warn("Erro carregando perguntas:", error);
-                    if (error.code === 'permission-denied') setPermissionError(true);
-                });
-
-                // Inspeções - Adicionando callback de erro
-                const weekId = getWeekID();
-                const qInspections = query(
-                    collection(firestore, 'artifacts', currentAppId, 'public', 'data', 'inspections'),
-                    where('weekId', '==', weekId)
-                );
-                onSnapshot(qInspections, (snapshot) => {
-                    const data = [];
-                    snapshot.forEach((doc) => data.push({ id: doc.id, ...doc.data() }));
-                    setInspectionsThisWeek(data);
-                }, (error) => {
-                    console.warn("Erro carregando inspeções:", error);
-                     if (error.code === 'permission-denied') setPermissionError(true);
-                });
-            };
+            }, [data, view]);
 
             // --- LÓGICA DE CÁLCULO ---
+            const weekId = getWeekID();
+            
             const allSetors = useMemo(() => {
-                if (questions.length === 0) return [];
-                const s = new Set(questions.map(p => p.setor).filter(x => x !== 'TODOS'));
+                const s = new Set(data.questions.map(p => p.setor).filter(x => x !== 'TODOS'));
                 return Array.from(s).sort();
-            }, [questions]);
+            }, [data.questions]);
+
+            const inspectionsThisWeek = useMemo(() => {
+                return data.inspections.filter(i => i.weekId === weekId);
+            }, [data.inspections, weekId]);
 
             const setoresConcluidos = useMemo(() => new Set(inspectionsThisWeek.map(i => i.setor)), [inspectionsThisWeek]);
 
@@ -395,8 +183,8 @@
 
             const currentQuestions = useMemo(() => {
                 if (!selectedSetor) return [];
-                return questions.filter(p => p.setor === selectedSetor || p.setor === 'TODOS');
-            }, [selectedSetor, questions]);
+                return data.questions.filter(p => p.setor === selectedSetor || p.setor === 'TODOS');
+            }, [selectedSetor, data.questions]);
 
             const scoreAtual = useMemo(() => {
                 if (currentQuestions.length === 0) return 0;
@@ -408,7 +196,7 @@
                 return total === 0 ? 0 : Math.round((conformes / total) * 100);
             }, [answers, currentQuestions]);
 
-            // --- AÇÕES ---
+            // --- AÇÕES DE INSPEÇÃO ---
             const handleStartInspection = (setor) => {
                 if (!responsavel) { alert("Informe o responsável."); return; }
                 setSelectedSetor(setor);
@@ -417,99 +205,117 @@
                 setView('inspection');
             };
 
-            const handleSaveInspection = async () => {
-                if (!db) return;
-                const { collection, addDoc, Timestamp } = window.firebaseModules;
+            const handleSaveInspection = () => {
                 const pendentes = currentQuestions.filter(q => !answers[q.id]);
                 if (pendentes.length > 0 && !confirm(`Existem ${pendentes.length} perguntas sem resposta. Salvar?`)) return;
 
-                try {
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'inspections'), {
-                        setor: selectedSetor,
-                        responsavel: responsavel,
-                        data: new Date().toISOString(),
-                        timestamp: Timestamp.now(),
-                        weekId: getWeekID(),
-                        score: scoreAtual,
-                        respostas: answers,
-                        observacoes: obs,
-                        status: 'Concluído'
-                    });
-                    setView('dashboard');
-                } catch (err) {
-                    alert("Erro ao salvar: " + err.message);
-                    if (err.code === 'permission-denied') setPermissionError(true);
-                }
-            };
+                const newInspection = {
+                    id: Date.now().toString(),
+                    setor: selectedSetor,
+                    responsavel: responsavel,
+                    data: new Date().toISOString(),
+                    weekId: getWeekID(),
+                    score: scoreAtual,
+                    respostas: answers,
+                    observacoes: obs,
+                    status: 'Concluído'
+                };
 
-            const handleImportDefaults = async () => {
-                if (!confirm("Isso importará todas as perguntas padrão. Continuar?")) return;
-                const { collection, writeBatch, doc } = window.firebaseModules;
-                const batch = writeBatch(db);
-                STATIC_DB_PERGUNTAS.forEach(q => {
-                    const newRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'questions'));
-                    batch.set(newRef, q);
-                });
+                // Remove inspeção anterior do mesmo setor na mesma semana (substituição) e adiciona a nova
+                const otherInspections = data.inspections.filter(i => !(i.weekId === weekId && i.setor === selectedSetor));
                 
-                try {
-                    await batch.commit();
-                    alert("Importação concluída!");
-                } catch (err) {
-                    alert("Erro ao importar: " + err.message);
-                    if (err.code === 'permission-denied') setPermissionError(true);
-                }
+                setData(prev => ({
+                    ...prev,
+                    inspections: [...otherInspections, newInspection]
+                }));
+
+                setView('dashboard');
             };
 
-            const handleSaveQuestion = async (e) => {
+            // --- AÇÕES DE ADMIN (CRUD) ---
+            const handleSaveQuestion = (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target);
-                const qData = {
+                const newQ = {
+                    id: editingQ?.id || Date.now().toString(),
                     setor: formData.get('setor').toUpperCase(),
                     grupo: formData.get('grupo').toUpperCase(),
                     pergunta: formData.get('pergunta')
                 };
 
-                const { collection, addDoc, updateDoc, doc } = window.firebaseModules;
-                try {
-                    if (editingQ && editingQ.id) {
-                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'questions', editingQ.id), qData);
-                    } else {
-                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'questions'), qData);
-                    }
-                    setIsModalOpen(false);
-                    setEditingQ(null);
-                } catch (err) {
-                    alert("Erro ao salvar pergunta: " + err.message);
+                let newQuestions;
+                if (editingQ) {
+                    newQuestions = data.questions.map(q => q.id === editingQ.id ? newQ : q);
+                } else {
+                    newQuestions = [...data.questions, newQ];
                 }
+
+                setData(prev => ({ ...prev, questions: newQuestions }));
+                setIsModalOpen(false);
+                setEditingQ(null);
             };
 
-            const handleDeleteQuestion = async (id) => {
-                if (!confirm("Tem certeza que deseja excluir esta pergunta?")) return;
-                const { deleteDoc, doc } = window.firebaseModules;
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'questions', id));
-                } catch (err) {
-                    alert("Erro ao excluir: " + err.message);
-                }
+            const handleDeleteQuestion = (id) => {
+                if (!confirm("Excluir pergunta?")) return;
+                const newQuestions = data.questions.filter(q => q.id !== id);
+                setData(prev => ({ ...prev, questions: newQuestions }));
+            };
+
+            // --- BACKUP & RESTORE ---
+            const handleDownloadBackup = () => {
+                const backupData = {
+                    ...data,
+                    lastBackup: new Date().toISOString()
+                };
+                
+                // Atualiza o estado com a nova data antes de baixar
+                setData(backupData);
+
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                
+                const dateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", `backup_imac_${dateStr}.json`);
+                document.body.appendChild(downloadAnchorNode); // required for firefox
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+            };
+
+            const handleRestoreBackup = (e) => {
+                const fileReader = new FileReader();
+                fileReader.readAsText(e.target.files[0], "UTF-8");
+                fileReader.onload = (event) => {
+                    try {
+                        const parsed = JSON.parse(event.target.result);
+                        if (parsed.questions && Array.isArray(parsed.inspections)) {
+                            if(confirm(`Restaurar backup de ${new Date(parsed.lastBackup || Date.now()).toLocaleString()}? Isso substituirá os dados atuais.`)){
+                                setData(parsed);
+                                alert("Dados restaurados com sucesso!");
+                            }
+                        } else {
+                            alert("Arquivo de backup inválido.");
+                        }
+                    } catch (error) {
+                        alert("Erro ao ler arquivo: " + error.message);
+                    }
+                };
             };
 
             // --- RENDER ---
             
             if (view === 'loading') return <div className="flex h-screen bg-slate-50 items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
 
-            if (permissionError) return <PermissionErrorScreen onRetry={() => window.location.reload()} />;
-
-            if (view === 'config') return <ConfigScreen onSave={(config) => initFirebase(config, appId)} />;
-
+            // VIEW: DASHBOARD
             if (view === 'dashboard') {
                 return (
                     <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col animate-fade-in">
                         <header className="bg-blue-900 text-white p-6 rounded-b-3xl shadow-lg mb-6 relative">
-                            <button onClick={() => setView('admin')} className="absolute top-6 right-6 p-2 bg-white/10 rounded-full hover:bg-white/20">
+                            <button onClick={() => setView('settings')} className="absolute top-6 right-6 p-2 bg-white/10 rounded-full hover:bg-white/20">
                                 <Icons.Gear />
                             </button>
                             <h1 className="text-2xl font-bold">Gestão IMAC</h1>
-                            <p className="text-blue-200 text-sm mb-4">Controle de Qualidade</p>
+                            <p className="text-blue-200 text-sm mb-4">Controle de Qualidade (Offline)</p>
                             
                             <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
                                 <div className="flex justify-between items-end mb-2">
@@ -526,55 +332,78 @@
                         <main className="flex-1 px-6 pb-20">
                             <div className="mb-6">
                                 <label className="block text-sm font-bold text-slate-700 mb-2">Responsável</label>
-                                <input type="text" value={responsavel} onChange={(e) => setResponsavel(e.target.value)} placeholder="Digite seu nome..." className="w-full p-3 rounded-xl border border-slate-200 shadow-sm" />
+                                <input type="text" value={responsavel} onChange={(e) => setResponsavel(e.target.value)} placeholder="Digite seu nome..." className="w-full p-3 rounded-xl border border-slate-200 shadow-sm outline-none focus:ring-2 focus:ring-blue-500" />
                             </div>
 
-                            {questions.length === 0 ? (
-                                <div className="text-center py-10">
-                                    <p className="text-slate-500 mb-4">Banco de dados limpo.</p>
-                                    <button onClick={() => setView('admin')} className="text-blue-600 font-bold underline">Configurar no Admin</button>
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {allSetors.map(setor => {
-                                        const isDone = setoresConcluidos.has(setor);
-                                        const insp = inspectionsThisWeek.find(i => i.setor === setor);
-                                        return (
-                                            <button key={setor} onClick={() => handleStartInspection(setor)} className={`w-full p-4 rounded-xl flex items-center justify-between card-shadow transition-all active:scale-95 ${isDone ? 'bg-green-50 border border-green-200' : 'bg-white hover:bg-slate-50 border border-slate-100'}`}>
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isDone ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
-                                                        {isDone ? <Icons.Check /> : <Icons.List />}
-                                                    </div>
-                                                    <div className="text-left">
-                                                        <p className={`font-bold ${isDone ? 'text-green-800' : 'text-slate-700'}`}>{setor}</p>
-                                                        {isDone && <p className="text-xs text-green-600">Nota: {insp.score}%</p>}
-                                                    </div>
+                            <div className="space-y-3">
+                                {allSetors.length === 0 && <p className="text-center text-slate-400 py-4">Nenhum setor encontrado. Vá em configurações.</p>}
+                                {allSetors.map(setor => {
+                                    const isDone = setoresConcluidos.has(setor);
+                                    const insp = inspectionsThisWeek.find(i => i.setor === setor);
+                                    return (
+                                        <button key={setor} onClick={() => handleStartInspection(setor)} className={`w-full p-4 rounded-xl flex items-center justify-between card-shadow transition-all active:scale-95 ${isDone ? 'bg-green-50 border border-green-200' : 'bg-white hover:bg-slate-50 border border-slate-100'}`}>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isDone ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                    {isDone ? <Icons.Check /> : <Icons.List />}
                                                 </div>
-                                                {isDone ? <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded font-bold">FEITO</span> : <span className="h-8 w-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">→</span>}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                                                <div className="text-left">
+                                                    <p className={`font-bold ${isDone ? 'text-green-800' : 'text-slate-700'}`}>{setor}</p>
+                                                    {isDone && <p className="text-xs text-green-600">Nota: {insp.score}%</p>}
+                                                </div>
+                                            </div>
+                                            {isDone ? <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded font-bold">FEITO</span> : <span className="h-8 w-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">→</span>}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </main>
                     </div>
                 );
             }
 
-            if (view === 'admin') {
+            // VIEW: SETTINGS & BACKUP
+            if (view === 'settings') {
                 const filteredQuestions = adminFilterSetor === 'TODOS' 
-                    ? questions 
-                    : questions.filter(q => q.setor === adminFilterSetor || q.setor === 'TODOS');
+                    ? data.questions 
+                    : data.questions.filter(q => q.setor === adminFilterSetor || q.setor === 'TODOS');
 
                 return (
                     <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col animate-fade-in">
                         <header className="bg-slate-800 text-white p-4 flex items-center justify-between sticky top-0 z-10 shadow-md">
                             <button onClick={() => setView('dashboard')} className="text-sm font-bold text-slate-300">← Voltar</button>
-                            <h1 className="font-bold">Administração</h1>
+                            <h1 className="font-bold">Dados & Backup</h1>
                             <div className="w-10"></div>
                         </header>
 
-                        <main className="flex-1 p-4 pb-24">
+                        <main className="flex-1 p-6 pb-24">
+                            
+                            {/* Card de Backup */}
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+                                <h2 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                    <Icons.Database /> Backup e Restauração
+                                </h2>
+                                
+                                <div className="mb-4 text-xs text-slate-500 bg-slate-50 p-3 rounded border border-slate-100">
+                                    <p>Último Backup: <strong>{data.lastBackup ? new Date(data.lastBackup).toLocaleString() : "Nunca realizado"}</strong></p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button onClick={handleDownloadBackup} className="flex flex-col items-center justify-center p-3 bg-blue-50 border border-blue-100 rounded-lg text-blue-700 hover:bg-blue-100 transition-colors">
+                                        <Icons.Download />
+                                        <span className="text-xs font-bold mt-2">Baixar Dados</span>
+                                    </button>
+                                    
+                                    <label className="flex flex-col items-center justify-center p-3 bg-green-50 border border-green-100 rounded-lg text-green-700 hover:bg-green-100 transition-colors cursor-pointer">
+                                        <Icons.Upload />
+                                        <span className="text-xs font-bold mt-2">Restaurar</span>
+                                        <input type="file" accept=".json" className="hidden" onChange={handleRestoreBackup} />
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Gerenciamento de Perguntas */}
+                            <h2 className="font-bold text-slate-800 mb-4 border-t pt-6 border-slate-200">Gerenciar Perguntas</h2>
+                            
                             <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
                                 <button onClick={() => setAdminFilterSetor('TODOS')} className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold ${adminFilterSetor === 'TODOS' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border'}`}>Todos</button>
                                 {allSetors.map(s => (
@@ -582,28 +411,15 @@
                                 ))}
                             </div>
 
-                            {questions.length === 0 && (
-                                <div className="bg-yellow-50 p-6 rounded-xl border border-yellow-200 text-center mb-6">
-                                    <h3 className="font-bold text-yellow-800 mb-2">Importar Dados Iniciais</h3>
-                                    <p className="text-xs text-yellow-700 mb-4">Seu banco está vazio. Clique para carregar as perguntas padrão da IMAC.</p>
-                                    <button onClick={handleImportDefaults} className="bg-yellow-500 text-white px-4 py-2 rounded-lg font-bold shadow-md hover:bg-yellow-600 w-full">Importar Padrão</button>
-                                </div>
-                            )}
-                            
-                            {/* Botão Reset Config (Escondido no final, útil se errar a key) */}
-                            <div className="mb-4 text-right">
-                                <button onClick={()=>{localStorage.removeItem('imac_firebase_config'); window.location.reload()}} className="text-[10px] text-red-400 underline">Resetar Configuração Firebase</button>
-                            </div>
-
                             <div className="space-y-3">
                                 {filteredQuestions.map(q => (
-                                    <div key={q.id} className="bg-white p-4 rounded-lg shadow-sm border border-slate-100 flex justify-between items-start">
+                                    <div key={q.id} className="bg-white p-3 rounded-lg shadow-sm border border-slate-100 flex justify-between items-start">
                                         <div className="flex-1 pr-2">
                                             <div className="flex gap-2 mb-1">
                                                 <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">{q.setor}</span>
                                                 <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">{q.grupo}</span>
                                             </div>
-                                            <p className="text-sm text-slate-800">{q.pergunta}</p>
+                                            <p className="text-xs text-slate-800 font-medium">{q.pergunta}</p>
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <button onClick={() => { setEditingQ(q); setIsModalOpen(true); }} className="text-blue-500 hover:bg-blue-50 p-1 rounded"><Icons.Edit /></button>
@@ -618,6 +434,7 @@
                             <Icons.Plus />
                         </button>
 
+                        {/* Modal de Edição */}
                         {isModalOpen && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay backdrop-blur-sm">
                                 <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 animate-in fade-in zoom-in duration-200">
@@ -648,6 +465,7 @@
                 );
             }
 
+            // VIEW: INSPECTION
             if (view === 'inspection') {
                 return (
                     <div className="max-w-md mx-auto min-h-screen bg-white flex flex-col animate-fade-in">
