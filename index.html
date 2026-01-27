@@ -12,18 +12,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        body { -webkit-tap-highlight-color: transparent; background-color: #f8fafc; }
+        body { -webkit-tap-highlight-color: transparent; background-color: #0c0a09; color: #f5f5f4; } /* stone-950 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         @media print { .no-print { display: none !important; } }
-        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); }
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.1); }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.8); }
         /* Animações */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
     </style>
 </head>
-<body>
+<body class="bg-stone-950 text-stone-100 font-sans">
 
     <div id="root"></div>
 
@@ -79,7 +79,8 @@
             Edit: () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>,
             Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
             Upload: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>,
-            Database: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+            Database: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>,
+            Image: () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
         };
 
         const getWeekID = () => {
@@ -106,7 +107,7 @@
             KEY: 'imac_offline_data',
             get: () => {
                 const data = localStorage.getItem(Storage.KEY);
-                return data ? JSON.parse(data) : { questions: [], inspections: [], lastBackup: null };
+                return data ? JSON.parse(data) : { questions: [], inspections: [], lastBackup: null, logo: null };
             },
             set: (data) => {
                 localStorage.setItem(Storage.KEY, JSON.stringify(data));
@@ -115,7 +116,8 @@
                 const initialData = { 
                     questions: STATIC_DB_PERGUNTAS, 
                     inspections: [],
-                    lastBackup: null 
+                    lastBackup: null,
+                    logo: null
                 };
                 Storage.set(initialData);
                 return initialData;
@@ -128,7 +130,7 @@
             const [responsavel, setResponsavel] = useState('');
             
             // Estado Global
-            const [data, setData] = useState({ questions: [], inspections: [], lastBackup: null });
+            const [data, setData] = useState({ questions: [], inspections: [], lastBackup: null, logo: null });
             
             // Estado Temporário da Inspeção
             const [answers, setAnswers] = useState({});
@@ -261,6 +263,23 @@
                 setData(prev => ({ ...prev, questions: newQuestions }));
             };
 
+            // --- UPLOAD LOGO ---
+            const handleLogoUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (file.size > 2000000) { // 2MB limit
+                    alert("A imagem é muito grande. Tente uma menor que 2MB.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setData(prev => ({ ...prev, logo: reader.result }));
+                };
+                reader.readAsDataURL(file);
+            };
+
             // --- BACKUP & RESTORE ---
             const handleDownloadBackup = () => {
                 const backupData = {
@@ -304,54 +323,61 @@
 
             // --- RENDER ---
             
-            if (view === 'loading') return <div className="flex h-screen bg-slate-50 items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
+            if (view === 'loading') return <div className="flex h-screen bg-stone-950 items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-600"></div></div>;
 
             // VIEW: DASHBOARD
             if (view === 'dashboard') {
                 return (
-                    <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col animate-fade-in">
-                        <header className="bg-blue-900 text-white p-6 rounded-b-3xl shadow-lg mb-6 relative">
-                            <button onClick={() => setView('settings')} className="absolute top-6 right-6 p-2 bg-white/10 rounded-full hover:bg-white/20">
+                    <div className="max-w-md mx-auto min-h-screen bg-stone-950 flex flex-col animate-fade-in">
+                        <header className="bg-gradient-to-b from-yellow-900 to-stone-900 text-stone-100 p-6 rounded-b-3xl shadow-lg mb-6 relative border-b border-yellow-900/30">
+                            <button onClick={() => setView('settings')} className="absolute top-6 right-6 p-2 bg-stone-950/30 rounded-full hover:bg-stone-950/50 text-yellow-500">
                                 <Icons.Gear />
                             </button>
-                            <h1 className="text-2xl font-bold">Gestão IMAC</h1>
-                            <p className="text-blue-200 text-sm mb-4">Controle de Qualidade (Offline)</p>
                             
-                            <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
+                            <div className="mb-4">
+                                {data.logo ? (
+                                    <img src={data.logo} alt="Logo Empresa" className="h-16 object-contain mb-2 drop-shadow-md" />
+                                ) : (
+                                    <h1 className="text-2xl font-bold text-yellow-500">Gestão IMAC</h1>
+                                )}
+                                <p className="text-stone-400 text-sm">Controle de Qualidade (Offline)</p>
+                            </div>
+                            
+                            <div className="bg-stone-800/60 backdrop-blur-md p-4 rounded-xl border border-yellow-900/40">
                                 <div className="flex justify-between items-end mb-2">
-                                    <span className="text-blue-100 text-sm">Meta Semanal ({getWeekRange()})</span>
-                                    <span className="text-2xl font-bold text-white">{progress.pct}%</span>
+                                    <span className="text-yellow-100/80 text-sm font-medium">Meta Semanal ({getWeekRange()})</span>
+                                    <span className="text-2xl font-bold text-yellow-400">{progress.pct}%</span>
                                 </div>
-                                <div className="w-full bg-blue-950/50 rounded-full h-3 mb-2">
-                                    <div className="bg-yellow-400 h-3 rounded-full transition-all duration-1000" style={{ width: `${progress.pct}%` }}></div>
+                                <div className="w-full bg-stone-950/50 rounded-full h-3 mb-2">
+                                    <div className="bg-yellow-500 h-3 rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(234,179,8,0.5)]" style={{ width: `${progress.pct}%` }}></div>
                                 </div>
-                                <p className="text-xs text-blue-200 text-right">{progress.done}/{progress.total} setores</p>
+                                <p className="text-xs text-stone-400 text-right">{progress.done}/{progress.total} setores</p>
                             </div>
                         </header>
 
                         <main className="flex-1 px-6 pb-20">
                             <div className="mb-6">
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Responsável</label>
-                                <input type="text" value={responsavel} onChange={(e) => setResponsavel(e.target.value)} placeholder="Digite seu nome..." className="w-full p-3 rounded-xl border border-slate-200 shadow-sm outline-none focus:ring-2 focus:ring-blue-500" />
+                                <label className="block text-sm font-bold text-stone-400 mb-2">Responsável</label>
+                                <input type="text" value={responsavel} onChange={(e) => setResponsavel(e.target.value)} placeholder="Digite seu nome..." className="w-full p-3 rounded-xl bg-stone-900 border border-stone-800 text-stone-100 shadow-sm outline-none focus:ring-2 focus:ring-yellow-600 focus:border-transparent placeholder-stone-600 transition-all" />
                             </div>
 
                             <div className="space-y-3">
-                                {allSetors.length === 0 && <p className="text-center text-slate-400 py-4">Nenhum setor encontrado. Vá em configurações.</p>}
+                                {allSetors.length === 0 && <p className="text-center text-stone-500 py-4">Nenhum setor encontrado. Vá em configurações.</p>}
                                 {allSetors.map(setor => {
                                     const isDone = setoresConcluidos.has(setor);
                                     const insp = inspectionsThisWeek.find(i => i.setor === setor);
                                     return (
-                                        <button key={setor} onClick={() => handleStartInspection(setor)} className={`w-full p-4 rounded-xl flex items-center justify-between card-shadow transition-all active:scale-95 ${isDone ? 'bg-green-50 border border-green-200' : 'bg-white hover:bg-slate-50 border border-slate-100'}`}>
+                                        <button key={setor} onClick={() => handleStartInspection(setor)} className={`w-full p-4 rounded-xl flex items-center justify-between card-shadow transition-all active:scale-95 border ${isDone ? 'bg-stone-900 border-yellow-900/50' : 'bg-stone-900 border-stone-800 hover:border-stone-700'}`}>
                                             <div className="flex items-center gap-3">
-                                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isDone ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                                                <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isDone ? 'bg-yellow-900/30 text-yellow-500' : 'bg-stone-800 text-stone-500'}`}>
                                                     {isDone ? <Icons.Check /> : <Icons.List />}
                                                 </div>
                                                 <div className="text-left">
-                                                    <p className={`font-bold ${isDone ? 'text-green-800' : 'text-slate-700'}`}>{setor}</p>
-                                                    {isDone && <p className="text-xs text-green-600">Nota: {insp.score}%</p>}
+                                                    <p className={`font-bold ${isDone ? 'text-yellow-100' : 'text-stone-300'}`}>{setor}</p>
+                                                    {isDone && <p className="text-xs text-yellow-600 font-medium">Nota: {insp.score}%</p>}
                                                 </div>
                                             </div>
-                                            {isDone ? <span className="text-xs bg-green-200 text-green-800 px-2 py-1 rounded font-bold">FEITO</span> : <span className="h-8 w-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">→</span>}
+                                            {isDone ? <span className="text-xs bg-yellow-900/40 text-yellow-400 px-2 py-1 rounded font-bold border border-yellow-900/50">FEITO</span> : <span className="h-8 w-8 rounded-full bg-stone-800 text-stone-500 flex items-center justify-center hover:bg-stone-700 hover:text-yellow-500 transition-colors">→</span>}
                                         </button>
                                     );
                                 })}
@@ -368,32 +394,57 @@
                     : data.questions.filter(q => q.setor === adminFilterSetor || q.setor === 'TODOS');
 
                 return (
-                    <div className="max-w-md mx-auto min-h-screen bg-slate-50 flex flex-col animate-fade-in">
-                        <header className="bg-slate-800 text-white p-4 flex items-center justify-between sticky top-0 z-10 shadow-md">
-                            <button onClick={() => setView('dashboard')} className="text-sm font-bold text-slate-300">← Voltar</button>
-                            <h1 className="font-bold">Dados & Backup</h1>
+                    <div className="max-w-md mx-auto min-h-screen bg-stone-950 flex flex-col animate-fade-in text-stone-100">
+                        <header className="bg-stone-900 p-4 flex items-center justify-between sticky top-0 z-10 shadow-md border-b border-stone-800">
+                            <button onClick={() => setView('dashboard')} className="text-sm font-bold text-stone-400 hover:text-yellow-500 transition-colors">← Voltar</button>
+                            <h1 className="font-bold text-yellow-500">Configurações</h1>
                             <div className="w-10"></div>
                         </header>
 
                         <main className="flex-1 p-6 pb-24">
                             
+                            {/* Card de Logo */}
+                            <div className="bg-stone-900 p-6 rounded-xl shadow-sm border border-stone-800 mb-6">
+                                <h2 className="font-bold text-stone-200 mb-4 flex items-center gap-2">
+                                    <Icons.Image /> Identidade Visual
+                                </h2>
+                                <label className="block cursor-pointer group">
+                                    <span className="text-xs font-bold text-stone-500 uppercase mb-2 block group-hover:text-yellow-500 transition-colors">Logo da Empresa (Dark Mode)</span>
+                                    <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
+                                    <div className={`mt-1 p-6 border-2 border-dashed rounded-xl flex flex-col items-center justify-center transition-all ${data.logo ? 'border-yellow-700/50 bg-stone-950' : 'border-stone-700 bg-stone-950 hover:bg-stone-800 hover:border-stone-600'}`}>
+                                        {data.logo ? (
+                                            <div className="relative">
+                                                <img src={data.logo} className="h-16 object-contain" />
+                                                <div className="absolute -bottom-8 left-0 right-0 text-center text-[10px] text-yellow-600">Clique para alterar</div>
+                                            </div>
+                                        ) : (
+                                            <div className="text-stone-500 flex flex-col items-center">
+                                                <Icons.Upload /> 
+                                                <span className="text-xs mt-2 font-medium">Clique para enviar logo</span>
+                                                <span className="text-[10px] mt-1 text-stone-600">Recomendado: PNG Transparente</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </label>
+                            </div>
+
                             {/* Card de Backup */}
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
-                                <h2 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <div className="bg-stone-900 p-6 rounded-xl shadow-sm border border-stone-800 mb-8">
+                                <h2 className="font-bold text-stone-200 mb-4 flex items-center gap-2">
                                     <Icons.Database /> Backup e Restauração
                                 </h2>
                                 
-                                <div className="mb-4 text-xs text-slate-500 bg-slate-50 p-3 rounded border border-slate-100">
-                                    <p>Último Backup: <strong>{data.lastBackup ? new Date(data.lastBackup).toLocaleString() : "Nunca realizado"}</strong></p>
+                                <div className="mb-4 text-xs text-stone-400 bg-stone-950 p-3 rounded border border-stone-800">
+                                    <p>Último Backup: <strong className="text-yellow-500">{data.lastBackup ? new Date(data.lastBackup).toLocaleString() : "Nunca realizado"}</strong></p>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-3">
-                                    <button onClick={handleDownloadBackup} className="flex flex-col items-center justify-center p-3 bg-blue-50 border border-blue-100 rounded-lg text-blue-700 hover:bg-blue-100 transition-colors">
+                                    <button onClick={handleDownloadBackup} className="flex flex-col items-center justify-center p-3 bg-stone-950 border border-stone-800 rounded-lg text-stone-300 hover:bg-stone-800 hover:text-yellow-400 hover:border-yellow-900/50 transition-all active:scale-95">
                                         <Icons.Download />
                                         <span className="text-xs font-bold mt-2">Baixar Dados</span>
                                     </button>
                                     
-                                    <label className="flex flex-col items-center justify-center p-3 bg-green-50 border border-green-100 rounded-lg text-green-700 hover:bg-green-100 transition-colors cursor-pointer">
+                                    <label className="flex flex-col items-center justify-center p-3 bg-stone-950 border border-stone-800 rounded-lg text-stone-300 hover:bg-stone-800 hover:text-green-400 hover:border-green-900/30 transition-all cursor-pointer active:scale-95">
                                         <Icons.Upload />
                                         <span className="text-xs font-bold mt-2">Restaurar</span>
                                         <input type="file" accept=".json" className="hidden" onChange={handleRestoreBackup} />
@@ -402,60 +453,60 @@
                             </div>
 
                             {/* Gerenciamento de Perguntas */}
-                            <h2 className="font-bold text-slate-800 mb-4 border-t pt-6 border-slate-200">Gerenciar Perguntas</h2>
+                            <h2 className="font-bold text-stone-300 mb-4 border-t border-stone-800 pt-6">Gerenciar Perguntas</h2>
                             
                             <div className="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
-                                <button onClick={() => setAdminFilterSetor('TODOS')} className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold ${adminFilterSetor === 'TODOS' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border'}`}>Todos</button>
+                                <button onClick={() => setAdminFilterSetor('TODOS')} className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold transition-colors ${adminFilterSetor === 'TODOS' ? 'bg-yellow-600 text-stone-950' : 'bg-stone-900 text-stone-400 border border-stone-700'}`}>Todos</button>
                                 {allSetors.map(s => (
-                                    <button key={s} onClick={() => setAdminFilterSetor(s)} className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold ${adminFilterSetor === s ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 border'}`}>{s}</button>
+                                    <button key={s} onClick={() => setAdminFilterSetor(s)} className={`whitespace-nowrap px-3 py-1 rounded-full text-xs font-bold transition-colors ${adminFilterSetor === s ? 'bg-yellow-600 text-stone-950' : 'bg-stone-900 text-stone-400 border border-stone-700'}`}>{s}</button>
                                 ))}
                             </div>
 
                             <div className="space-y-3">
                                 {filteredQuestions.map(q => (
-                                    <div key={q.id} className="bg-white p-3 rounded-lg shadow-sm border border-slate-100 flex justify-between items-start">
+                                    <div key={q.id} className="bg-stone-900 p-3 rounded-lg shadow-sm border border-stone-800 flex justify-between items-start hover:border-stone-700 transition-colors">
                                         <div className="flex-1 pr-2">
                                             <div className="flex gap-2 mb-1">
-                                                <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold">{q.setor}</span>
-                                                <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">{q.grupo}</span>
+                                                <span className="text-[10px] bg-stone-950 text-stone-500 px-1.5 py-0.5 rounded font-bold">{q.setor}</span>
+                                                <span className="text-[10px] bg-yellow-900/20 text-yellow-600 px-1.5 py-0.5 rounded font-bold border border-yellow-900/30">{q.grupo}</span>
                                             </div>
-                                            <p className="text-xs text-slate-800 font-medium">{q.pergunta}</p>
+                                            <p className="text-xs text-stone-300 font-medium">{q.pergunta}</p>
                                         </div>
                                         <div className="flex flex-col gap-2">
-                                            <button onClick={() => { setEditingQ(q); setIsModalOpen(true); }} className="text-blue-500 hover:bg-blue-50 p-1 rounded"><Icons.Edit /></button>
-                                            <button onClick={() => handleDeleteQuestion(q.id)} className="text-red-400 hover:bg-red-50 p-1 rounded"><Icons.Trash /></button>
+                                            <button onClick={() => { setEditingQ(q); setIsModalOpen(true); }} className="text-stone-500 hover:text-yellow-500 hover:bg-stone-800 p-1 rounded"><Icons.Edit /></button>
+                                            <button onClick={() => handleDeleteQuestion(q.id)} className="text-stone-600 hover:text-red-400 hover:bg-stone-800 p-1 rounded"><Icons.Trash /></button>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </main>
 
-                        <button onClick={() => { setEditingQ(null); setIsModalOpen(true); }} className="fixed bottom-6 right-6 bg-blue-600 text-white h-14 w-14 rounded-full shadow-lg flex items-center justify-center hover:bg-blue-700 z-20">
+                        <button onClick={() => { setEditingQ(null); setIsModalOpen(true); }} className="fixed bottom-6 right-6 bg-yellow-600 text-stone-950 h-14 w-14 rounded-full shadow-lg shadow-yellow-900/20 flex items-center justify-center hover:bg-yellow-500 hover:scale-105 transition-all z-20">
                             <Icons.Plus />
                         </button>
 
                         {/* Modal de Edição */}
                         {isModalOpen && (
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay backdrop-blur-sm">
-                                <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 animate-in fade-in zoom-in duration-200">
-                                    <h2 className="text-lg font-bold mb-4">{editingQ ? 'Editar Pergunta' : 'Nova Pergunta'}</h2>
+                                <div className="bg-stone-900 border border-stone-700 rounded-xl shadow-2xl w-full max-w-sm p-6 animate-in fade-in zoom-in duration-200">
+                                    <h2 className="text-lg font-bold mb-4 text-yellow-500">{editingQ ? 'Editar Pergunta' : 'Nova Pergunta'}</h2>
                                     <form onSubmit={handleSaveQuestion} className="space-y-4">
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Setor</label>
-                                            <input name="setor" defaultValue={editingQ?.setor || ''} list="setores-list" className="w-full p-2 border rounded-lg text-sm" required placeholder="Ex: ESTOQUE" />
+                                            <label className="block text-xs font-bold text-stone-500 uppercase mb-1">Setor</label>
+                                            <input name="setor" defaultValue={editingQ?.setor || ''} list="setores-list" className="w-full p-2 bg-stone-950 border border-stone-700 rounded-lg text-sm text-stone-100 focus:border-yellow-600 outline-none" required placeholder="Ex: ESTOQUE" />
                                             <datalist id="setores-list">{allSetors.map(s => <option key={s} value={s} />)}</datalist>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Grupo/Categoria</label>
-                                            <input name="grupo" defaultValue={editingQ?.grupo || ''} className="w-full p-2 border rounded-lg text-sm" required placeholder="Ex: LIMPEZA" />
+                                            <label className="block text-xs font-bold text-stone-500 uppercase mb-1">Grupo/Categoria</label>
+                                            <input name="grupo" defaultValue={editingQ?.grupo || ''} className="w-full p-2 bg-stone-950 border border-stone-700 rounded-lg text-sm text-stone-100 focus:border-yellow-600 outline-none" required placeholder="Ex: LIMPEZA" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Pergunta</label>
-                                            <textarea name="pergunta" defaultValue={editingQ?.pergunta || ''} className="w-full p-2 border rounded-lg text-sm h-24 resize-none" required placeholder="Digite a pergunta..." />
+                                            <label className="block text-xs font-bold text-stone-500 uppercase mb-1">Pergunta</label>
+                                            <textarea name="pergunta" defaultValue={editingQ?.pergunta || ''} className="w-full p-2 bg-stone-950 border border-stone-700 rounded-lg text-sm text-stone-100 h-24 resize-none focus:border-yellow-600 outline-none" required placeholder="Digite a pergunta..." />
                                         </div>
                                         <div className="flex gap-2 pt-2">
-                                            <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 border rounded-lg text-slate-600 font-bold">Cancelar</button>
-                                            <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold">Salvar</button>
+                                            <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2 border border-stone-700 rounded-lg text-stone-400 font-bold hover:bg-stone-800">Cancelar</button>
+                                            <button type="submit" className="flex-1 py-2 bg-yellow-600 text-stone-950 rounded-lg font-bold hover:bg-yellow-500">Salvar</button>
                                         </div>
                                     </form>
                                 </div>
@@ -468,27 +519,27 @@
             // VIEW: INSPECTION
             if (view === 'inspection') {
                 return (
-                    <div className="max-w-md mx-auto min-h-screen bg-white flex flex-col animate-fade-in">
-                        <header className="sticky top-0 z-10 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between shadow-sm">
-                            <div><h2 className="text-lg font-bold text-slate-800">{selectedSetor}</h2><p className="text-xs text-slate-500">Resp: {responsavel}</p></div>
+                    <div className="max-w-md mx-auto min-h-screen bg-stone-950 flex flex-col animate-fade-in">
+                        <header className="sticky top-0 z-10 bg-stone-900 border-b border-stone-800 px-6 py-4 flex items-center justify-between shadow-md">
+                            <div><h2 className="text-lg font-bold text-stone-100">{selectedSetor}</h2><p className="text-xs text-stone-500">Resp: {responsavel}</p></div>
                             <div className="text-right"><span className={`text-2xl font-black ${scoreAtual >= 80 ? 'text-green-500' : 'text-red-500'}`}>{scoreAtual}%</span></div>
                         </header>
                         <main className="flex-1 p-6 space-y-6 pb-24 overflow-y-auto">
                             {currentQuestions.map((q, idx) => (
                                 <div key={q.id || idx} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                    <div className="mb-2"><span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded uppercase">{q.grupo}</span><p className="mt-2 text-slate-800 font-medium leading-snug">{q.pergunta}</p></div>
+                                    <div className="mb-2"><span className="text-[10px] font-bold text-yellow-600 bg-yellow-900/20 border border-yellow-900/30 px-2 py-1 rounded uppercase">{q.grupo}</span><p className="mt-2 text-stone-200 font-medium leading-snug">{q.pergunta}</p></div>
                                     <div className="flex gap-2">
                                         {['C', 'NC', 'NA'].map(opt => (
-                                            <button key={opt} onClick={() => setAnswers(p => ({...p, [q.id]: opt}))} className={`flex-1 py-3 rounded-lg font-bold text-sm transition-colors ${answers[q.id] === opt ? (opt === 'C' ? 'bg-green-500 text-white shadow-lg' : opt === 'NC' ? 'bg-red-500 text-white shadow-lg' : 'bg-slate-600 text-white') : 'bg-slate-100 text-slate-400'}`}>{opt}</button>
+                                            <button key={opt} onClick={() => setAnswers(p => ({...p, [q.id]: opt}))} className={`flex-1 py-3 rounded-lg font-bold text-sm transition-all shadow-lg ${answers[q.id] === opt ? (opt === 'C' ? 'bg-green-600 text-white shadow-green-900/40' : opt === 'NC' ? 'bg-red-600 text-white shadow-red-900/40' : 'bg-stone-600 text-white') : 'bg-stone-900 text-stone-500 hover:bg-stone-800'}`}>{opt}</button>
                                         ))}
                                     </div>
-                                    {answers[q.id] === 'NC' && <input type="text" placeholder="Descreva o problema..." value={obs[q.id] || ''} onChange={(e) => setObs(p => ({...p, [q.id]: e.target.value}))} className="mt-2 w-full text-sm p-3 bg-red-50 border-red-100 rounded-lg text-red-800 focus:border-red-300 outline-none border" autoFocus />}
+                                    {answers[q.id] === 'NC' && <input type="text" placeholder="Descreva o problema..." value={obs[q.id] || ''} onChange={(e) => setObs(p => ({...p, [q.id]: e.target.value}))} className="mt-2 w-full text-sm p-3 bg-red-900/10 border-red-900/30 rounded-lg text-red-200 focus:border-red-500 outline-none border placeholder-red-800/50" autoFocus />}
                                 </div>
                             ))}
                         </main>
-                        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 flex gap-3 max-w-md mx-auto">
-                            <button onClick={() => setView('dashboard')} className="px-6 py-3 rounded-xl border border-slate-200 font-bold text-slate-500">Cancelar</button>
-                            <button onClick={handleSaveInspection} className="flex-1 bg-blue-600 text-white rounded-xl font-bold shadow-lg">Salvar Inspeção</button>
+                        <div className="fixed bottom-0 left-0 right-0 p-4 bg-stone-900 border-t border-stone-800 flex gap-3 max-w-md mx-auto">
+                            <button onClick={() => setView('dashboard')} className="px-6 py-3 rounded-xl border border-stone-700 font-bold text-stone-400 hover:bg-stone-800">Cancelar</button>
+                            <button onClick={handleSaveInspection} className="flex-1 bg-yellow-600 text-stone-950 rounded-xl font-bold shadow-lg shadow-yellow-900/20 hover:bg-yellow-500 transition-colors">Salvar Inspeção</button>
                         </div>
                     </div>
                 );
