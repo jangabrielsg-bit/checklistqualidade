@@ -48,7 +48,7 @@
             .base-th { @apply px-5 py-4 font-semibold whitespace-nowrap; }
             .base-td { @apply px-5 py-4; }
             .stat-icon { @apply p-3 rounded-xl flex items-center justify-center w-12 h-12 text-xl; }
-            .modal-content { @apply bg-ios-card border border-ios-border rounded-3xl shadow-2xl p-6 w-full transform transition-all; }
+            .modal-content { @apply bg-ios-card border border-ios-border rounded-3xl shadow-2xl p-6 w-full transform transition-all max-h-[90vh] overflow-y-auto; }
             .badge { @apply text-xs font-semibold px-2 py-1 rounded-md; }
             
             /* Home Grid Menu Button */
@@ -180,13 +180,13 @@
             <!-- Home / Janelas de Menu -->
             <div id="screen-home" class="screen-panel w-full">
                 <h1 class="title-lg mb-8 text-center text-white text-4xl tracking-tight">Menu Principal</h1>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-10">
                     
                     <button type="button" class="menu-window nav-btn" data-target="consulta">
                         <i class="fa-solid fa-magnifying-glass" style="color:#32ade6;"></i><span>Consulta Universal</span>
                     </button>
                     <button type="button" class="menu-window nav-btn" data-target="entry">
-                        <i class="fa-solid fa-box-open"></i><span>Nova Entrada</span>
+                        <i class="fa-solid fa-box-open"></i><span>Entrada (Massa)</span>
                     </button>
                     <button type="button" class="menu-window nav-btn" data-target="inventory">
                         <i class="fa-solid fa-boxes-stacked" style="color:#30d158;"></i><span>Estoque Atual</span>
@@ -220,6 +220,14 @@
                     <button type="button" class="menu-window nav-btn" data-target="settings">
                         <i class="fa-solid fa-database" style="color:#98989d;"></i><span>Banco de Dados</span>
                     </button>
+                </div>
+
+                <!-- Recebimentos do Dia -->
+                <div class="max-w-6xl mx-auto border-t border-ios-border pt-8">
+                    <h2 class="title-md mb-4 text-ios-blue"><i class="fa-solid fa-truck-ramp-box mr-2"></i>📦 Entregas Previstas para Hoje</h2>
+                    <div id="home-incoming-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
             </div>
 
@@ -279,8 +287,8 @@
             <!-- Compras / Pedidos -->
             <div id="screen-purchasing" class="screen-panel hidden">
                 <h1 class="title-lg mb-0 text-ios-blue"><i class="fa-solid fa-cart-shopping mr-3"></i>Gestão de Compras e Pedidos</h1>
-                <p class="text-ios-textMuted text-sm mb-6 mt-1">Acompanhe a duração do estoque com base no consumo diário (últimos 30 dias), estoque mínimo e prazo do fornecedor.</p>
-                <div class="mb-6">
+                <p class="text-ios-textMuted text-sm mb-6 mt-1">Acompanhe a duração do estoque visualmente, baseando-se no tanque de reserva (estoque mínimo) e no prazo de entrega do fornecedor.</p>
+                <div class="mb-6 flex gap-4">
                     <input type="text" id="search-purchasing" class="form-input w-full md:w-1/2" placeholder="Buscar fornecedor ou item..." autocomplete="off">
                 </div>
                 <div id="purchasing-container" class="space-y-8"></div>
@@ -346,53 +354,54 @@
                 </div>
             </div>
 
-            <!-- Entrada -->
+            <!-- Entrada em Massa -->
             <div id="screen-entry" class="screen-panel hidden">
-                <h1 class="title-lg">Nova Entrada Físico</h1>
-                <div class="card max-w-3xl mx-auto relative">
-                    <div id="entry-pending-order-alert" class="hidden mb-6 bg-ios-blue/10 border-l-4 border-ios-blue p-4 rounded-r-xl">
-                        <p class="text-ios-blue font-bold text-sm"><i class="fa-solid fa-truck-fast mr-2"></i>Atenção: Existe um pedido em trânsito para este item!</p>
-                        <p class="text-xs text-white mt-1">Ao salvar esta entrada, o status de "Pedido Solicitado" será automaticamente baixado.</p>
-                    </div>
+                <h1 class="title-lg">Entrada de Insumos (Lotes Físicos)</h1>
+                
+                <div class="card mb-6">
+                    <h2 class="title-md mb-4">Adicionar Item à Lista de Entrada</h2>
                     <form id="entry-form">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
                             <div class="md:col-span-1">
-                                <label class="form-label">Cód. Produto / Barras</label>
+                                <label class="form-label">Buscar / Bipar Produto</label>
                                 <div class="flex gap-2">
-                                    <input type="text" name="product-code" class="form-input text-lg font-mono placeholder:text-sm" placeholder="Ex: 8110 ou Bipar">
+                                    <div id="entry-searchable-container" class="searchable-container flex-1"></div>
                                     <button type="button" id="btn-scan-entry-code" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600 transition"><i class="fa-solid fa-camera"></i></button>
                                 </div>
                             </div>
                             <div class="md:col-span-1">
-                                <label class="form-label">Endereço de Destino <span class="text-xs font-normal">- Opcional</span></label>
-                                <div class="flex gap-2">
-                                    <input type="text" name="location" class="form-input font-mono placeholder:text-sm text-ios-blue" placeholder="Ex: RUA-A-01">
-                                    <button type="button" id="btn-scan-entry-loc" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600 transition"><i class="fa-solid fa-camera"></i></button>
-                                </div>
+                                <label class="form-label">Quantidade</label>
+                                <input type="number" name="quantity" required min="0.01" step="0.01" class="form-input text-ios-blue font-bold">
                             </div>
-                            <div class="md:col-span-2">
-                                <label class="form-label">Nome do Produto</label>
-                                <input type="text" name="product-name" required class="form-input">
+                            <div class="md:col-span-1">
+                                <button type="submit" class="btn-secondary w-full"><i class="fa-solid fa-plus mr-2"></i>Adicionar Lote à Lista</button>
                             </div>
-                            <div>
-                                <label class="form-label">Tipo de Produto</label>
-                                <select name="product-type" required class="form-input">
-                                    <option value="insumo">Insumo (Matéria Prima / Embalagem)</option>
-                                    <option value="semi_acabado">Semi-acabado (Massa, Recheio, Base)</option>
-                                </select>
-                            </div>
-                            <div><label class="form-label">Fornecedor</label><input type="text" name="supplier" required class="form-input" placeholder="Ex: Fornecedor X"></div>
-                            
-                            <div><label class="form-label">Prazo Entrega (Dias)</label><input type="number" name="lead-time" min="0" class="form-input text-ios-blue" placeholder="Ex: 5"></div>
-                            <div><label class="form-label">Estoque Mínimo (Alerta)</label><input type="number" name="min-stock" min="0" step="0.01" class="form-input text-ios-orange" placeholder="Opcional"></div>
-                            
-                            <div><label class="form-label">Quantidade FÍSICA recebida</label><input type="number" name="quantity" required min="0.01" step="0.01" class="form-input text-ios-blue font-bold text-xl"></div>
-                            <div><label class="form-label">Data de Recebimento</label><input type="date" id="receipt-date" required class="form-input"></div>
-                            <div><label class="form-label">Data de Fabricação</label><input type="date" id="mfg-date" class="form-input"></div>
-                            <div><label class="form-label">Data de Validade</label><input type="date" id="expiry-date" class="form-input text-ios-orange font-bold"></div>
                         </div>
-                        <div class="mt-8 flex justify-end"><button type="submit" class="btn-primary"><i class="fa-solid fa-plus mr-2"></i>Registrar no Estoque</button></div>
                     </form>
+                </div>
+
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="title-md mb-0">Lista de Recebimento</h2>
+                        <button type="button" id="btn-save-bulk-entry" class="btn-primary shadow-lg shadow-ios-blue/20"><i class="fa-solid fa-check-double mr-2"></i>Efetivar Entradas</button>
+                    </div>
+                    <div class="table-container overflow-visible"> <!-- overflow visible for selects if needed -->
+                        <table class="base-table min-w-full">
+                            <thead class="base-thead">
+                                <tr>
+                                    <th class="base-th w-1/4">Produto</th>
+                                    <th class="base-th w-24">Qtd</th>
+                                    <th class="base-th">Lote (Auto/Manual)</th>
+                                    <th class="base-th w-32">Validade</th>
+                                    <th class="base-th w-40">Endereço (Opcional)</th>
+                                    <th class="base-th w-12 text-center"><i class="fa-solid fa-trash"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulk-entry-list" class="divide-y divide-ios-border">
+                                <tr><td colspan="6" class="base-td text-center text-ios-textMuted py-8">Nenhum item na lista. Busque e adicione acima.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -870,6 +879,17 @@
         setTimeout(() => hide(el), 4000);
     };
 
+    // Helper: Add Business Days
+    function addBusinessDays(startDate, daysToAdd) {
+        let date = new Date(startDate);
+        let added = 0;
+        while (added < daysToAdd) {
+            date.setDate(date.getDate() + 1);
+            if (date.getDay() !== 0 && date.getDay() !== 6) { added++; }
+        }
+        return date;
+    }
+
     // --- FIREBASE IMPORTS ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
@@ -998,11 +1018,6 @@
         const nu = id('nome-usuario');
         if(nu) nu.innerText = 'Modo Visualização';
         
-        const t = new Date().toISOString().split('T')[0];
-        if(id('receipt-date')) id('receipt-date').value = t; 
-        if(id('search-po-by-date')) id('search-po-by-date').value = t; 
-        if(id('mfg-date')) id('mfg-date').value = t;
-        
         window.navTo('home'); refreshData();
     });
 
@@ -1016,13 +1031,7 @@
             const nu = id('nome-usuario'); if(nu) nu.innerText = user.displayName || 'Estoquista';
             
             show(id('loading-overlay'));
-            const t = new Date().toISOString().split('T')[0];
-            if(id('receipt-date')) id('receipt-date').value = t; 
-            if(id('search-po-by-date')) id('search-po-by-date').value = t; 
-            if(id('mfg-date')) id('mfg-date').value = t;
-            
             window.navTo('home');
-            
             try { await refreshData(); } catch(e) { if(id('loading-text')) id('loading-text').innerText = "Erro na Nuvem"; }
             hide(id('loading-overlay'));
         } else {
@@ -1039,6 +1048,9 @@
     let activePickingLine = null;
     let activePickingOpIds = [];
     let pickingScanProductId = null;
+    
+    // Lista de entrada em massa
+    let bulkEntryItems = [];
 
     const typeLabels = { insumo: 'Insumo', semi_acabado: 'Semi-acabado' };
 
@@ -1062,6 +1074,13 @@
         if(target==='purchasing') { renderPurchasing(); }
         if(target==='barcodes') { renderBarcodesList(); createSearchableSelect(id('barcode-searchable-container'), localInventory, 'Selecione o produto do sistema...'); }
         if(target==='consulta') { id('consulta-input').value = ''; id('consulta-results').innerHTML = '<div class="card flex flex-col items-center justify-center py-20 text-center border-dashed"><i class="fa-solid fa-magnifying-glass text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Aguardando leitura...</p></div>'; id('consulta-input').focus(); }
+        if(target==='entry') { 
+            createSearchableSelect(id('entry-searchable-container'), localInventory, 'Pesquisar insumo...', p => {
+                // Ao escolher, focar na quantidade
+                document.querySelector('#entry-form input[name="quantity"]').focus();
+            }); 
+            renderBulkEntry(); 
+        }
     }
     
     document.querySelectorAll('.nav-item, .nav-btn').forEach(link => { 
@@ -1080,7 +1099,7 @@
         }
     }
 
-    // Busca aceitando array de barcodes
+    // Busca inteligente
     function createSearchableSelect(container, items, placeholder, onSelect) {
         if(!container) return;
         container.innerHTML = `<div class="searchable-container"><input type="text" class="form-input bg-ios-input text-white border-ios-border w-full" placeholder="${placeholder}" autocomplete="off"><div class="searchable-dropdown hidden"></div></div>`;
@@ -1140,7 +1159,13 @@
                 if(opChanged) await DB.update('productionOrders', op);
             }
 
-            populateFilters(); renderInv(); renderRecipes(); renderPO(); renderConsum(); updateSidebarBadges();
+            populateFilters(); 
+            renderHome();
+            renderInv(); 
+            renderRecipes(); 
+            renderPO(); 
+            renderConsum(); 
+            updateSidebarBadges();
             
             const activeNav = document.querySelector('.nav-item.bg-ios-card');
             if(activeNav) {
@@ -1165,6 +1190,68 @@
         const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
         const mf = id('consumption-month-filter'); if(mf) { mf.innerHTML = months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join(''); mf.value = cm; }
     }
+
+    // --- HOME SCREEN (ENTREGAS) ---
+    function renderHome() {
+        const todayStr = new Date().toISOString().split('T')[0];
+        // Encontra produtos com pedidos ativos previstos para hoje ou atrasados
+        const incoming = localInventory.filter(i => i.pendingOrder && i.pendingOrder.active && i.pendingOrder.expectedDate <= todayStr);
+        
+        const cont = id('home-incoming-orders');
+        if(!cont) return;
+        
+        if(incoming.length === 0) {
+            cont.innerHTML = '<div class="col-span-full text-ios-textMuted text-sm bg-ios-cardHover p-4 rounded-xl text-center border border-ios-border">Nenhuma entrega prevista para hoje.</div>';
+            return;
+        }
+        
+        const bySup = {};
+        incoming.forEach(i => {
+            const sup = i.supplier || 'Diversos';
+            if(!bySup[sup]) bySup[sup] = [];
+            bySup[sup].push(i);
+        });
+        
+        let html = '';
+        Object.keys(bySup).forEach(sup => {
+            const items = bySup[sup];
+            const itemIds = JSON.stringify(items.map(x=>x.id));
+            html += `
+            <div class="bg-ios-cardHover p-4 rounded-xl border border-ios-blue shadow-lg shadow-ios-blue/10 cursor-pointer hover:bg-ios-blue/10 transition flex justify-between items-center btn-receive-incoming" data-ids='${itemIds}'>
+                <div>
+                    <h3 class="font-bold text-white text-lg"><i class="fa-solid fa-truck-fast text-ios-blue mr-2"></i>${sup}</h3>
+                    <p class="text-xs text-ios-textMuted mt-1">${items.length} item(ns) aguardando entrada.</p>
+                </div>
+                <i class="fa-solid fa-chevron-right text-ios-textMuted"></i>
+            </div>`;
+        });
+        cont.innerHTML = html;
+    }
+
+    addEvt('home-incoming-orders', 'click', e => {
+        const btn = e.target.closest('.btn-receive-incoming');
+        if(btn) {
+            const ids = JSON.parse(btn.dataset.ids);
+            
+            // Push items into bulk entry array
+            ids.forEach(idStr => {
+                const item = localInventory.find(x=>x.id===idStr);
+                if(!item) return;
+                
+                // Add if not already in list to avoid duplicates
+                if(!bulkEntryItems.some(b => b.productId === item.id)) {
+                    bulkEntryItems.push({
+                        productId: item.id,
+                        qty: item.pendingOrder.qty || 0,
+                        batchCode: 'LT-' + new Date().getTime().toString(36).toUpperCase() + Math.floor(Math.random()*1000), // Random init
+                        expiryDate: '',
+                        locationCode: ''
+                    });
+                }
+            });
+            window.navTo('entry');
+        }
+    });
 
     // --- SIDEBAR BADGES & ALERTS ---
     function updateSidebarBadges() {
@@ -1431,76 +1518,148 @@
     
     addEvt('btn-delete-item', 'click', () => { const pId = id('edit-item-id').value; showConfirmationModal('Excluir?', 'Histórico e lotes serão perdidos.', async () => { await DB.remove('inventory', pId); refreshData(); hide(id('item-details-modal')); window.showNotif('Excluído'); }); });
 
-    // --- NOVA ENTRADA (CÂMERA E AUTO-FILL) ---
-    const entryCodeInput = document.querySelector('#entry-form input[name="product-code"]');
-    if(entryCodeInput) {
-        entryCodeInput.addEventListener('input', e => {
-            const code = e.target.value.trim();
-            if(!code) return;
-            const p = localInventory.find(i => i.code === code || (i.barcodes && i.barcodes.includes(code)));
-            if(p) {
-                const form = id('entry-form');
-                form.elements['product-name'].value = p.name || '';
-                form.elements['product-type'].value = p.type || 'insumo';
-                form.elements['supplier'].value = p.supplier || '';
-                form.elements['lead-time'].value = p.leadTime || '';
-                form.elements['min-stock'].value = p.minStock || '';
-                
-                ['product-name', 'supplier'].forEach(fname => {
-                    const el = form.elements[fname];
-                    el.classList.add('border-ios-green', 'bg-ios-green/10');
-                    setTimeout(() => el.classList.remove('border-ios-green', 'bg-ios-green/10'), 800);
-                });
+    // --- NOVA ENTRADA EM MASSA ---
+    
+    addEvt('btn-scan-entry-code', 'click', () => { 
+        openScanner(c => { 
+            const inp = document.querySelector('#entry-searchable-container input'); 
+            if(inp){ inp.value=c; inp.dispatchEvent(new Event('input')); } 
+        }); 
+    });
 
-                if(p.pendingOrder && p.pendingOrder.active) {
-                    show(id('entry-pending-order-alert'));
-                } else {
-                    hide(id('entry-pending-order-alert'));
-                }
-            } else {
-                hide(id('entry-pending-order-alert'));
-            }
-        });
+    addEvt('entry-form', 'submit', e => {
+        e.preventDefault();
+        const searchInput = document.querySelector('#entry-searchable-container input');
+        const pId = searchInput ? searchInput.dataset.selectedId : null;
+        if(!pId) return window.showNotif('Selecione um produto primeiro.', true);
+        
+        const qty = parseFloat(document.querySelector('#entry-form input[name="quantity"]').value);
+        if(!qty || qty <= 0) return window.showNotif('Quantidade inválida.', true);
+
+        const item = localInventory.find(i=>i.id===pId);
+        if(item) {
+            bulkEntryItems.push({
+                productId: item.id,
+                qty: qty,
+                batchCode: 'LT-' + new Date().getTime().toString(36).toUpperCase().substring(4) + Math.floor(Math.random()*100),
+                expiryDate: '',
+                locationCode: ''
+            });
+            e.target.reset();
+            searchInput.value = '';
+            delete searchInput.dataset.selectedId;
+            renderBulkEntry();
+        }
+    });
+
+    function renderBulkEntry() {
+        const tbody = id('bulk-entry-list');
+        if(!tbody) return;
+        
+        if(!bulkEntryItems.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="base-td text-center text-ios-textMuted py-8">Nenhum item na lista. Busque e adicione acima.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = bulkEntryItems.map((bItem, idx) => {
+            const prod = localInventory.find(i=>i.id===bItem.productId);
+            
+            return `
+            <tr class="base-tr" data-idx="${idx}">
+                <td class="base-td font-medium text-white">
+                    ${prod?.name || '?'}
+                    ${prod?.pendingOrder?.active ? '<span class="ml-2 badge bg-ios-blue text-white shadow shadow-ios-blue text-[9px]"><i class="fa-solid fa-truck-fast"></i> Pedido em Trânsito</span>' : ''}
+                </td>
+                <td class="base-td"><input type="number" step="0.01" class="form-input py-1 px-2 w-full bulk-qty" value="${bItem.qty}"></td>
+                <td class="base-td"><input type="text" class="form-input py-1 px-2 w-full bulk-batch font-mono text-xs" value="${bItem.batchCode}"></td>
+                <td class="base-td"><input type="date" class="form-input py-1 px-2 w-full bulk-exp" value="${bItem.expiryDate}"></td>
+                <td class="base-td">
+                    <div class="flex gap-1">
+                        <input type="text" class="form-input py-1 px-2 w-full bulk-loc font-mono text-xs" placeholder="RUA..." value="${bItem.locationCode}">
+                        <button type="button" class="bg-ios-cardHover text-ios-blue px-2 rounded border border-ios-border btn-scan-bulk-loc"><i class="fa-solid fa-camera"></i></button>
+                    </div>
+                </td>
+                <td class="base-td text-center"><button type="button" class="text-ios-red hover:text-red-400 btn-remove-bulk"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>
+            `;
+        }).join('');
     }
 
-    addEvt('btn-scan-entry-code', 'click', () => { openScanner(c => { const inp = document.querySelector('#entry-form input[name="product-code"]'); if(inp){ inp.value=c; inp.dispatchEvent(new Event('input')); } }); });
-    addEvt('btn-scan-entry-loc', 'click', () => { openScanner(c => { const inp = document.querySelector('#entry-form input[name="location"]'); if(inp){ inp.value=c; } }); });
-
-    addEvt('entry-form', 'submit', async e => {
-        e.preventDefault(); const fd = new FormData(e.target); const autoBatch = 'LT-' + new Date().getTime().toString(36).toUpperCase();
-        const data = {code:fd.get('product-code'), location: fd.get('location')||'', type:fd.get('product-type'), name:fd.get('product-name'), supplier:fd.get('supplier'), qtd:parseFloat(fd.get('quantity')), valid:id('expiry-date').value, minStock: parseFloat(fd.get('min-stock')) || 0, leadTime: parseInt(fd.get('lead-time')) || 0 };
-        
-        // Ensure location exists if typed
-        if(data.location) { const l = localLocations.find(loc => loc.code === data.location); if(!l) { await DB.add('locations', {code: data.location, name: `Gerado Auto: ${data.location}`}); } }
-
-        let p = await DB.getByIndex('inventory','code',data.code); 
-        if(!p || !data.code) { 
-            // Also search by barcode if it wasn't the internal code
-            p = localInventory.find(i => i.barcodes && i.barcodes.includes(data.code));
-        }
-
-        if(!p) { 
-            p = {code:data.code, name:data.name, type:data.type, supplier:data.supplier, totalQuantity:0, minStock: data.minStock, leadTime: data.leadTime, barcodes: []}; 
-        } else { 
-            p.supplier = data.supplier; p.name = data.name; p.type = data.type; if (data.minStock > 0) p.minStock = data.minStock; if (data.leadTime > 0) p.leadTime = data.leadTime; 
-        }
-        
-        if(p.pendingOrder && p.pendingOrder.active) {
-            p.pendingOrder.active = false;
-            window.showNotif('Pedido em trânsito marcado como RECEBIDO.', false);
-        }
-
-        if(!p.id) p.id = await DB.add('inventory', p); else await DB.update('inventory', p);
-
-        const freshP = await DB.get('inventory', p.id);
-        freshP.totalQuantity += data.qtd; await DB.update('inventory', freshP);
-        
-        const isReleased = (freshP.code !== '8110');
-        await DB.add('batches', {productId:freshP.id, code:autoBatch, quantity:data.qtd, expiryDate:data.valid, isReleased: isReleased, locationCode: data.location});
-        await DB.add('history', {productId:freshP.id, batchCode:autoBatch, type:'entrada', quantity:data.qtd, date:id('receipt-date').value, reason: `Recepção Forn. ${freshP.supplier}`});
-        if(!isReleased) window.showNotif('Registrada! Lote em Quarentena.', true); else window.showNotif('Entrada Registrada!'); 
-        e.target.reset(); hide(id('entry-pending-order-alert')); refreshData(); if(id('receipt-date')) id('receipt-date').value = new Date().toISOString().split('T')[0];
+    addEvt('bulk-entry-list', 'input', e => {
+        const tr = e.target.closest('tr');
+        if(!tr) return;
+        const idx = parseInt(tr.dataset.idx);
+        if(e.target.classList.contains('bulk-qty')) bulkEntryItems[idx].qty = parseFloat(e.target.value) || 0;
+        if(e.target.classList.contains('bulk-batch')) bulkEntryItems[idx].batchCode = e.target.value;
+        if(e.target.classList.contains('bulk-exp')) bulkEntryItems[idx].expiryDate = e.target.value;
+        if(e.target.classList.contains('bulk-loc')) bulkEntryItems[idx].locationCode = e.target.value;
     });
+
+    addEvt('bulk-entry-list', 'click', e => {
+        const tr = e.target.closest('tr');
+        if(!tr) return;
+        const idx = parseInt(tr.dataset.idx);
+        
+        const btnRemove = e.target.closest('.btn-remove-bulk');
+        if(btnRemove) {
+            bulkEntryItems.splice(idx, 1);
+            renderBulkEntry();
+        }
+
+        const btnScanLoc = e.target.closest('.btn-scan-bulk-loc');
+        if(btnScanLoc) {
+            openScanner(c => {
+                bulkEntryItems[idx].locationCode = c;
+                renderBulkEntry();
+            });
+        }
+    });
+
+    addEvt('btn-save-bulk-entry', 'click', async () => {
+        if(!bulkEntryItems.length) return window.showNotif('A lista está vazia.', true);
+        
+        // Validation
+        for(let item of bulkEntryItems) {
+            if(!item.qty || item.qty <= 0) return window.showNotif('Todas as quantidades devem ser maiores que 0.', true);
+            if(!item.batchCode) return window.showNotif('Todos os itens precisam de um código de lote.', true);
+        }
+
+        show(id('loading-overlay'));
+        try {
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            for(let bItem of bulkEntryItems) {
+                let p = await DB.get('inventory', bItem.productId);
+                if(!p) continue;
+                
+                // Clear pending order flag if present
+                if(p.pendingOrder && p.pendingOrder.active) {
+                    p.pendingOrder.active = false;
+                }
+                
+                p.totalQuantity += bItem.qty; 
+                await DB.update('inventory', p);
+
+                // Auto-create location if it doesn't exist
+                if(bItem.locationCode) { 
+                    const l = localLocations.find(loc => loc.code === bItem.locationCode); 
+                    if(!l) await DB.add('locations', {code: bItem.locationCode, name: `Gerado Auto: ${bItem.locationCode}`}); 
+                }
+                
+                const isReleased = (p.code !== '8110');
+                
+                await DB.add('batches', {productId: p.id, code: bItem.batchCode, quantity: bItem.qty, expiryDate: bItem.expiryDate, isReleased: isReleased, locationCode: bItem.locationCode});
+                await DB.add('history', {productId: p.id, batchCode: bItem.batchCode, type:'entrada', quantity: bItem.qty, date: todayStr, reason: `Entrada Massa (Forn: ${p.supplier||'?'})`});
+            }
+            
+            window.showNotif('Todas as entradas foram registradas com sucesso!');
+            bulkEntryItems = [];
+            renderBulkEntry();
+            await refreshData();
+        } catch(e) { window.showNotif('Erro crítico ao salvar entradas.', true); }
+        finally { hide(id('loading-overlay')); }
+    });
+
 
     // --- CADASTRO CÓDIGO BARRAS ---
     function renderBarcodesList() {
@@ -1618,11 +1777,17 @@
                 <div class="p-5 grid grid-cols-1 gap-4">`;
             
             items.forEach(i => {
-                let statusColor = 'bg-ios-green'; let statusText = 'Adequado';
-                const warningThreshold = i.leadTime + 5; // Start warning 5 days before lead time hits
+                const minStock = i.minStock || 0;
+                const balance = i.totalQuantity || 0;
+                const maxTank = Math.max(balance, minStock * 3, 1); 
+                const fillPct = Math.min(100, (balance / maxTank) * 100);
+                const minPct = Math.min(100, (minStock / maxTank) * 100);
                 
-                if (i.daysLeft <= i.leadTime) { statusColor = 'bg-ios-red'; statusText = 'Urgente / Atrasado'; }
-                else if (i.daysLeft <= warningThreshold) { statusColor = 'bg-ios-orange'; statusText = 'Ponto de Pedido'; }
+                let tankColor = 'bg-ios-green';
+                let statusColor = 'bg-ios-green'; let statusText = 'Adequado';
+
+                if(balance <= minStock) { tankColor = 'bg-ios-red'; statusColor = 'bg-ios-red'; statusText = 'Reserva Intocada'; }
+                else if(balance <= minStock * 1.5) { tankColor = 'bg-ios-orange'; statusColor = 'bg-ios-orange'; statusText = 'Ponto de Pedido'; }
 
                 let orderHtml = `<button type="button" class="btn-primary py-2 px-3 text-xs w-full mt-3 btn-place-order" data-id="${i.id}"><i class="fa-solid fa-cart-plus mr-2"></i>Fazer Pedido</button>`;
                 
@@ -1636,20 +1801,23 @@
                             <span class="font-bold text-white">${i.name}</span>
                             <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}/20 text-${statusColor.split('-')[1]} uppercase">${statusText}</span>
                         </div>
-                        <div class="text-xs text-ios-textMuted grid grid-cols-3 gap-2 mt-2">
-                            <div>Saldo: <strong class="text-white">${i.totalQuantity.toFixed(2)}</strong></div>
-                            <div>Mínimo: <strong class="text-ios-orange">${i.minStock}</strong></div>
-                            <div>Prazo: <strong class="text-ios-blue">${i.leadTime} dias</strong></div>
+                        <div class="text-xs text-ios-textMuted grid grid-cols-2 gap-2 mt-2">
+                            <div>Prazo do Fornecedor: <strong class="text-ios-blue">${i.leadTime} dias úteis</strong></div>
+                            <div class="text-right">Durabilidade no Estoque: <strong class="font-mono text-white">${i.daysLeft===999 ? '> 99 dias' : i.daysLeft + ' dias'}</strong></div>
                         </div>
-                        <div class="mt-3">
-                            <div class="flex justify-between text-[10px] mb-1"><span class="uppercase tracking-wider">Duração Estimada do Estoque</span><span class="font-mono font-bold">${i.daysLeft===999 ? '> 99 dias' : i.daysLeft + ' dias'}</span></div>
-                            <div class="w-full h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                                <div class="h-full ${statusColor}" style="width: ${Math.min(100, (i.daysLeft / (warningThreshold * 2)) * 100)}%"></div>
+                        <div class="relative w-full h-6 bg-ios-input rounded-full overflow-hidden border border-ios-border mt-3 shadow-inner">
+                            <div class="absolute left-0 top-0 bottom-0 bg-ios-red/30" style="width: ${minPct}%"></div>
+                            <div class="absolute left-0 top-0 bottom-0 ${tankColor} transition-all" style="width: ${fillPct}%"></div>
+                            <div class="absolute top-0 bottom-0 border-r-2 border-dashed border-white z-10 drop-shadow-md" style="left: ${minPct}%;" title="Reserva (Mínimo)"></div>
+                            <div class="absolute inset-0 flex justify-between items-center px-3 z-20 text-[10px] font-bold text-white drop-shadow-md">
+                                <span>0</span>
+                                <span class="absolute" style="left: calc(${minPct}% - 12px);">MÍN</span>
+                                <span class="absolute right-3">${balance.toFixed(2)} Atual</span>
                             </div>
                         </div>
                     </div>
                     <div class="w-full md:w-48 shrink-0 border-t md:border-t-0 md:border-l border-ios-border pt-3 md:pt-0 md:pl-4">
-                        <p class="text-[10px] text-ios-textMuted uppercase mb-1">Consumo Médio Real</p>
+                        <p class="text-[10px] text-ios-textMuted uppercase mb-1">Consumo Médio</p>
                         <p class="text-lg font-bold text-white">${i.dailyAvg.toFixed(2)} / dia</p>
                         ${orderHtml}
                     </div>
@@ -1683,8 +1851,9 @@
                 id('order-product-id').value = p.id;
                 id('order-product-name').innerText = p.name;
                 id('order-qty').value = '';
-                const today = new Date(); today.setDate(today.getDate() + (p.leadTime || 1));
-                const expStr = today.toISOString().split('T')[0];
+                // Business days calculation
+                const expDate = addBusinessDays(new Date(), (p.leadTime || 0));
+                const expStr = expDate.toISOString().split('T')[0];
                 id('order-date').value = expStr;
                 id('order-date').dataset.estimated = expStr;
                 show(id('place-order-modal'));
