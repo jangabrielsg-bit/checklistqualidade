@@ -77,6 +77,9 @@
         ::-webkit-scrollbar-thumb { background: #48484a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #636366; }
 
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #48484a; border-radius: 10px; }
+
         .toggle-status { appearance: none; width: 40px; height: 20px; background: #38383a; border-radius: 20px; position: relative; cursor: pointer; outline: none; transition: background 0.3s; }
         .toggle-status::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: transform 0.3s; }
         .toggle-status:checked { background: #30d158; }
@@ -94,7 +97,7 @@
 
     <div id="loading-overlay" class="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-black bg-opacity-80 backdrop-blur-md transition-opacity">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-ios-cardHover border-t-ios-blue mb-4"></div>
-        <p class="text-ios-textMuted font-medium" id="loading-text">Processando...</p>
+        <p class="text-ios-textMuted font-medium" id="loading-text">A processar...</p>
     </div>
 
     <div id="notification-modal" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[2000] hidden py-3 px-6 rounded-full shadow-2xl font-semibold text-white transition-all text-sm backdrop-blur-md text-center max-w-sm"></div>
@@ -117,7 +120,7 @@
                 <span class="ml-3 font-bold text-xl text-white hidden lg:block tracking-tight">Estoque OS</span>
             </div>
             <nav class="flex-1 w-full px-3 space-y-2 overflow-y-auto">
-                <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-white bg-ios-card transition-all" data-target="home"><i class="fa-solid fa-house w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Início</span></a>
+                <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-white bg-ios-card transition-all" data-target="home"><i class="fa-solid fa-house w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Ecrã Principal</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="consulta"><i class="fa-solid fa-magnifying-glass w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Consulta Rápida</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="inventory"><i class="fa-solid fa-boxes-stacked w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Estoque Geral</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="barcodes"><i class="fa-solid fa-barcode w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Cód. Barras</span></a>
@@ -136,7 +139,6 @@
                     <span id="badge-nav-prod" class="absolute top-3 right-3 w-2.5 h-2.5 bg-ios-blue rounded-full animate-pulse hidden"></span>
                 </a>
                 
-                <!-- Rastreabilidade -->
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="traceability">
                     <i class="fa-solid fa-route w-6 text-center text-lg" style="color:#5e5ce6;"></i>
                     <span class="ml-3 hidden lg:block font-medium">Rastreabilidade</span>
@@ -171,7 +173,9 @@
             
             <!-- HOME -->
             <div id="screen-home" class="screen-panel w-full">
-                <h1 class="title-lg mb-8 text-center text-white text-4xl tracking-tight">Menu Principal</h1>
+                <h1 class="title-lg mb-2 text-center text-white text-4xl tracking-tight">Ecrã Principal</h1>
+                <p class="text-ios-textMuted text-center text-sm mb-10 italic max-w-2xl mx-auto tracking-wide">"Não se gere o que não se mede, não se mede o que não se define, não se define o que não se entende e não há sucesso no que não se gere."</p>
+
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-10">
                     <button type="button" class="menu-window nav-btn" data-target="consulta"><i class="fa-solid fa-magnifying-glass" style="color:#32ade6;"></i><span>Consulta Universal</span></button>
                     <button type="button" class="menu-window nav-btn" data-target="entry"><i class="fa-solid fa-box-open"></i><span>Entrada (Massa)</span></button>
@@ -211,7 +215,7 @@
                 </div>
             </div>
 
-            <!-- RASTREABILIDADE (NOVO) -->
+            <!-- RASTREABILIDADE -->
             <div id="screen-traceability" class="screen-panel hidden max-w-6xl mx-auto">
                 <h1 class="title-lg">Rastreabilidade de Produção</h1>
                 <p class="text-ios-textMuted text-sm mb-6">Consulte quais lotes foram usados, suas validades e as quantidades entregues pela separação em cada Ordem de Produção concluída.</p>
@@ -223,7 +227,7 @@
                         <div class="z-50"><label class="form-label">Insumo Utilizado</label><div id="trace-searchable-container" class="searchable-container"></div></div>
                     </div>
                     <div class="mt-4 flex justify-end">
-                        <button type="button" id="btn-trace-search" class="btn-primary px-8"><i class="fa-solid fa-magnifying-glass mr-2"></i>Buscar Rastreabilidade</button>
+                        <button type="button" id="btn-trace-search" class="btn-primary px-8"><i class="fa-solid fa-magnifying-glass mr-2"></i>Pesquisar</button>
                     </div>
                 </div>
                 <div id="traceability-results" class="space-y-6">
@@ -233,7 +237,7 @@
 
             <!-- CODIGOS DE BARRAS -->
             <div id="screen-barcodes" class="screen-panel hidden max-w-4xl mx-auto">
-                <h1 class="title-lg">Cadastro de Código de Barras</h1>
+                <h1 class="title-lg">Registo de Código de Barras</h1>
                 <div class="card mb-8">
                     <p class="text-sm text-ios-textMuted mb-6">Vincule os códigos de barras das embalagens físicas aos produtos internos.</p>
                     <form id="barcode-form" class="space-y-6">
@@ -247,20 +251,24 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-end pt-4"><button type="submit" class="btn-primary px-8"><i class="fa-solid fa-link mr-2"></i>Vincular / Adicionar Código</button></div>
+                        <div class="flex justify-end pt-4"><button type="submit" class="btn-primary px-8"><i class="fa-solid fa-link mr-2"></i>Vincular Código</button></div>
                     </form>
                 </div>
                 <h2 class="title-md mt-10 mb-4">Produtos Mapeados</h2>
                 <div class="table-container">
-                    <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Cód Interno</th><th class="base-th">Códigos de Barras (EANs)</th><th class="base-th text-center">Gestão</th></tr></thead><tbody id="barcodes-table-body"></tbody></table>
+                    <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Cód Interno</th><th class="base-th">Códigos de Barras (EANs)</th><th class="base-th text-center">Ações</th></tr></thead><tbody id="barcodes-table-body"></tbody></table>
                 </div>
             </div>
 
             <!-- COMPRAS / PEDIDOS -->
             <div id="screen-purchasing" class="screen-panel hidden">
                 <h1 class="title-lg mb-0 text-ios-blue"><i class="fa-solid fa-cart-shopping mr-3"></i>Gestão de Compras e Pedidos</h1>
-                <p class="text-ios-textMuted text-sm mb-6 mt-1">Acompanhe a duração do estoque visualmente, baseando-se no tanque de reserva (estoque mínimo) e no prazo de entrega do fornecedor.</p>
+                <p class="text-ios-textMuted text-sm mb-6 mt-1">Acompanhe a duração do stock visualmente e gira as encomendas de fornecedores no calendário.</p>
                 <div class="mb-6 flex gap-4"><input type="text" id="search-purchasing" class="form-input w-full md:w-1/2" placeholder="Buscar fornecedor ou item..." autocomplete="off"></div>
+                
+                <!-- Calendário Compras -->
+                <div id="purchasing-calendar-container" class="mb-8"></div>
+
                 <div id="purchasing-container" class="space-y-8"></div>
             </div>
 
@@ -287,7 +295,7 @@
                             </div>
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-sm font-semibold text-ios-textMuted uppercase">Lotes Neste Endereço</h3>
-                                <button type="button" id="btn-add-batch-to-loc" class="text-ios-green bg-ios-green/10 px-4 py-2 rounded-xl font-bold hover:bg-ios-green/20 text-sm transition-colors"><i class="fa-solid fa-plus mr-1"></i>Alocar Lote Aqui</button>
+                                <button type="button" id="btn-add-batch-to-loc" class="text-ios-green bg-ios-green/10 px-4 py-2 rounded-xl font-bold hover:bg-ios-green/20 text-sm transition-colors"><i class="fa-solid fa-plus mr-1"></i>Alocar Lote</button>
                             </div>
                             <div class="table-container max-h-64 overflow-y-auto">
                                 <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Lote</th><th class="base-th">Qtd</th><th class="base-th text-center">Retirar</th></tr></thead><tbody id="loc-batches-body"></tbody></table>
@@ -296,7 +304,7 @@
 
                         <div id="location-create-panel" class="card hidden border-ios-orange border-dashed">
                             <h2 class="title-md mb-2 text-ios-orange">Local não cadastrado!</h2>
-                            <p class="text-sm text-ios-textMuted mb-6">O código não existe. Deseja registrar este novo endereço?</p>
+                            <p class="text-sm text-ios-textMuted mb-6">O código não existe. Deseja registar este novo endereço?</p>
                             <form id="location-form" class="space-y-4">
                                 <div><label class="form-label">Código Lida/Digitado</label><input type="text" id="loc-form-code" required readonly class="form-input bg-ios-bg text-ios-textMuted font-mono"></div>
                                 <div><label class="form-label">Nome de Identificação (Ex: Prateleira B Nível 2)</label><input type="text" id="loc-form-name" required class="form-input"></div>
@@ -305,7 +313,7 @@
                         </div>
                         
                         <div id="location-empty-state" class="card flex flex-col items-center justify-center py-20 text-center border-dashed">
-                            <i class="fa-solid fa-map-location-dot text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Busque ou leia o código de barras de um local para gerenciar o estoque nele.</p>
+                            <i class="fa-solid fa-map-location-dot text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Busque ou leia o código de barras de um local para gerir o stock.</p>
                         </div>
                     </div>
                 </div>
@@ -326,13 +334,13 @@
                                 </div>
                             </div>
                             <div class="md:col-span-1"><label class="form-label">Quantidade</label><input type="number" name="quantity" required min="0.01" step="0.01" class="form-input text-ios-blue font-bold"></div>
-                            <div class="md:col-span-1"><button type="submit" class="btn-secondary w-full"><i class="fa-solid fa-plus mr-2"></i>Adicionar Lote à Lista</button></div>
+                            <div class="md:col-span-1"><button type="submit" class="btn-secondary w-full"><i class="fa-solid fa-plus mr-2"></i>Adicionar à Lista</button></div>
                         </div>
                     </form>
                 </div>
                 <div class="card">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="title-md mb-0">Lista de Recebimento</h2>
+                        <h2 class="title-md mb-0">Lista de Recebimentos</h2>
                         <button type="button" id="btn-save-bulk-entry" class="btn-primary shadow-lg shadow-ios-blue/20"><i class="fa-solid fa-check-double mr-2"></i>Efetivar Entradas</button>
                     </div>
                     <div class="table-container overflow-visible">
@@ -378,7 +386,7 @@
                     <div class="flex gap-3">
                         <input type="text" id="search-recipe" placeholder="Buscar receita..." class="form-input w-64">
                         <button type="button" id="btn-export-recipe-book" class="btn-secondary"><i class="fa-solid fa-file-pdf mr-2"></i>Livro PDF</button>
-                        <button type="button" id="btn-new-recipe" class="btn-primary"><i class="fa-solid fa-plus mr-2"></i>Criar Receita</button>
+                        <button type="button" id="btn-new-recipe" class="btn-primary"><i class="fa-solid fa-plus mr-2"></i>Nova Receita</button>
                     </div>
                 </div>
                 <div class="flex flex-col xl:flex-row gap-6">
@@ -390,7 +398,7 @@
             <!-- SEPARAÇÃO (PICKING) -->
             <div id="screen-picking" class="screen-panel hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <div><h1 class="title-lg mb-0 text-ios-orange"><i class="fa-solid fa-dolly mr-3"></i>Separação (Kitting por Linha)</h1><p class="text-ios-textMuted mt-1 text-sm">Acompanhe a barra de progresso do que já foi separado em cada linha.</p></div>
+                    <div><h1 class="title-lg mb-0 text-ios-orange"><i class="fa-solid fa-dolly mr-3"></i>Separação (Kitting)</h1><p class="text-ios-textMuted mt-1 text-sm">Acompanhe a barra de progresso do que já foi separado em cada linha.</p></div>
                 </div>
                 <div id="picking-lines-container" class="space-y-6"></div>
             </div>
@@ -400,10 +408,13 @@
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="title-lg mb-0">Ordens de Produção (OP)</h1>
                     <div class="flex gap-3">
-                        <button type="button" id="btn-confirm-production" class="btn-success"><i class="fa-solid fa-check-double mr-2"></i>Efetivar OPs Selecionadas</button>
+                        <button type="button" id="btn-confirm-production" class="btn-success"><i class="fa-solid fa-check-double mr-2"></i>Efetivar OPs</button>
                         <button type="button" id="btn-new-production-order" class="btn-primary"><i class="fa-solid fa-plus mr-2"></i>Nova OP</button>
                     </div>
                 </div>
+                <!-- Calendário Produção -->
+                <div id="production-calendar-container" class="mb-6"></div>
+                
                 <div class="card mb-5 flex flex-wrap gap-4 items-center border-l-4 border-l-ios-blue">
                     <label class="text-sm font-medium text-ios-textMuted"><i class="fa-solid fa-filter mr-2"></i>Filtrar Programação:</label>
                     <input type="date" id="search-po-by-date" class="form-input w-auto py-2">
@@ -432,7 +443,7 @@
                 <div class="card max-w-4xl mx-auto">
                     <form id="requisition-form">
                         <div class="grid grid-cols-2 gap-5 mb-6">
-                            <div><label class="form-label">Destino / Motivo</label><input type="text" id="requisition-reason" required class="form-input" placeholder="Ex: Quebra, Teste, Refeição"></div>
+                            <div><label class="form-label">Destino / Motivo</label><input type="text" id="requisition-reason" required class="form-input" placeholder="Ex: Quebra, Teste"></div>
                             <div><label class="form-label">Solicitante</label><input type="text" id="requisition-responsible" required class="form-input" placeholder="Nome"></div>
                         </div>
                         <div class="border-t border-ios-border pt-4">
@@ -440,7 +451,7 @@
                             <div id="requisition-items-container" class="space-y-3 mb-5"></div>
                             <button type="button" id="add-requisition-item-btn" class="text-ios-blue hover:text-blue-400 font-medium text-sm flex items-center"><i class="fa-solid fa-circle-plus mr-2 text-lg"></i>Adicionar Insumo</button>
                         </div>
-                        <div class="mt-8 flex justify-end"><button type="submit" class="btn-primary">Confirmar Saída Avulsa</button></div>
+                        <div class="mt-8 flex justify-end"><button type="submit" class="btn-primary">Confirmar Saída</button></div>
                     </form>
                 </div>
             </div>
@@ -451,11 +462,11 @@
                 <div class="card max-w-2xl mx-auto">
                     <form id="adjustment-form" class="space-y-5">
                         <div class="z-50 relative"><label class="form-label">Buscar Produto</label><div id="adjustment-searchable-container" class="searchable-container"></div></div>
-                        <div><label class="form-label">Selecionar Lote Físico</label><select id="adjustment-batch" required class="form-input"><option value="">Aguardando produto...</option></select></div>
+                        <div><label class="form-label">Selecionar Lote Físico</label><select id="adjustment-batch" required class="form-input"><option value="">Aguardar produto...</option></select></div>
                         <div><label class="form-label">Nova Quantidade Real (Física)</label><input type="number" id="adjustment-new-quantity" required min="0" step="0.01" class="form-input text-lg font-bold text-ios-blue"></div>
-                        <div><label class="form-label">Motivo do Ajuste</label><input type="text" id="adjustment-reason" required class="form-input" placeholder="Ex: Recontagem de inventário"></div>
+                        <div><label class="form-label">Motivo do Ajuste</label><input type="text" id="adjustment-reason" required class="form-input" placeholder="Ex: Quebra"></div>
                         <div><label class="form-label">Responsável</label><input type="text" id="adjustment-responsible" required class="form-input"></div>
-                        <div class="mt-8 flex justify-end"><button type="submit" class="btn-primary">Registrar Ajuste</button></div>
+                        <div class="mt-8 flex justify-end"><button type="submit" class="btn-primary">Registar Ajuste</button></div>
                     </form>
                 </div>
             </div>
@@ -466,7 +477,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="card border-ios-blue border">
                         <h2 class="title-md text-ios-blue"><i class="fa-solid fa-download mr-2"></i>Backup de Dados</h2>
-                        <p class="text-sm text-ios-textMuted mb-6">Baixe um arquivo JSON com todas as informações atuais do banco de dados (Nuvem).</p>
+                        <p class="text-sm text-ios-textMuted mb-6">Baixe um ficheiro JSON com todas as informações atuais do banco de dados (Nuvem).</p>
                         <button type="button" id="btn-download-db" class="btn-primary w-full"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Fazer Backup Seguro</button>
                     </div>
                     <div class="card border-ios-red border">
@@ -501,7 +512,7 @@
             <p class="text-sm text-white mb-4" id="picking-scan-qty-name"></p>
             <form id="picking-scan-qty-form" class="space-y-4">
                 <div><label class="form-label">Quantidade FÍSICA Coletada:</label><input type="number" id="picking-scan-qty" step="0.001" required class="form-input text-ios-blue text-2xl font-bold text-center py-4"></div>
-                <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary close-modal" data-target="picking-scan-qty-modal">Cancelar</button><button type="submit" class="btn-primary px-6">Confirmar Baixa Real</button></div>
+                <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary close-modal" data-target="picking-scan-qty-modal">Cancelar</button><button type="submit" class="btn-primary px-6">Confirmar Baixa</button></div>
             </form>
         </div>
     </div>
@@ -513,8 +524,8 @@
             <form id="add-loc-batch-form" class="space-y-4">
                 <input type="hidden" id="add-loc-target-code">
                 <div class="z-50 relative"><label class="form-label">1. Buscar Produto</label><div id="add-loc-searchable-container" class="searchable-container"></div></div>
-                <div><label class="form-label">2. Selecionar Lote Físico Existente</label><select id="add-loc-batch-select" required class="form-input bg-ios-input"><option value="">Aguardando produto...</option></select></div>
-                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="modal-add-loc-batch">Cancelar</button><button type="submit" class="btn-primary">Confirmar Movimentação</button></div>
+                <div><label class="form-label">2. Selecionar Lote Físico Existente</label><select id="add-loc-batch-select" required class="form-input bg-ios-input"><option value="">Aguardar produto...</option></select></div>
+                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="modal-add-loc-batch">Cancelar</button><button type="submit" class="btn-primary">Confirmar</button></div>
             </form>
         </div>
     </div>
@@ -527,7 +538,7 @@
                 <input type="hidden" id="edit-loc-old-code">
                 <div><label class="form-label">Código (Rua/Posição)</label><input type="text" id="edit-loc-new-code" required class="form-input font-mono text-ios-blue"></div>
                 <div><label class="form-label">Nome Visível</label><input type="text" id="edit-loc-new-name" required class="form-input"></div>
-                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="edit-location-modal">Cancelar</button><button type="submit" class="btn-primary">Salvar e Atualizar Lotes</button></div>
+                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="edit-location-modal">Cancelar</button><button type="submit" class="btn-primary">Salvar e Atualizar</button></div>
             </form>
         </div>
     </div>
@@ -540,7 +551,7 @@
             <form id="edit-supplier-form" class="space-y-4">
                 <input type="hidden" id="edit-supplier-old-name">
                 <div><label class="form-label">Prazo Padrão de Entrega (Dias Úteis)</label><input type="number" id="edit-supplier-lead" min="0" required class="form-input"></div>
-                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="edit-supplier-modal">Cancelar</button><button type="submit" class="btn-primary">Salvar p/ Todos Itens</button></div>
+                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="edit-supplier-modal">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
             </form>
         </div>
     </div>
@@ -548,13 +559,13 @@
     <!-- Modal Fazer Pedido (Compras) -->
     <div id="place-order-modal" class="modal z-[6000]">
         <div class="modal-content max-w-sm">
-            <h2 class="title-md mb-2 text-ios-blue">Registrar Pedido</h2>
+            <h2 class="title-md mb-2 text-ios-blue">Registar Encomenda</h2>
             <p class="text-sm text-white mb-4" id="order-product-name"></p>
             <form id="place-order-form" class="space-y-4">
                 <input type="hidden" id="order-product-id">
-                <div><label class="form-label">Quantidade Solicitada ao Fornecedor</label><input type="number" id="order-qty" step="0.01" required class="form-input text-ios-blue font-bold"></div>
+                <div><label class="form-label">Quantidade Solicitada</label><input type="number" id="order-qty" step="0.01" required class="form-input text-ios-blue font-bold"></div>
                 <div><label class="form-label">Previsão de Entrega</label><input type="date" id="order-date" required class="form-input"></div>
-                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="place-order-modal">Cancelar</button><button type="submit" class="btn-primary">Confirmar Pedido</button></div>
+                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="place-order-modal">Cancelar</button><button type="submit" class="btn-primary">Confirmar</button></div>
             </form>
         </div>
     </div>
@@ -568,10 +579,10 @@
             </div>
             <div id="picking-setup-view" class="p-10 flex flex-col items-center justify-center bg-ios-card h-[50vh]">
                 <i class="fa-solid fa-clipboard-user text-6xl text-ios-orange mb-6"></i>
-                <h3 class="text-2xl font-bold text-white mb-2">Quem vai separar esta linha?</h3>
-                <p class="text-ios-textMuted text-sm mb-8 text-center max-w-md">Insira o seu nome abaixo para iniciar o cronômetro independente desta linha.</p>
+                <h3 class="text-2xl font-bold text-white mb-2">Quem vai separar esta equipa?</h3>
+                <p class="text-ios-textMuted text-sm mb-8 text-center max-w-md">Insira o seu nome para iniciar o cronómetro independente.</p>
                 <input type="text" id="picking-responsible" class="form-input max-w-xs text-center text-xl py-4 mb-6 shadow-inner border border-ios-border" placeholder="O seu nome aqui" autocomplete="off">
-                <button type="button" id="btn-start-picking" class="btn-success py-4 px-10 text-lg rounded-full shadow-lg shadow-ios-green/20 hover:-translate-y-1 transform transition"><i class="fa-solid fa-play mr-2"></i> Iniciar Cronômetro</button>
+                <button type="button" id="btn-start-picking" class="btn-success py-4 px-10 text-lg rounded-full shadow-lg shadow-ios-green/20 hover:-translate-y-1 transform transition"><i class="fa-solid fa-play mr-2"></i> Iniciar Cronómetro</button>
             </div>
             <div id="picking-active-view" class="hidden flex-col flex-1 overflow-hidden h-[70vh]">
                 <div class="bg-ios-bg px-6 py-4 flex flex-wrap justify-between items-center shrink-0 border-b border-ios-border shadow-inner gap-4">
@@ -910,10 +921,100 @@
         }
     });
 
+    // --- CALENDÁRIOS ---
+    window.purchCalendarDate = new Date();
+    window.prodCalendarDate = new Date();
+
+    function generateCalendarHTML(currentDate, eventsMap, idPrefix) {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        
+        let html = `
+        <div class="bg-ios-card rounded-2xl border border-ios-border overflow-hidden shadow-sm">
+            <div class="flex justify-between items-center p-4 bg-ios-cardHover border-b border-ios-border">
+                <button type="button" class="px-3 py-1 bg-ios-bg rounded-lg hover:bg-gray-700 text-white transition-colors" onclick="window.changeMonth('${idPrefix}', -1)"><i class="fa-solid fa-chevron-left"></i></button>
+                <h3 class="font-bold text-lg text-white">${monthNames[month]} ${year}</h3>
+                <button type="button" class="px-3 py-1 bg-ios-bg rounded-lg hover:bg-gray-700 text-white transition-colors" onclick="window.changeMonth('${idPrefix}', 1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="grid grid-cols-7 text-center text-[10px] uppercase tracking-wider font-bold text-ios-textMuted bg-ios-bg border-b border-ios-border">
+                <div class="py-2">Dom</div><div class="py-2">Seg</div><div class="py-2">Ter</div><div class="py-2">Qua</div><div class="py-2">Qui</div><div class="py-2">Sex</div><div class="py-2">Sáb</div>
+            </div>
+            <div class="grid grid-cols-7 auto-rows-fr bg-ios-border gap-px border border-ios-border">
+        `;
+        
+        for(let i=0; i<firstDay; i++) {
+            html += `<div class="bg-ios-card min-h-[80px] opacity-50"></div>`;
+        }
+        
+        const tDate = new Date();
+        const todayStr = tDate.getFullYear() + '-' + String(tDate.getMonth()+1).padStart(2,'0') + '-' + String(tDate.getDate()).padStart(2,'0');
+
+        for(let d=1; d<=daysInMonth; d++) {
+            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const isToday = dateStr === todayStr;
+            const dayEvents = eventsMap[dateStr] || [];
+            
+            let eventsHtml = dayEvents.map(ev => 
+                `<div class="text-[9px] mb-1 p-1 rounded font-semibold truncate ${ev.classes}" title="${ev.tooltip||ev.title}">${ev.title}</div>`
+            ).join('');
+            
+            html += `
+            <div class="bg-ios-card min-h-[90px] p-1 md:p-2 cursor-pointer hover:bg-ios-cardHover transition-colors relative group" onclick="window.selectDate('${idPrefix}', '${dateStr}')">
+                <div class="text-right text-xs mb-1 ${isToday ? 'text-white bg-ios-blue w-5 h-5 rounded-full flex items-center justify-center ml-auto' : 'text-ios-textMuted'}">${d}</div>
+                <div class="flex flex-col gap-px overflow-y-auto max-h-[60px] custom-scroll">
+                    ${eventsHtml}
+                </div>
+            </div>
+            `;
+        }
+        
+        const totalCells = firstDay + daysInMonth;
+        const remainder = totalCells % 7;
+        if(remainder > 0) {
+            for(let i=0; i < (7 - remainder); i++) {
+                html += `<div class="bg-ios-card min-h-[80px] opacity-50"></div>`;
+            }
+        }
+        
+        html += `</div></div>`;
+        return html;
+    }
+
+    window.changeMonth = function(prefix, delta) {
+        if(prefix === 'purchasing') {
+            window.purchCalendarDate.setMonth(window.purchCalendarDate.getMonth() + delta);
+            renderPurchasing();
+        } else if(prefix === 'production') {
+            window.prodCalendarDate.setMonth(window.prodCalendarDate.getMonth() + delta);
+            renderPO();
+        }
+    };
+
+    window.selectDate = function(prefix, dateStr) {
+        if(prefix === 'production') {
+            const dateInput = id('search-po-by-date');
+            if(dateInput) {
+                dateInput.value = dateStr;
+                renderPO();
+                id('production-orders-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else if(prefix === 'purchasing') {
+            const incoming = localInventory.filter(i => i.pendingOrder?.active && i.pendingOrder.expectedDate === dateStr);
+            if(incoming.length > 0) {
+                const names = incoming.map(i => i.name).join(', ');
+                window.showNotif(`${incoming.length} encomenda(s) prevista(s) para este dia: ${names}`);
+            }
+        }
+    };
+
     // --- LOGIN ---
     addEvt('btn-login-google', 'click', () => {
         const msg = id('mensagem-erro');
-        if(msg) { msg.innerText = "Abrindo pop-up do Google..."; show(msg); }
+        if(msg) { msg.innerText = "A abrir pop-up do Google..."; show(msg); }
         signInWithPopup(auth, provider).catch((error) => {
             if(msg) { msg.innerHTML = "Erro ao fazer login. Tente 'Testar sem Login'."; show(msg); }
         });
@@ -935,7 +1036,7 @@
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             hide(id('login-wrapper')); show(id('app-wrapper'));
-            const nu = id('nome-usuario'); if(nu) nu.innerText = user.displayName || 'Estoquista';
+            const nu = id('nome-usuario'); if(nu) nu.innerText = user.displayName || 'Equipa';
             
             show(id('loading-overlay'));
             window.navTo('home');
@@ -974,13 +1075,13 @@
         const activeLink = document.querySelector(`.nav-item[data-target="${target}"]`);
         if(activeLink) { activeLink.classList.remove('text-ios-textMuted'); activeLink.classList.add('bg-ios-card', 'text-white'); }
         
-        if(target==='adjustments') { createSearchableSelect(id('adjustment-searchable-container'), localInventory, 'Buscar produto inteligente...', p => { const batchEl = id('adjustment-batch'); if(batchEl) batchEl.innerHTML = '<option value="">Selecione Lote...</option>' + localBatches.filter(b=>b.productId===p.id && b.quantity>0).map(b=>`<option value="${b.id}">${b.code}</option>`).join(''); }); }
+        if(target==='adjustments') { createSearchableSelect(id('adjustment-searchable-container'), localInventory, 'Procurar produto...', p => { const batchEl = id('adjustment-batch'); if(batchEl) batchEl.innerHTML = '<option value="">Selecione Lote...</option>' + localBatches.filter(b=>b.productId===p.id && b.quantity>0).map(b=>`<option value="${b.id}">${b.code}</option>`).join(''); }); }
         if(target==='requisitions') { const reqCont = id('requisition-items-container'); if (reqCont) { reqCont.innerHTML=''; addIngRowReq(reqCont); } }
         if(target==='picking') { renderPickingScreen(); }
         if(target==='purchasing') { renderPurchasing(); }
         if(target==='traceability') { updateTraceabilityFilters(); renderTraceability(); createSearchableSelect(id('trace-searchable-container'), localInventory, 'Selecione um insumo...'); }
         if(target==='barcodes') { renderBarcodesList(); createSearchableSelect(id('barcode-searchable-container'), localInventory, 'Selecione o produto do sistema...'); }
-        if(target==='consulta') { id('consulta-input').value = ''; id('consulta-results').innerHTML = '<div class="card flex flex-col items-center justify-center py-20 text-center border-dashed"><i class="fa-solid fa-magnifying-glass text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Aguardando leitura...</p></div>'; id('consulta-input').focus(); }
+        if(target==='consulta') { id('consulta-input').value = ''; id('consulta-results').innerHTML = '<div class="card flex flex-col items-center justify-center py-20 text-center border-dashed"><i class="fa-solid fa-magnifying-glass text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">A aguardar leitura...</p></div>'; id('consulta-input').focus(); }
         if(target==='entry') { 
             createSearchableSelect(id('entry-searchable-container'), localInventory, 'Pesquisar insumo...', p => {
                 document.querySelector('#entry-form input[name="quantity"]').focus();
@@ -1126,7 +1227,7 @@
             <div class="bg-ios-cardHover p-4 rounded-xl border border-ios-blue shadow-lg shadow-ios-blue/10 cursor-pointer hover:bg-ios-blue/10 transition flex justify-between items-center btn-receive-incoming" data-ids='${itemIds}'>
                 <div>
                     <h3 class="font-bold text-white text-lg"><i class="fa-solid fa-truck-fast text-ios-blue mr-2"></i>${sup}</h3>
-                    <p class="text-xs text-ios-textMuted mt-1">${items.length} item(ns) aguardando entrada.</p>
+                    <p class="text-xs text-ios-textMuted mt-1">${items.length} item(ns) a aguardar entrada.</p>
                 </div>
                 <i class="fa-solid fa-chevron-right text-ios-textMuted"></i>
             </div>`;
@@ -1186,7 +1287,7 @@
                     </li>
                 `).join('');
             } else {
-                listAlerts.innerHTML = '<li class="text-center text-ios-textMuted py-8"><i class="fa-solid fa-check-circle text-4xl text-ios-green mb-3 block"></i>Todos os itens estão acima do estoque mínimo.</li>';
+                listAlerts.innerHTML = '<li class="text-center text-ios-textMuted py-8"><i class="fa-solid fa-check-circle text-4xl text-ios-green mb-3 block"></i>Todos os itens estão acima do stock mínimo.</li>';
             }
         }
 
@@ -1211,7 +1312,7 @@
                     </li>`;
                 }).join('');
             } else {
-                expList.innerHTML = '<li class="text-center text-ios-textMuted py-8">Nenhum lote vencendo nos próximos 45 dias.</li>';
+                expList.innerHTML = '<li class="text-center text-ios-textMuted py-8">Nenhum lote a vencer nos próximos 45 dias.</li>';
             }
         }
     }
@@ -1219,20 +1320,6 @@
     addEvt('btn-show-alerts', 'click', () => { show(id('low-stock-modal')); });
     addEvt('low-stock-list', 'click', e => { const item = e.target.closest('.alert-item'); if (item) { hide(id('low-stock-modal')); window.navTo('inventory'); openDetails(item.dataset.id); } });
     addEvt('expiring-list', 'click', e => { const item = e.target.closest('.alert-item'); if (item) { hide(id('low-stock-modal')); window.navTo('inventory'); openDetails(item.dataset.id); } });
-
-    setInterval(() => {
-        document.querySelectorAll('.live-timer').forEach(el => {
-            const startTime = parseInt(el.dataset.start);
-            if(startTime && startTime > 0) {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const h = Math.floor(elapsed / 3600); const m = Math.floor((elapsed % 3600) / 60); const s = Math.floor(elapsed % 60);
-                let timeStr = '';
-                if (h > 0) timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                else timeStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                el.innerText = timeStr;
-            }
-        });
-    }, 1000);
 
     // --- CONSULTA UNIVERSAL (RÁPIDA) MÚLTIPLA ---
     function searchUniversal(q) {
@@ -1252,10 +1339,10 @@
                     <div class="flex flex-wrap gap-4 text-sm text-ios-textMuted mb-6 bg-ios-bg p-3 rounded-xl border border-ios-border">
                         <div><strong class="block text-[10px] uppercase">Cód Interno</strong><span class="text-white">${p.code||'-'}</span></div>
                         <div><strong class="block text-[10px] uppercase">Códigos (EAN)</strong><span class="text-white break-all">${p.barcodes?.join(', ')||'-'}</span></div>
-                        <div><strong class="block text-[10px] uppercase">Estoque Mín</strong><span class="text-ios-orange">${p.minStock||0}</span></div>
+                        <div><strong class="block text-[10px] uppercase">Stock Mín</strong><span class="text-ios-orange">${p.minStock||0}</span></div>
                         <div class="ml-auto text-right"><strong class="block text-[10px] uppercase">Saldo Físico Total</strong><span class="text-ios-blue font-bold text-xl">${(p.totalQuantity||0).toFixed(2)}</span></div>
                     </div>
-                    <h3 class="text-sm font-bold text-ios-textMuted uppercase mb-3">Estoque por Lote e Local</h3>
+                    <h3 class="text-sm font-bold text-ios-textMuted uppercase mb-3">Stock por Lote e Local</h3>
                     <div class="table-container max-h-64 overflow-y-auto">
                         <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Lote</th><th class="base-th">Local / Endereço</th><th class="base-th">Validade</th><th class="base-th text-right">Qtd</th></tr></thead><tbody>`;
                 batches.forEach(b => {
@@ -1292,7 +1379,7 @@
         }
 
         if(!foundAny) {
-            resEl.innerHTML = `<div class="card border border-ios-red/50 text-center py-10 bg-ios-red/5"><i class="fa-solid fa-circle-xmark text-5xl text-ios-red mb-4"></i><h2 class="title-md text-ios-red mb-1">Código não identificado!</h2><p class="text-sm text-ios-textMuted max-w-md mx-auto">O código <strong>"${q}"</strong> não corresponde a nenhum produto, EAN ou endereço cadastrado no sistema.</p></div>`;
+            resEl.innerHTML = `<div class="card border border-ios-red/50 text-center py-10 bg-ios-red/5"><i class="fa-solid fa-circle-xmark text-5xl text-ios-red mb-4"></i><h2 class="title-md text-ios-red mb-1">Código não identificado!</h2><p class="text-sm text-ios-textMuted max-w-md mx-auto">O código <strong>"${q}"</strong> não corresponde a nenhum produto, EAN ou endereço no sistema.</p></div>`;
         }
     }
 
@@ -1348,7 +1435,7 @@
                 <div class="bg-ios-cardHover p-4 border-b border-ios-border flex flex-wrap justify-between items-center gap-2">
                     <div>
                         <h3 class="font-bold text-white text-lg">${op.recipeName} <span class="text-ios-blue text-sm">(${op.multiplier}x)</span></h3>
-                        <p class="text-xs text-ios-textMuted">OP ID: ${op.id.substring(0,8).toUpperCase()} | Execução: <strong class="text-gray-300">${new Date(op.date+'T00:00:00').toLocaleDateString('pt-BR')}</strong></p>
+                        <p class="text-xs text-ios-textMuted">OP ID: ${op.id.substring(0,8).toUpperCase()} | Registo: <strong class="text-gray-300">${new Date(op.date+'T00:00:00').toLocaleDateString('pt-BR')}</strong></p>
                     </div>
                     <span class="badge bg-ios-blue/20 text-ios-blue border border-ios-blue/30">${op.recipeCategory || 'Diversos'}</span>
                 </div>
@@ -1370,7 +1457,6 @@
                     
                     if(ing.consumptionPlan && ing.consumptionPlan.length > 0) {
                         ing.consumptionPlan.forEach(plan => {
-                            // Fetch full batch info for expiry date
                             const b = localBatches.find(x => x.id === plan.batchId);
                             const valStr = b && b.expiryDate ? new Date(b.expiryDate+'T00:00:00').toLocaleDateString('pt-BR') : 'Indisponível';
                             
@@ -1382,7 +1468,6 @@
                             </tr>`;
                         });
                     } else {
-                        // Fallback (Older records before specific lot deduction was enforced)
                         let actualQty = ing.adjustedQuantity;
                         if(op.picking?.pickedItems && op.picking.pickedItems[ing.productId]) {
                             actualQty = op.picking.pickedItems[ing.productId];
@@ -1396,7 +1481,7 @@
                     }
                 });
             } else {
-                html += `<tr><td colspan="4" class="text-center text-ios-textMuted py-4">Sem insumos registrados para esta OP.</td></tr>`;
+                html += `<tr><td colspan="4" class="text-center text-ios-textMuted py-4">Sem insumos registados para esta OP.</td></tr>`;
             }
 
             html += `</tbody></table></div></div>`;
@@ -1417,7 +1502,7 @@
         let list = localInventory.filter(i => (i.name.toLowerCase().includes(term) || (i.barcodes && i.barcodes.some(b=>b.toLowerCase().includes(term)))) && (!sup || i.supplier === sup) && (!typ || i.type === typ));
         const getExp = item => localBatches.filter(bt=>bt.productId===item.id && bt.quantity>0 && bt.expiryDate).sort((x,y)=>new Date(x.expiryDate)-new Date(y.expiryDate))[0]?.expiryDate || '9999-12-31';
         list.sort((a,b) => { let valA, valB; if(invSort.col === 'name') { valA = a.name.toLowerCase(); valB = b.name.toLowerCase(); } else if(invSort.col === 'supplier') { valA = (a.supplier||'').toLowerCase(); valB = (b.supplier||'').toLowerCase(); } else if(invSort.col === 'totalQuantity') { valA = a.totalQuantity||0; valB = b.totalQuantity||0; } else if(invSort.col === 'expiry') { valA = getExp(a); valB = getExp(b); } if(valA < valB) return invSort.asc ? -1 : 1; if(valA > valB) return invSort.asc ? 1 : -1; return 0; });
-        if(!list.length) { tbody.innerHTML = `<tr><td colspan="5" class="base-td text-center text-ios-textMuted py-8">Nenhum item em estoque.</td></tr>`; return; }
+        if(!list.length) { tbody.innerHTML = `<tr><td colspan="5" class="base-td text-center text-ios-textMuted py-8">Nenhum item no stock.</td></tr>`; return; }
         tbody.innerHTML = list.map(item => {
             const exp = getExp(item); const expFormat = exp !== '9999-12-31' ? new Date(exp+'T00:00:00').toLocaleDateString('pt-BR') : '-';
             const typeClass = item.type==='semi_acabado' ? 'bg-ios-orange/20 text-ios-orange border-ios-orange/30' : 'bg-gray-800 text-gray-300 border-gray-600';
@@ -1429,7 +1514,7 @@
 
     // --- EXPORTAR EXCEL ---
     addEvt('btn-export-excel', 'click', () => {
-        if(!localInventory || !localInventory.length) return window.showNotif('Estoque vazio!', true);
+        if(!localInventory || !localInventory.length) return window.showNotif('Stock vazio!', true);
         
         const term = id('search-inventory')?.value.toLowerCase() || ''; const sup = id('supplier-filter')?.value || ''; const typ = id('type-filter')?.value || '';
         let list = localInventory.filter(i => (i.name.toLowerCase().includes(term) || (i.barcodes && i.barcodes.some(b=>b.toLowerCase().includes(term)))) && (!sup || i.supplier === sup) && (!typ || i.type === typ));
@@ -1444,7 +1529,7 @@
                 'Produto': item.name,
                 'Tipo': typeLabels[item.type] || 'Insumo',
                 'Fornecedor': item.supplier || '-',
-                'Estoque Mínimo': item.minStock || 0,
+                'Stock Mínimo': item.minStock || 0,
                 'Saldo Total Físico': item.totalQuantity || 0,
                 'Validade Mais Próxima': expStr,
                 'Cód. Barras (EANs)': item.barcodes ? item.barcodes.join(', ') : '-'
@@ -1456,7 +1541,7 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Estoque");
             XLSX.writeFile(wb, `Estoque_Geral_${new Date().toISOString().split('T')[0]}.xlsx`);
-            window.showNotif('Planilha exportada com sucesso!');
+            window.showNotif('Ficheiro exportado com sucesso!');
         } catch(e) {
             window.showNotif('Erro ao gerar Excel.', true);
         }
@@ -1477,7 +1562,7 @@
         if(start) hist = hist.filter(h => h.date >= start); if(end) hist = hist.filter(h => h.date <= end);
         if(type) { if(type === 'entrada') hist = hist.filter(h => h.type.includes('entrada')); else if(type === 'saída') hist = hist.filter(h => h.type === 'saída'); else hist = hist.filter(h => h.type === type); }
         
-        if(!hist.length) { cont.innerHTML = '<div class="py-5 text-center text-ios-textMuted text-xs">Nenhuma movimentação no período/filtro.</div>'; return; }
+        if(!hist.length) { cont.innerHTML = '<div class="py-5 text-center text-ios-textMuted text-xs">Sem movimentações no período.</div>'; return; }
         cont.innerHTML = hist.map(h=>`<div class="py-3 border-b border-ios-border text-sm flex justify-between items-center hover:bg-ios-card transition-colors px-2 rounded"><div><span class="font-bold text-xs uppercase ${h.type.includes('entrada')?'text-ios-green':h.type==='saída'||h.type==='requisição'?'text-ios-red':'text-ios-blue'}">${h.type}</span><p class="text-xs text-ios-textMuted mt-1 w-48 truncate" title="${h.reason||'Movimentação'}">${h.reason||'Movimentação'}</p></div><div class="text-right"><span class="font-bold text-white ${h.type.includes('entrada')?'':'text-ios-red'}">${h.type.includes('entrada')?'+':'-'} ${h.quantity.toFixed(2)}</span><br><span class="text-xs text-ios-textMuted"><i class="fa-regular fa-calendar mr-1"></i>${new Date(h.date+'T00:00:00').toLocaleDateString('pt-BR')}</span></div></div>`).join('');
     }
 
@@ -1525,7 +1610,7 @@
 
     addEvt('details-batches-table', 'click', e => {
         const delBtn = e.target.closest('.del-batch-btn');
-        if(delBtn) showConfirmationModal('Excluir Lote?', 'Atenção: Apagar o lote remove a quantidade sem registrar saída.', async () => { await DB.remove('batches', delBtn.dataset.id); await refreshData(); openDetails(id('edit-item-id').value); window.showNotif('Lote apagado'); });
+        if(delBtn) showConfirmationModal('Excluir Lote?', 'Atenção: Apagar o lote remove a quantidade sem registar saída.', async () => { await DB.remove('batches', delBtn.dataset.id); await refreshData(); openDetails(id('edit-item-id').value); window.showNotif('Lote apagado'); });
         const editBtn = e.target.closest('.edit-batch-btn');
         if(editBtn) { const b = localBatches.find(x => x.id === editBtn.dataset.id); if(b) { if(id('edit-batch-id')) id('edit-batch-id').value = b.id; if(id('edit-batch-product-id')) id('edit-batch-product-id').value = b.productId; if(id('edit-batch-code')) id('edit-batch-code').value = b.code; if(id('edit-batch-qty')) id('edit-batch-qty').value = b.quantity; if(id('edit-batch-expiry')) id('edit-batch-expiry').value = b.expiryDate || ''; show(id('edit-batch-modal')); } }
     });
@@ -1561,7 +1646,6 @@
     addEvt('btn-delete-item', 'click', () => { const pId = id('edit-item-id').value; showConfirmationModal('Excluir?', 'Histórico e lotes serão perdidos.', async () => { await DB.remove('inventory', pId); refreshData(); hide(id('item-details-modal')); window.showNotif('Excluído'); }); });
 
     // --- NOVA ENTRADA EM MASSA ---
-    
     addEvt('btn-scan-entry-code', 'click', () => { 
         openScanner(c => { 
             const inp = document.querySelector('#entry-searchable-container input'); 
@@ -1694,78 +1778,13 @@
                 await DB.add('history', {productId: p.id, batchCode: bItem.batchCode, type:'entrada', quantity: bItem.qty, date: todayStr, reason: `Entrada Massa (Forn: ${p.supplier||'?'})`});
             }
             
-            window.showNotif('Todas as entradas foram registradas com sucesso!');
+            window.showNotif('Todas as entradas foram registadas com sucesso!');
             bulkEntryItems = [];
             renderBulkEntry();
             await refreshData();
         } catch(e) { window.showNotif('Erro crítico ao salvar entradas.', true); }
         finally { hide(id('loading-overlay')); }
     });
-
-
-    // --- CADASTRO CÓDIGO BARRAS ---
-    function renderBarcodesList() {
-        const tb = id('barcodes-table-body');
-        if(!tb) return;
-        const list = localInventory.filter(i => i.barcodes && i.barcodes.length > 0);
-        if(!list.length) {
-            tb.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-ios-textMuted">Nenhum código de barras vinculado.</td></tr>';
-            return;
-        }
-        let html = '';
-        list.forEach(i => {
-            i.barcodes.forEach(b => {
-                html += `<tr class="base-tr">
-                    <td class="base-td font-medium text-white">${i.name}</td>
-                    <td class="base-td">${i.code || '-'}</td>
-                    <td class="base-td font-mono text-ios-blue break-all">${b}</td>
-                    <td class="base-td text-center"><button type="button" class="btn-unlink-barcode text-ios-red bg-ios-red/10 px-3 py-1 rounded hover:bg-ios-red/20" data-pid="${i.id}" data-bcode="${b}"><i class="fa-solid fa-unlink"></i></button></td>
-                </tr>`;
-            });
-        });
-        tb.innerHTML = html;
-    }
-
-    addEvt('btn-scan-barcode', 'click', () => {
-        openScanner(code => { id('barcode-input').value = code; window.showNotif("Código lido com sucesso!"); });
-    });
-
-    addEvt('barcode-form', 'submit', async (e) => {
-        e.preventDefault();
-        const searchInput = id('barcode-searchable-container')?.querySelector('input');
-        const pId = searchInput?.dataset?.selectedId;
-        const bcode = id('barcode-input').value.trim();
-        if(!pId || !bcode) return window.showNotif("Selecione o produto e informe o código", true);
-        
-        const p = await DB.get('inventory', pId);
-        if(p) {
-            if(!p.barcodes) p.barcodes = [];
-            if(!p.barcodes.includes(bcode)) {
-                p.barcodes.push(bcode);
-                await DB.update('inventory', p);
-                window.showNotif(p.barcodes.length > 1 ? 'Código Adicional Similar Vinculado!' : 'Código vinculado ao produto!');
-            } else {
-                window.showNotif('Este código já está mapeado para este produto.', true);
-            }
-            e.target.reset(); searchInput.value=''; delete searchInput.dataset.selectedId;
-            refreshData();
-        }
-    });
-
-    addEvt('barcodes-table-body', 'click', async (e) => {
-        const btn = e.target.closest('.btn-unlink-barcode');
-        if(btn) {
-            const pId = btn.dataset.pid;
-            const bcodeToRemove = btn.dataset.bcode;
-            const p = await DB.get('inventory', pId);
-            if(p && p.barcodes) {
-                p.barcodes = p.barcodes.filter(b => b !== bcodeToRemove);
-                await DB.update('inventory', p);
-                window.showNotif('Vínculo removido'); refreshData();
-            }
-        }
-    });
-
 
     // --- COMPRAS E PEDIDOS ---
     addEvt('search-purchasing', 'input', renderPurchasing);
@@ -1775,6 +1794,24 @@
         if(!cont) return;
 
         const term = (id('search-purchasing')?.value || '').toLowerCase();
+
+        const purchEvents = {};
+        localInventory.forEach(i => {
+            if(i.pendingOrder && i.pendingOrder.active && i.pendingOrder.expectedDate) {
+                const d = i.pendingOrder.expectedDate;
+                if(!purchEvents[d]) purchEvents[d] = [];
+                purchEvents[d].push({
+                    title: `${i.supplier ? i.supplier.substring(0,6) : 'Forn'}: ${i.name}`,
+                    tooltip: `Qtd: ${i.pendingOrder.qty}`,
+                    classes: 'bg-ios-blue/20 text-ios-blue border border-ios-blue/30'
+                });
+            }
+        });
+
+        const calendarContainer = id('purchasing-calendar-container');
+        if(calendarContainer) {
+            calendarContainer.innerHTML = generateCalendarHTML(window.purchCalendarDate, purchEvents, 'purchasing');
+        }
 
         const suppliers = {};
         localInventory.filter(i => i.type !== 'semi_acabado').forEach(i => {
@@ -1921,7 +1958,7 @@
                 if(p) {
                     p.pendingOrder = { active: true, qty: qty, expectedDate: expDate };
                     await DB.update('inventory', p);
-                    window.showNotif('Pedido Registrado!');
+                    window.showNotif('Pedido Registado!');
                     hide(id('place-order-modal'));
                     await refreshData();
                 }
@@ -1929,135 +1966,9 @@
         };
 
         if(expDate < estimatedDate) {
-            showConfirmationModal("Atenção - Prazo Curto!", "A data informada é MENOR que o prazo estimado em sistema para o fornecedor. Certifique-se de se comunicar com o setor de compras. Deseja confirmar este pedido?", executeOrder);
+            showConfirmationModal("Atenção - Prazo Curto!", "A data informada é MENOR que o prazo estimado em sistema para o fornecedor. Certifique-se que comunicou com o Setor de Compras. Deseja confirmar esta encomenda?", executeOrder);
         } else {
             executeOrder();
-        }
-    });
-
-    // --- ENDEREÇAMENTO (LOCATIONS) ---
-    function searchLocation(code) {
-        const loc = localLocations.find(l => l.code === code);
-        if(loc) {
-            id('loc-detail-name').innerText = loc.name;
-            id('loc-detail-code').innerText = loc.code;
-            
-            const locBatches = localBatches.filter(b => b.locationCode === code && b.quantity > 0);
-            const tb = id('loc-batches-body');
-            tb.innerHTML = locBatches.map(b => {
-                const prod = localInventory.find(i => i.id === b.productId);
-                return `<tr class="base-tr"><td class="base-td font-medium text-white">${prod?prod.name:'?'}</td><td class="base-td">${b.code}</td><td class="base-td font-bold">${b.quantity.toFixed(2)}</td><td class="base-td text-center"><button type="button" class="btn-remove-batch-loc text-ios-red p-2" data-id="${b.id}"><i class="fa-solid fa-minus-circle"></i></button></td></tr>`;
-            }).join('');
-            if(!locBatches.length) tb.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-ios-textMuted">Endereço Vazio</td></tr>`;
-            
-            id('add-loc-target-code').value = code;
-            
-            hide(id('location-empty-state')); hide(id('location-create-panel')); show(id('location-details-panel'));
-        } else {
-            id('loc-form-code').value = code; id('loc-form-name').value = '';
-            hide(id('location-empty-state')); hide(id('location-details-panel')); show(id('location-create-panel'));
-        }
-    }
-
-    addEvt('btn-search-location', 'click', () => { const c = id('location-search-input').value.trim(); if(c) searchLocation(c); else window.showNotif("Digite o código do local", true); });
-    addEvt('btn-scan-location', 'click', () => { openScanner(code => { id('location-search-input').value = code; searchLocation(code); }); });
-
-    addEvt('location-form', 'submit', async (e) => {
-        e.preventDefault();
-        const code = id('loc-form-code').value; const name = id('loc-form-name').value;
-        await DB.add('locations', {code, name});
-        window.showNotif('Endereço criado!'); await refreshData(); searchLocation(code);
-    });
-
-    addEvt('btn-cancel-loc', 'click', () => { hide(id('location-create-panel')); show(id('location-empty-state')); id('location-search-input').value=''; });
-
-    addEvt('btn-delete-location', 'click', () => {
-        const code = id('loc-detail-code').innerText;
-        const loc = localLocations.find(l => l.code === code);
-        if(loc) {
-            showConfirmationModal("Excluir Local", "Deseja remover este endereço? Lotes continuarão existindo (mas sem local definido).", async () => {
-                await DB.remove('locations', loc.id); window.showNotif('Local removido');
-                hide(id('location-details-panel')); show(id('location-empty-state')); id('location-search-input').value='';
-                refreshData();
-            });
-        }
-    });
-
-    // Edição de Local
-    addEvt('btn-edit-location', 'click', () => {
-        const code = id('loc-detail-code').innerText;
-        const name = id('loc-detail-name').innerText;
-        id('edit-loc-old-code').value = code;
-        id('edit-loc-new-code').value = code;
-        id('edit-loc-new-name').value = name;
-        show(id('edit-location-modal'));
-    });
-
-    addEvt('edit-location-form', 'submit', async (e) => {
-        e.preventDefault();
-        const oldCode = id('edit-loc-old-code').value;
-        const newCode = id('edit-loc-new-code').value.trim();
-        const newName = id('edit-loc-new-name').value.trim();
-        
-        const loc = localLocations.find(l => l.code === oldCode);
-        if(!loc) return;
-
-        show(id('loading-overlay'));
-        try {
-            loc.code = newCode;
-            loc.name = newName;
-            await DB.update('locations', loc);
-
-            // Mover os lotes pro novo código se mudou
-            if(oldCode !== newCode) {
-                const batchesInLoc = localBatches.filter(b => b.locationCode === oldCode);
-                for(const b of batchesInLoc) {
-                    b.locationCode = newCode;
-                    await DB.update('batches', b);
-                }
-            }
-            window.showNotif('Endereço Atualizado!');
-            hide(id('edit-location-modal'));
-            await refreshData();
-            searchLocation(newCode);
-        } catch(err) { window.showNotif('Erro ao atualizar.', true); }
-        finally { hide(id('loading-overlay')); }
-    });
-
-    // Add / Remove Batch in Location
-    addEvt('btn-add-batch-to-loc', 'click', () => {
-        const ctn = id('add-loc-searchable-container');
-        createSearchableSelect(ctn, localInventory, 'Pesquise pelo Produto...', p => {
-            const batches = localBatches.filter(b => b.productId === p.id && b.quantity > 0);
-            const sel = id('add-loc-batch-select');
-            if(sel) {
-                sel.innerHTML = '<option value="">Escolha um Lote...</option>' + batches.map(b => `<option value="${b.code}">${b.code} (Saldo: ${b.quantity.toFixed(2)})</option>`).join('');
-            }
-        });
-        id('add-loc-batch-select').innerHTML = '<option value="">Aguardando produto...</option>';
-        show(id('modal-add-loc-batch'));
-    });
-
-    addEvt('add-loc-batch-form', 'submit', async (e) => {
-        e.preventDefault();
-        const batchCode = id('add-loc-batch-select').value;
-        const locCode = id('add-loc-target-code').value;
-        const batch = localBatches.find(b => b.code === batchCode && b.quantity > 0);
-        if(!batch) return window.showNotif('Selecione um lote válido', true);
-        
-        batch.locationCode = locCode;
-        await DB.update('batches', batch); window.showNotif('Lote Mapeado!');
-        hide(id('modal-add-loc-batch')); await refreshData(); searchLocation(locCode);
-    });
-
-    addEvt('loc-batches-body', 'click', async (e) => {
-        const btn = e.target.closest('.btn-remove-batch-loc');
-        if(btn) {
-            const batch = await DB.get('batches', btn.dataset.id);
-            if(batch) {
-                batch.locationCode = ''; await DB.update('batches', batch);
-                window.showNotif('Lote removido do local'); await refreshData(); searchLocation(id('loc-detail-code').innerText);
-            }
         }
     });
 
@@ -2093,7 +2004,7 @@
                 planDisplay.innerHTML = isSufficient ? '<i class="fa-solid fa-check mr-1"></i> Lotes Alocados: ' + plan.map(x => `<strong>${x.batchCode}</strong>(${x.quantity.toFixed(2)})`).join(', ') : '<i class="fa-solid fa-triangle-exclamation mr-1"></i> ALERTA: Físico Insuficiente ou Bloqueado!';
                 planDisplay.className = isSufficient ? 'plan-display text-ios-green' : 'plan-display text-ios-red';
                 if(isSufficient) show(editBtn); else hide(editBtn);
-            } else { planDisplay.innerText = 'Aguardando produto e qtd...'; hide(editBtn); }
+            } else { planDisplay.innerText = 'Aguardar produto e qtd...'; hide(editBtn); }
         };
 
         createSearchableSelect(div.querySelector('.searchable-container'), localInventory, 'Buscar item...', item => { updatePlan(); });
@@ -2195,299 +2106,6 @@
     });
 
 
-    // --- SEPARAÇÃO AGRUPADA (PICKING KITTING) & CÂMERA ---
-    function renderPickingScreen() {
-        const container = id('picking-lines-container');
-        if(!container) return;
-
-        const pendingOps = localProductionOrders.filter(po => po.status === 'pendente');
-        if(!pendingOps.length) { container.innerHTML = `<div class="card text-center py-10"><i class="fa-solid fa-clipboard-check text-5xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Não há Ordens de Produção pendentes.</p></div>`; return; }
-
-        const opsByLine = {};
-        pendingOps.forEach(op => { const line = op.recipeCategory || 'Diversos'; if(!opsByLine[line]) opsByLine[line] = []; opsByLine[line].push(op); });
-
-        container.innerHTML = Object.keys(opsByLine).sort().map(line => {
-            const ops = opsByLine[line];
-            const concluidas = ops.filter(o => o.picking?.status === 'concluido').length;
-            const emAndamento = ops.filter(o => o.picking?.status === 'em_andamento').length;
-            const extrasPendentes = ops.filter(o => o.isExtra === true && o.picking?.status !== 'concluido');
-            const pct = ops.length > 0 ? (concluidas / ops.length) * 100 : 0;
-            
-            let lineStatusHTML = ''; let isLineActive = emAndamento > 0; let allConcluido = concluidas === ops.length;
-            
-            if(allConcluido) lineStatusHTML = `<span class="badge bg-ios-green/20 text-ios-green"><i class="fa-solid fa-check-double mr-1"></i>Linha Separada</span>`;
-            else if(isLineActive) lineStatusHTML = `<span class="badge bg-ios-blue/20 text-ios-blue animate-pulse"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Em Separação</span>`;
-            else lineStatusHTML = `<span class="badge bg-ios-orange/20 text-ios-orange"><i class="fa-solid fa-clock mr-1"></i>A Separar</span>`;
-
-            const opIdsStr = JSON.stringify(ops.map(o=>o.id));
-
-            return `
-            <div class="card p-0 overflow-hidden border ${isLineActive ? 'border-ios-blue' : 'border-ios-border'} transition-all">
-                <div class="bg-ios-cardHover px-5 py-4 flex flex-col gap-2 ${isLineActive ? 'bg-ios-blue/10' : ''}">
-                    <div class="flex flex-wrap justify-between items-center gap-3">
-                        <div>
-                            <h3 class="font-bold text-white text-xl flex items-center">
-                                <i class="fa-solid fa-layer-group text-ios-blue mr-2"></i>Setor: ${line.toUpperCase()}
-                                ${extrasPendentes.length > 0 ? `<span class="ml-2 badge bg-ios-red text-white shadow shadow-ios-red">🚨 ${extrasPendentes.length} EXTRA(s)</span>` : ''}
-                            </h3>
-                            <p class="text-xs text-ios-textMuted mt-1">${ops.length} OP(s) programada(s) | ${concluidas} Separada(s)</p>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-4">
-                            ${lineStatusHTML}
-                            ${extrasPendentes.length > 0 ? `<button type="button" class="btn-secondary py-2 px-4 text-xs text-ios-red border-ios-red/50 hover:bg-ios-red/10 btn-print-extras" data-line="${line}"><i class="fa-solid fa-print mr-2"></i>Imprimir Extras</button>` : ''}
-                            ${!allConcluido ? `<button type="button" class="btn-primary py-2 px-4 shadow-lg shadow-ios-blue/20 btn-open-line-picking" data-line="${line}" data-opids='${opIdsStr}'><i class="fa-solid fa-dolly mr-2"></i>Separar Linha Completa</button>` : ''}
-                        </div>
-                    </div>
-                    <!-- Barra de Progresso da Linha -->
-                    <div class="w-full h-2 bg-ios-bg rounded-full mt-2 overflow-hidden border border-ios-border">
-                        <div class="h-full bg-ios-green transition-all" style="width: ${pct}%"></div>
-                    </div>
-                </div>
-                <div class="p-4 bg-ios-bg grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 border-t border-ios-border/50">
-                    ${ops.map(op => {
-                        let timerHtml = op.picking?.status === 'concluido' ? '<i class="fa-solid fa-check text-ios-green"></i>' : '<i class="fa-solid fa-clock text-ios-textMuted"></i>';
-                        if(op.picking?.status === 'em_andamento') {
-                            timerHtml = `<div class="live-timer text-ios-orange font-mono font-bold timer-active" data-start="${op.picking.start}">00:00</div>`;
-                        }
-                        return `
-                        <div class="bg-ios-card p-3 rounded-lg border border-ios-border text-sm flex justify-between items-center relative overflow-hidden">
-                            ${op.isExtra ? '<div class="absolute left-0 top-0 bottom-0 w-1 bg-ios-red"></div>' : ''}
-                            <div class="${op.isExtra ? 'pl-2' : ''}">
-                                <span class="font-bold text-white">${op.recipeName}</span> <span class="text-ios-blue">(${op.multiplier}x)</span>
-                            </div>
-                            <div class="ml-2">${timerHtml}</div>
-                        </div>`;
-                    }).join('')}
-                </div>
-            </div>`;
-        }).join('');
-    }
-
-    addEvt('picking-lines-container', 'click', e => {
-        const btnPick = e.target.closest('.btn-open-line-picking');
-        if(btnPick) openGroupedPickingModal(btnPick.dataset.line, JSON.parse(btnPick.dataset.opids));
-
-        const btnPrint = e.target.closest('.btn-print-extras');
-        if(btnPrint) printExtras(btnPrint.dataset.line);
-    });
-
-    function getAggregatedIngredients(opIds) {
-        const ops = localProductionOrders.filter(op => opIds.includes(op.id));
-        const agg = {};
-        ops.forEach(op => { op.ingredients.forEach(ing => { if (!agg[ing.productId]) agg[ing.productId] = { productId: ing.productId, adjustedQuantity: 0 }; agg[ing.productId].adjustedQuantity += ing.adjustedQuantity; }); });
-        return Object.values(agg);
-    }
-
-    function printExtras(lineName) {
-        const ops = localProductionOrders.filter(o => o.recipeCategory === lineName && o.status === 'pendente' && o.isExtra === true && o.picking?.status !== 'concluido');
-        if(!ops.length) return window.showNotif('Nenhuma OP Extra pendente para imprimir.', true);
-
-        const agg = {};
-        ops.forEach(op => {
-            op.ingredients.forEach(ing => {
-                if (!agg[ing.productId]) agg[ing.productId] = 0;
-                agg[ing.productId] += ing.adjustedQuantity;
-            });
-        });
-
-        const { jsPDF } = window.jspdf; const doc = new jsPDF();
-        doc.setFontSize(20); doc.setTextColor(255, 69, 58); doc.text(`Folha de Separação: EXTRAS / URGENTES`, 14, 20);
-        doc.setFontSize(12); doc.setTextColor(50, 50, 55); doc.text(`Setor: ${lineName.toUpperCase()}`, 14, 28);
-        doc.setFontSize(10); doc.setTextColor(150, 150, 150); doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Inclui ${ops.length} OPs`, 14, 34);
-        doc.setLineWidth(0.5); doc.line(14, 38, 196, 38);
-
-        const tableData = Object.keys(agg).map(pidStr => {
-            const pName = localInventory.find(p => p.id === pidStr)?.name || 'Desconhecido';
-            return [pName, agg[pidStr].toFixed(4)];
-        });
-
-        doc.autoTable({ startY: 45, head: [['Insumo a Separar', 'Quantidade Total FÍSICA Necessária']], body: tableData, theme: 'striped', headStyles: { fillColor: [255, 69, 58], textColor: [255, 255, 255] }, alternateRowStyles: { fillColor: [255, 245, 245] }, margin: { left: 14, right: 14 } });
-        doc.save(`Separacao_Extras_${lineName.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`);
-        window.showNotif('Folha de Extras gerada para impressão!');
-    }
-
-    function openGroupedPickingModal(lineName, opIds) {
-        activePickingLine = lineName; activePickingOpIds = opIds;
-        const ops = localProductionOrders.filter(op => opIds.includes(op.id));
-        const sampleOp = ops[0];
-        const picking = sampleOp.picking || { status: 'pendente', responsible: '', start: null, end: null, pickedItems: {} };
-
-        const titleEl = id('picking-modal-title'); if(titleEl) titleEl.innerHTML = `<i class="fa-solid fa-dolly mr-3 text-2xl"></i><span>Check-list Setor: ${lineName.toUpperCase()}</span>`;
-        const subEl = id('picking-modal-subtitle'); if(subEl) subEl.innerText = `Agrupando os insumos de ${ops.length} OP(s) para separação única.`;
-        const respEl = id('picking-responsible'); if(respEl) respEl.value = picking.responsible || '';
-
-        const timerEl = id('picking-timer-display');
-        if(timerEl) {
-            timerEl.innerText = '00:00'; 
-            timerEl.classList.remove('timer-active');
-            timerEl.dataset.start = ""; 
-        }
-
-        if(picking.status === 'em_andamento' && picking.start) {
-            hide(id('picking-setup-view')); 
-            show(id('picking-active-view'));
-            const actResp = id('picking-active-resp'); if(actResp) actResp.innerText = picking.responsible;
-            if(timerEl) { timerEl.dataset.start = picking.start; timerEl.classList.add('timer-active'); }
-        } else {
-            show(id('picking-setup-view'));
-            hide(id('picking-active-view'));
-            if(respEl) respEl.focus();
-        }
-
-        const aggregatedItems = getAggregatedIngredients(opIds);
-        const checklistBody = id('picking-checklist-body');
-        if(checklistBody) {
-            checklistBody.innerHTML = aggregatedItems.map((ing) => {
-                const product = localInventory.find(p => p.id === ing.productId);
-                const needed = ing.adjustedQuantity;
-                let totalPicked = 0;
-                ops.forEach(op => { if(op.picking && op.picking.pickedItems && op.picking.pickedItems[ing.productId] !== undefined) totalPicked += op.picking.pickedItems[ing.productId]; });
-                
-                // Se ainda não pipou, mostra string vazia.
-                const hasPicked = ops.some(op => op.picking && op.picking.pickedItems && op.picking.pickedItems[ing.productId] !== undefined);
-                const isChecked = hasPicked && totalPicked > 0;
-                
-                return `
-                <tr class="border-b border-ios-border/50 hover:bg-ios-cardHover transition-colors ${isChecked ? 'opacity-50' : ''}" data-pid="${ing.productId}">
-                    <td class="px-6 py-4 font-medium text-white ${isChecked ? 'line-through text-ios-textMuted' : ''}">
-                        ${product ? product.name : 'Insumo Excluído'}
-                        <div class="text-[10px] text-ios-textMuted font-mono">BARRAS: ${product?.barcodes?.join(', ') || 'Sem Cód. Mapeado'}</div>
-                    </td>
-                    <td class="px-6 py-4 text-right font-bold text-ios-blue text-lg">${needed.toFixed(4)}</td>
-                    <td class="px-6 py-4 text-center">
-                        <div class="flex items-center justify-center gap-2">
-                            <input type="number" step="0.001" value="${hasPicked ? totalPicked : ''}" class="form-input py-2 px-3 w-28 text-center font-bold text-white picking-qty-input bg-ios-bg border-ios-border text-lg" placeholder="0.000">
-                            <button type="button" class="bg-ios-cardHover border border-ios-border text-xs px-3 py-2 rounded-lg hover:text-white btn-fill-all shadow" title="Preencher Total"><i class="fa-solid fa-check-double"></i></button>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 text-center"><input type="checkbox" class="ui-checkbox ui-checkbox-success picking-row-check" ${isChecked ? 'checked' : ''}></td>
-                </tr>`;
-            }).join('');
-        }
-        show(id('picking-modal'));
-    }
-
-    addEvt('btn-start-picking', 'click', async () => {
-        const respEl = id('picking-responsible');
-        const resp = respEl ? respEl.value.trim() : '';
-        if(!resp) return window.showNotif('Informe o nome do Estoquista para iniciar.', true);
-        const now = Date.now();
-        for(let opId of activePickingOpIds) {
-            let op = localProductionOrders.find(x => x.id === opId);
-            if(op) { op.picking.status = 'em_andamento'; op.picking.start = now; op.picking.responsible = resp; await DB.update('productionOrders', op); }
-        }
-        
-        hide(id('picking-setup-view')); 
-        show(id('picking-active-view'));
-        const actResp = id('picking-active-resp'); if(actResp) actResp.innerText = resp;
-        const timerEl = id('picking-timer-display');
-        if(timerEl) { timerEl.dataset.start = now; timerEl.classList.add('timer-active'); }
-        window.showNotif('Cronômetro Iniciado!'); 
-        
-        refreshData(); 
-    });
-
-    // Scanner no Picking
-    addEvt('btn-picking-scan', 'click', () => {
-        openScanner(code => {
-            const prod = localInventory.find(p => p.code === code || (p.barcodes && p.barcodes.includes(code)));
-            if (!prod) return window.showNotif('Código não reconhecido no sistema.', true);
-            
-            const row = document.querySelector(`#picking-checklist-body tr[data-pid="${prod.id}"]`);
-            if (!row) return window.showNotif('Este item NÃO faz parte desta separação!', true);
-            
-            pickingScanProductId = prod.id;
-            id('picking-scan-qty-name').innerText = prod.name;
-            id('picking-scan-qty').value = '';
-            show(id('picking-scan-qty-modal'));
-            id('picking-scan-qty').focus();
-        });
-    });
-
-    addEvt('picking-scan-qty-form', 'submit', (e) => {
-        e.preventDefault();
-        const qty = parseFloat(id('picking-scan-qty').value);
-        if(qty > 0 && pickingScanProductId) {
-            const row = document.querySelector(`#picking-checklist-body tr[data-pid="${pickingScanProductId}"]`);
-            if(row) {
-                const input = row.querySelector('.picking-qty-input');
-                const chk = row.querySelector('.picking-row-check');
-                input.value = qty.toFixed(4);
-                chk.checked = true;
-                row.classList.add('opacity-50');
-                row.cells[0].classList.add('line-through', 'text-ios-textMuted');
-                window.showNotif('Item marcado no check-list com quantidade Real!');
-            }
-        }
-        hide(id('picking-scan-qty-modal'));
-    });
-
-    addEvt('picking-checklist-body', 'click', e => {
-        const btnFill = e.target.closest('.btn-fill-all');
-        if(btnFill) {
-            const row = btnFill.closest('tr'); const neededStr = row.cells[1].innerText;
-            const input = row.querySelector('.picking-qty-input'); const chk = row.querySelector('.picking-row-check');
-            if(input && chk) { input.value = parseFloat(neededStr).toFixed(4); chk.checked = true; }
-            row.classList.add('opacity-50'); row.cells[0].classList.add('line-through', 'text-ios-textMuted');
-        }
-        if(e.target.classList.contains('picking-row-check')) {
-            const row = e.target.closest('tr');
-            if(e.target.checked) {
-                const input = row.querySelector('.picking-qty-input');
-                if(input && (!input.value || parseFloat(input.value) === 0)) input.value = parseFloat(row.cells[1].innerText).toFixed(4);
-                row.classList.add('opacity-50'); row.cells[0].classList.add('line-through', 'text-ios-textMuted');
-            } else {
-                row.classList.remove('opacity-50'); row.cells[0].classList.remove('line-through', 'text-ios-textMuted');
-            }
-        }
-    });
-
-    addEvt('btn-finish-picking', 'click', async () => {
-        const pickedTotals = {}; let allChecked = true;
-        const bodyEl = id('picking-checklist-body'); if(!bodyEl) return;
-        const rows = bodyEl.querySelectorAll('tr');
-        rows.forEach(row => {
-            const pid = row.dataset.pid; const input = row.querySelector('.picking-qty-input'); const qty = input ? (parseFloat(input.value) || 0) : 0;
-            const chk = row.querySelector('.picking-row-check'); const isChecked = chk ? chk.checked : false; 
-            pickedTotals[pid] = qty;
-            if(!isChecked || qty <= 0) allChecked = false;
-        });
-
-        const finishTask = async () => {
-            const now = Date.now();
-            let opsToUpdate = localProductionOrders.filter(op => activePickingOpIds.includes(op.id));
-            
-            // Distribute picked totals across OPs if multiple OPs need the same item
-            Object.keys(pickedTotals).forEach(pidStr => {
-                const pid = pidStr; let remainingPicked = pickedTotals[pid];
-                opsToUpdate.forEach(op => {
-                    const ing = op.ingredients.find(i => i.productId === pid);
-                    if(ing) {
-                        const take = Math.min(ing.adjustedQuantity, remainingPicked);
-                        if(!op.picking.pickedItems) op.picking.pickedItems = {};
-                        op.picking.pickedItems[pid] = take; remainingPicked -= take;
-                    }
-                });
-                // If there is excess remainingPicked (separated more than ALL OPs needed), give the excess to the first OP.
-                if (remainingPicked > 0 && opsToUpdate.length > 0) {
-                    const op = opsToUpdate.find(o => o.ingredients.some(i => i.productId === pid));
-                    if (op) op.picking.pickedItems[pid] += remainingPicked;
-                }
-            });
-
-            for(let op of opsToUpdate) {
-                op.picking.end = now; op.picking.status = 'concluido';
-                op.picking.duration = Math.floor((op.picking.end - op.picking.start) / 1000); 
-                await DB.update('productionOrders', op);
-            }
-            
-            hide(id('picking-modal')); await refreshData(); window.showNotif('Check-list Concluído com Quantidades Reais!');
-        };
-
-        if(!allChecked) showConfirmationModal('Existem itens não marcados!', 'A Linha não foi separada 100%. Deseja finalizar com pendências?', finishTask);
-        else finishTask();
-    });
-
     // --- LOGICA OP (PRODUCAO) ---
     addEvt('po-date', 'change', e => {
         const selectedDate = new Date(e.target.value);
@@ -2499,10 +2117,34 @@
 
     addEvt('search-po-by-date', 'change', renderPO);
     function renderPO() {
-        const dateInput = id('search-po-by-date'); if(!dateInput) return;
-        const d = dateInput.value; const list = localProductionOrders.filter(po => po.date === d);
-        const container = id('production-orders-list'); if(!container) return;
-        if(!list.length) { container.innerHTML = `<div class="col-span-full text-center text-ios-textMuted py-10 bg-ios-card rounded-2xl border border-ios-border">Fila de produção vazia nesta data.</div>`; return; }
+        const dateInput = id('search-po-by-date');
+        const d = dateInput ? dateInput.value : ''; 
+        const list = d ? localProductionOrders.filter(po => po.date === d) : localProductionOrders;
+        
+        // Render Calendar
+        const prodEvents = {};
+        localProductionOrders.forEach(op => {
+            const dateStr = op.date;
+            if(!prodEvents[dateStr]) prodEvents[dateStr] = [];
+            let colorClass = 'bg-ios-orange/20 text-ios-orange border border-ios-orange/30';
+            if(op.status === 'concluído') colorClass = 'bg-ios-green/20 text-ios-green border border-ios-green/30';
+            else if(op.isExtra) colorClass = 'bg-ios-red/20 text-ios-red border border-ios-red/30';
+            
+            prodEvents[dateStr].push({
+                title: `OP-${op.id.substring(0,4)}: ${op.recipeName} (${op.multiplier}x)`,
+                tooltip: `Status: ${op.status}`,
+                classes: colorClass
+            });
+        });
+        const calendarContainer = id('production-calendar-container');
+        if(calendarContainer) {
+            calendarContainer.innerHTML = generateCalendarHTML(window.prodCalendarDate, prodEvents, 'production');
+        }
+
+        const container = id('production-orders-list'); 
+        if(!container) return;
+
+        if(!list.length) { container.innerHTML = `<div class="col-span-full text-center text-ios-textMuted py-10 bg-ios-card rounded-2xl border border-ios-border">Fila de produção vazia nesta data. Selecione um dia no calendário.</div>`; return; }
         
         container.innerHTML = list.map(po => {
             const p = po.picking || { status: 'pendente' }; let pickBadge = '';
@@ -2683,7 +2325,7 @@
                     }
                     op.status = 'concluído'; await DB.update('productionOrders', op);
                 }
-                window.showNotif('Sucesso! Movimentações registradas baseadas nas quantidades reais.'); 
+                window.showNotif('Sucesso! Movimentações registadas baseadas nas quantidades reais.'); 
             } catch(e) { window.showNotif(e.message || 'Erro crítico', true); } finally { hide(id('loading-overlay')); await refreshData(); }
         });
     });
@@ -2717,7 +2359,7 @@
         let list = localMonthlyConsumption.filter(c => c.period === p);
         if(term) list = list.filter(c => localInventory.find(i=>i.id===c.productId)?.name.toLowerCase().includes(term));
         const tbody = id('consumption-table-body'); if(!tbody) return;
-        if(!list.length) return tbody.innerHTML = `<tr><td colspan="2" class="base-td text-center border-none py-10">Nada registrado.</td></tr>`;
+        if(!list.length) return tbody.innerHTML = `<tr><td colspan="2" class="base-td text-center border-none py-10">Nada registado.</td></tr>`;
         tbody.innerHTML = list.map(c => `<tr class="base-tr"><td class="base-td text-white">${localInventory.find(i=>i.id===c.productId)?.name||'?'}</td><td class="base-td text-right font-bold text-ios-blue">${c.totalConsumed.toFixed(2)}</td></tr>`).join('');
     }
 
@@ -2795,7 +2437,7 @@
             const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
             a.download = `EstoqueOS_Backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click(); window.showNotif('Backup salvo no seu dispositivo!');
-        } catch(e) { window.showNotif('Erro ao gerar arquivo.', true); }
+        } catch(e) { window.showNotif('Erro ao gerar ficheiro.', true); }
         finally { hide(id('loading-overlay')); }
     });
 
