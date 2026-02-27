@@ -51,7 +51,6 @@
             .modal-content { @apply bg-ios-card border border-ios-border rounded-3xl shadow-2xl p-6 w-full transform transition-all max-h-[90vh] overflow-y-auto; }
             .badge { @apply text-xs font-semibold px-2 py-1 rounded-md; }
             
-            /* Home Grid Menu Button */
             .menu-window { @apply flex flex-col items-center justify-center p-8 bg-ios-card border border-ios-border rounded-3xl shadow-lg hover:bg-ios-cardHover hover:scale-105 transition-all duration-300 cursor-pointer text-center; }
             .menu-window i { @apply text-5xl mb-4 text-ios-blue drop-shadow-md; }
             .menu-window span { @apply font-bold text-white text-lg tracking-wide; }
@@ -86,15 +85,7 @@
         .timer-active { color: #ff9f0a; animation: pulse-text 1.5s infinite; }
         @keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         
-        .check-nativo {
-            appearance: auto !important;
-            width: 1.5rem !important; 
-            height: 1.5rem !important; 
-            cursor: pointer;
-            accent-color: #30d158;
-            margin: 0;
-            padding: 0;
-        }
+        .check-nativo { appearance: auto !important; width: 1.5rem !important; height: 1.5rem !important; cursor: pointer; accent-color: #30d158; margin: 0; padding: 0; }
         .form-input { transition: all 0.4s ease; }
         #reader video { border-radius: 0.75rem; object-fit: cover; }
     </style>
@@ -108,7 +99,6 @@
 
     <div id="notification-modal" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[2000] hidden py-3 px-6 rounded-full shadow-2xl font-semibold text-white transition-all text-sm backdrop-blur-md text-center max-w-sm"></div>
 
-    <!-- Tela de Login -->
     <div id="login-wrapper" class="absolute inset-0 z-[999] flex flex-col items-center justify-center bg-ios-bg text-center px-4 hidden">
         <div class="card max-w-md w-full py-10 px-6 border border-ios-border/50 shadow-2xl">
             <div class="w-20 h-20 rounded-2xl bg-ios-blue flex items-center justify-center text-white font-bold text-4xl shadow-lg shadow-ios-blue/30 mx-auto mb-6"><i class="fa-solid fa-layer-group"></i></div>
@@ -120,10 +110,7 @@
         </div>
     </div>
 
-    <!-- App Principal -->
     <div id="app-wrapper" class="flex h-screen overflow-hidden w-full hidden">
-        
-        <!-- Sidebar Menu -->
         <aside class="w-20 lg:w-64 bg-[#000000] border-r border-ios-border flex flex-col py-6 transition-all duration-300 z-40">
             <div class="px-4 mb-8 flex items-center justify-center lg:justify-start cursor-pointer" onclick="navTo('home')">
                 <div class="w-10 h-10 rounded-xl bg-ios-blue flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-ios-blue/30"><i class="fa-solid fa-layer-group"></i></div>
@@ -149,7 +136,6 @@
                     <span id="badge-nav-prod" class="absolute top-3 right-3 w-2.5 h-2.5 bg-ios-blue rounded-full animate-pulse hidden"></span>
                 </a>
                 
-                <!-- Novo Módulo: Pedidos / Compras -->
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="purchasing">
                     <i class="fa-solid fa-cart-shopping w-6 text-center text-lg" style="color:#32ade6;"></i>
                     <span class="ml-3 hidden lg:block font-medium">Compras/Pedidos</span>
@@ -177,65 +163,34 @@
 
         <main class="flex-1 p-6 lg:p-10 overflow-y-auto bg-ios-bg relative z-0 h-full">
             
-            <!-- Home / Janelas de Menu -->
+            <!-- HOME -->
             <div id="screen-home" class="screen-panel w-full">
                 <h1 class="title-lg mb-8 text-center text-white text-4xl tracking-tight">Menu Principal</h1>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-10">
-                    
-                    <button type="button" class="menu-window nav-btn" data-target="consulta">
-                        <i class="fa-solid fa-magnifying-glass" style="color:#32ade6;"></i><span>Consulta Universal</span>
-                    </button>
-                    <button type="button" class="menu-window nav-btn" data-target="entry">
-                        <i class="fa-solid fa-box-open"></i><span>Entrada (Massa)</span>
-                    </button>
-                    <button type="button" class="menu-window nav-btn" data-target="inventory">
-                        <i class="fa-solid fa-boxes-stacked" style="color:#30d158;"></i><span>Estoque Atual</span>
-                    </button>
-                    <button type="button" class="menu-window nav-btn" data-target="locations">
-                        <i class="fa-solid fa-map-location-dot" style="color:#5e5ce6;"></i><span>Endereçamento</span>
-                    </button>
-                    
-                    <button type="button" class="menu-window nav-btn" data-target="barcodes">
-                        <i class="fa-solid fa-barcode" style="color:#bf5af2;"></i><span>Cód. Barras</span>
-                    </button>
-                    <button type="button" class="menu-window nav-btn" data-target="purchasing">
-                        <i class="fa-solid fa-cart-shopping" style="color:#32ade6;"></i><span>Compras/Pedidos</span>
-                    </button>
-                    <button type="button" class="menu-window nav-btn" data-target="recipes">
-                        <i class="fa-solid fa-book-bookmark" style="color:#ff375f;"></i><span>Fichas/Receitas</span>
-                    </button>
-                    <button type="button" class="menu-window nav-btn relative" data-target="picking">
-                        <i class="fa-solid fa-dolly text-ios-orange"></i><span class="text-ios-orange">Separação</span>
-                    </button>
-
-                    <button type="button" class="menu-window nav-btn" data-target="production">
-                        <i class="fa-solid fa-hammer" style="color:#ff9f0a;"></i><span>Ordens Prod.</span>
-                    </button>
-                    <button type="button" class="menu-window nav-btn" data-target="requisitions">
-                        <i class="fa-solid fa-arrow-right-from-bracket" style="color:#ff453a;"></i><span>Requisições</span>
-                    </button>
-                    <button type="button" class="menu-window nav-btn" data-target="adjustments">
-                        <i class="fa-solid fa-sliders" style="color:#64d2ff;"></i><span>Ajuste Lotes</span>
-                    </button>
-                    <button type="button" class="menu-window nav-btn" data-target="settings">
-                        <i class="fa-solid fa-database" style="color:#98989d;"></i><span>Banco de Dados</span>
-                    </button>
+                    <button type="button" class="menu-window nav-btn" data-target="consulta"><i class="fa-solid fa-magnifying-glass" style="color:#32ade6;"></i><span>Consulta Universal</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="entry"><i class="fa-solid fa-box-open"></i><span>Entrada (Massa)</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="inventory"><i class="fa-solid fa-boxes-stacked" style="color:#30d158;"></i><span>Estoque Atual</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="locations"><i class="fa-solid fa-map-location-dot" style="color:#5e5ce6;"></i><span>Endereçamento</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="barcodes"><i class="fa-solid fa-barcode" style="color:#bf5af2;"></i><span>Cód. Barras</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="purchasing"><i class="fa-solid fa-cart-shopping" style="color:#32ade6;"></i><span>Compras/Pedidos</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="recipes"><i class="fa-solid fa-book-bookmark" style="color:#ff375f;"></i><span>Fichas/Receitas</span></button>
+                    <button type="button" class="menu-window nav-btn relative" data-target="picking"><i class="fa-solid fa-dolly text-ios-orange"></i><span class="text-ios-orange">Separação</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="production"><i class="fa-solid fa-hammer" style="color:#ff9f0a;"></i><span>Ordens Prod.</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="requisitions"><i class="fa-solid fa-arrow-right-from-bracket" style="color:#ff453a;"></i><span>Requisições</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="adjustments"><i class="fa-solid fa-sliders" style="color:#64d2ff;"></i><span>Ajuste Lotes</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="settings"><i class="fa-solid fa-database" style="color:#98989d;"></i><span>Banco de Dados</span></button>
                 </div>
-
-                <!-- Recebimentos do Dia -->
                 <div class="max-w-6xl mx-auto border-t border-ios-border pt-8">
                     <h2 class="title-md mb-4 text-ios-blue"><i class="fa-solid fa-truck-ramp-box mr-2"></i>📦 Entregas Previstas para Hoje</h2>
-                    <div id="home-incoming-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Populated by JS -->
-                    </div>
+                    <div id="home-incoming-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
             </div>
 
-            <!-- Consulta Rápida (Universal) -->
+            <!-- CONSULTA RAPIDA -->
             <div id="screen-consulta" class="screen-panel hidden max-w-4xl mx-auto">
                 <h1 class="title-lg">Consulta Rápida</h1>
                 <div class="card mb-8">
-                    <p class="text-sm text-ios-textMuted mb-6">Leia um código de barras, código interno do produto ou código de um endereço para ver o saldo e localização. O sistema trará todas as correspondências.</p>
+                    <p class="text-sm text-ios-textMuted mb-6">Leia um código de barras, código interno do produto ou código de um endereço para ver o saldo e localização.</p>
                     <div class="flex gap-2">
                         <input type="text" id="consulta-input" class="form-input flex-1 font-mono text-lg" placeholder="Digite ou bipar código..." autocomplete="off">
                         <button type="button" id="btn-consulta-scan" class="bg-ios-blue text-white p-4 rounded-xl hover:bg-blue-600 transition shadow-lg"><i class="fa-solid fa-camera text-2xl"></i></button>
@@ -250,17 +205,14 @@
                 </div>
             </div>
 
-            <!-- Códigos de Barras -->
+            <!-- CODIGOS DE BARRAS -->
             <div id="screen-barcodes" class="screen-panel hidden max-w-4xl mx-auto">
                 <h1 class="title-lg">Cadastro de Código de Barras</h1>
                 <div class="card mb-8">
-                    <p class="text-sm text-ios-textMuted mb-6">Vincule os códigos de barras das embalagens físicas aos produtos internos. Um mesmo produto pode ter vários EANs similares.</p>
+                    <p class="text-sm text-ios-textMuted mb-6">Vincule os códigos de barras das embalagens físicas aos produtos internos.</p>
                     <form id="barcode-form" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-                            <div class="z-50">
-                                <label class="form-label">Produto do Sistema</label>
-                                <div id="barcode-searchable-container" class="searchable-container"></div>
-                            </div>
+                            <div class="z-50"><label class="form-label">Produto do Sistema</label><div id="barcode-searchable-container" class="searchable-container"></div></div>
                             <div class="z-40">
                                 <label class="form-label">Código de Barras (Novo)</label>
                                 <div class="flex gap-2">
@@ -269,32 +221,24 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-end pt-4">
-                            <button type="submit" class="btn-primary px-8"><i class="fa-solid fa-link mr-2"></i>Vincular / Adicionar Código</button>
-                        </div>
+                        <div class="flex justify-end pt-4"><button type="submit" class="btn-primary px-8"><i class="fa-solid fa-link mr-2"></i>Vincular / Adicionar Código</button></div>
                     </form>
                 </div>
-                
                 <h2 class="title-md mt-10 mb-4">Produtos Mapeados</h2>
                 <div class="table-container">
-                    <table class="base-table">
-                        <thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Cód Interno</th><th class="base-th">Códigos de Barras (EANs)</th><th class="base-th text-center">Gestão</th></tr></thead>
-                        <tbody id="barcodes-table-body"></tbody>
-                    </table>
+                    <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Cód Interno</th><th class="base-th">Códigos de Barras (EANs)</th><th class="base-th text-center">Gestão</th></tr></thead><tbody id="barcodes-table-body"></tbody></table>
                 </div>
             </div>
 
-            <!-- Compras / Pedidos -->
+            <!-- COMPRAS / PEDIDOS -->
             <div id="screen-purchasing" class="screen-panel hidden">
                 <h1 class="title-lg mb-0 text-ios-blue"><i class="fa-solid fa-cart-shopping mr-3"></i>Gestão de Compras e Pedidos</h1>
                 <p class="text-ios-textMuted text-sm mb-6 mt-1">Acompanhe a duração do estoque visualmente, baseando-se no tanque de reserva (estoque mínimo) e no prazo de entrega do fornecedor.</p>
-                <div class="mb-6 flex gap-4">
-                    <input type="text" id="search-purchasing" class="form-input w-full md:w-1/2" placeholder="Buscar fornecedor ou item..." autocomplete="off">
-                </div>
+                <div class="mb-6 flex gap-4"><input type="text" id="search-purchasing" class="form-input w-full md:w-1/2" placeholder="Buscar fornecedor ou item..." autocomplete="off"></div>
                 <div id="purchasing-container" class="space-y-8"></div>
             </div>
 
-            <!-- Endereçamento (Locations) -->
+            <!-- ENDEREÇAMENTO (LOCATIONS) -->
             <div id="screen-locations" class="screen-panel hidden max-w-5xl mx-auto">
                 <h1 class="title-lg">Endereçamento (Ruas e Locais)</h1>
                 <div class="flex flex-col md:flex-row gap-6 mb-8">
@@ -306,58 +250,44 @@
                         </div>
                         <button type="button" id="btn-search-location" class="btn-secondary w-full">Pesquisar / Abrir</button>
                     </div>
-                    
                     <div class="w-full md:w-2/3">
                         <div id="location-details-panel" class="card hidden mb-6 border-ios-blue shadow-lg shadow-ios-blue/10">
                             <div class="flex justify-between items-start mb-6 border-b border-ios-border pb-4">
-                                <div>
-                                    <h2 class="text-2xl font-bold text-white mb-1" id="loc-detail-name">Nome do Local</h2>
-                                    <p class="text-ios-blue font-mono font-bold bg-ios-blue/10 px-2 py-1 rounded inline-block" id="loc-detail-code">CODIGO</p>
-                                </div>
+                                <div><h2 class="text-2xl font-bold text-white mb-1" id="loc-detail-name">Nome do Local</h2><p class="text-ios-blue font-mono font-bold bg-ios-blue/10 px-2 py-1 rounded inline-block" id="loc-detail-code">CODIGO</p></div>
                                 <div class="flex gap-2">
                                     <button type="button" id="btn-edit-location" class="text-ios-blue bg-ios-blue/10 p-3 rounded-xl hover:bg-ios-blue/20 transition-colors" title="Editar Endereço"><i class="fa-solid fa-pen"></i></button>
                                     <button type="button" id="btn-delete-location" class="text-ios-red bg-ios-red/10 p-3 rounded-xl hover:bg-ios-red/20 transition-colors" title="Apagar Endereço"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </div>
-                            
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-sm font-semibold text-ios-textMuted uppercase">Lotes Neste Endereço</h3>
                                 <button type="button" id="btn-add-batch-to-loc" class="text-ios-green bg-ios-green/10 px-4 py-2 rounded-xl font-bold hover:bg-ios-green/20 text-sm transition-colors"><i class="fa-solid fa-plus mr-1"></i>Alocar Lote Aqui</button>
                             </div>
                             <div class="table-container max-h-64 overflow-y-auto">
-                                <table class="base-table">
-                                    <thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Lote</th><th class="base-th">Qtd</th><th class="base-th text-center">Retirar</th></tr></thead>
-                                    <tbody id="loc-batches-body"></tbody>
-                                </table>
+                                <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Lote</th><th class="base-th">Qtd</th><th class="base-th text-center">Retirar</th></tr></thead><tbody id="loc-batches-body"></tbody></table>
                             </div>
                         </div>
 
-                        <!-- Estado Vazio e Forms... -->
                         <div id="location-create-panel" class="card hidden border-ios-orange border-dashed">
                             <h2 class="title-md mb-2 text-ios-orange">Local não cadastrado!</h2>
                             <p class="text-sm text-ios-textMuted mb-6">O código não existe. Deseja registrar este novo endereço?</p>
                             <form id="location-form" class="space-y-4">
                                 <div><label class="form-label">Código Lida/Digitado</label><input type="text" id="loc-form-code" required readonly class="form-input bg-ios-bg text-ios-textMuted font-mono"></div>
                                 <div><label class="form-label">Nome de Identificação (Ex: Prateleira B Nível 2)</label><input type="text" id="loc-form-name" required class="form-input"></div>
-                                <div class="flex justify-end gap-3 mt-4">
-                                    <button type="button" id="btn-cancel-loc" class="btn-secondary">Cancelar</button>
-                                    <button type="submit" class="btn-primary">Criar Endereço</button>
-                                </div>
+                                <div class="flex justify-end gap-3 mt-4"><button type="button" id="btn-cancel-loc" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Criar Endereço</button></div>
                             </form>
                         </div>
                         
                         <div id="location-empty-state" class="card flex flex-col items-center justify-center py-20 text-center border-dashed">
-                            <i class="fa-solid fa-map-location-dot text-6xl text-ios-cardHover mb-4"></i>
-                            <p class="text-ios-textMuted">Busque ou leia o código de barras de um local para gerenciar o estoque nele.</p>
+                            <i class="fa-solid fa-map-location-dot text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Busque ou leia o código de barras de um local para gerenciar o estoque nele.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Entrada em Massa -->
+            <!-- ENTRADA EM MASSA -->
             <div id="screen-entry" class="screen-panel hidden">
                 <h1 class="title-lg">Entrada de Insumos (Lotes Físicos)</h1>
-                
                 <div class="card mb-6">
                     <h2 class="title-md mb-4">Adicionar Item à Lista de Entrada</h2>
                     <form id="entry-form">
@@ -369,53 +299,32 @@
                                     <button type="button" id="btn-scan-entry-code" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600 transition"><i class="fa-solid fa-camera"></i></button>
                                 </div>
                             </div>
-                            <div class="md:col-span-1">
-                                <label class="form-label">Quantidade</label>
-                                <input type="number" name="quantity" required min="0.01" step="0.01" class="form-input text-ios-blue font-bold">
-                            </div>
-                            <div class="md:col-span-1">
-                                <button type="submit" class="btn-secondary w-full"><i class="fa-solid fa-plus mr-2"></i>Adicionar Lote à Lista</button>
-                            </div>
+                            <div class="md:col-span-1"><label class="form-label">Quantidade</label><input type="number" name="quantity" required min="0.01" step="0.01" class="form-input text-ios-blue font-bold"></div>
+                            <div class="md:col-span-1"><button type="submit" class="btn-secondary w-full"><i class="fa-solid fa-plus mr-2"></i>Adicionar Lote à Lista</button></div>
                         </div>
                     </form>
                 </div>
-
                 <div class="card">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="title-md mb-0">Lista de Recebimento</h2>
                         <button type="button" id="btn-save-bulk-entry" class="btn-primary shadow-lg shadow-ios-blue/20"><i class="fa-solid fa-check-double mr-2"></i>Efetivar Entradas</button>
                     </div>
-                    <div class="table-container overflow-visible"> <!-- overflow visible for selects if needed -->
+                    <div class="table-container overflow-visible">
                         <table class="base-table min-w-full">
-                            <thead class="base-thead">
-                                <tr>
-                                    <th class="base-th w-1/4">Produto</th>
-                                    <th class="base-th w-24">Qtd</th>
-                                    <th class="base-th">Lote (Auto/Manual)</th>
-                                    <th class="base-th w-32">Validade</th>
-                                    <th class="base-th w-40">Endereço (Opcional)</th>
-                                    <th class="base-th w-12 text-center"><i class="fa-solid fa-trash"></i></th>
-                                </tr>
-                            </thead>
-                            <tbody id="bulk-entry-list" class="divide-y divide-ios-border">
-                                <tr><td colspan="6" class="base-td text-center text-ios-textMuted py-8">Nenhum item na lista. Busque e adicione acima.</td></tr>
-                            </tbody>
+                            <thead class="base-thead"><tr><th class="base-th w-1/4">Produto</th><th class="base-th w-24">Qtd</th><th class="base-th">Lote (Auto/Manual)</th><th class="base-th w-32">Validade</th><th class="base-th w-40">Endereço (Opcional)</th><th class="base-th w-12 text-center"><i class="fa-solid fa-trash"></i></th></tr></thead>
+                            <tbody id="bulk-entry-list" class="divide-y divide-ios-border"><tr><td colspan="6" class="base-td text-center text-ios-textMuted py-8">Nenhum item na lista. Busque e adicione acima.</td></tr></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Estoque -->
+            <!-- ESTOQUE GERAL -->
             <div id="screen-inventory" class="screen-panel hidden">
                 <h1 class="title-lg">Estoque Atual</h1>
                 <div class="card p-0 overflow-hidden border-none bg-transparent">
                     <div class="flex flex-wrap gap-3 mb-5 p-1">
                         <input type="text" id="search-inventory" placeholder="Pesquisar itens..." class="form-input w-full md:w-64">
-                        <select id="type-filter" class="form-input w-auto">
-                            <option value="">Todos os Tipos</option>
-                            <option value="insumo">Insumos</option>
-                            <option value="semi_acabado">Semi-acabados</option>
-                        </select>
+                        <select id="type-filter" class="form-input w-auto"><option value="">Todos os Tipos</option><option value="insumo">Insumos</option><option value="semi_acabado">Semi-acabados</option></select>
                         <select id="supplier-filter" class="form-input w-auto"><option value="">Fornecedores</option></select>
                         <button type="button" id="btn-export-excel" class="btn-secondary ml-auto"><i class="fa-solid fa-arrow-up-from-bracket mr-2"></i>Exportar</button>
                     </div>
@@ -436,7 +345,7 @@
                 </div>
             </div>
 
-            <!-- Receitas -->
+            <!-- RECEITAS -->
             <div id="screen-recipes" class="screen-panel hidden">
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                     <h1 class="title-lg mb-0">Fichas Técnicas / Receitas</h1>
@@ -447,26 +356,20 @@
                     </div>
                 </div>
                 <div class="flex flex-col xl:flex-row gap-6">
-                    <div class="w-full xl:w-1/4 card self-start">
-                        <h2 class="text-sm font-semibold text-ios-textMuted uppercase mb-3">Linhas de Produção</h2>
-                        <ul id="recipe-categories-list" class="space-y-1"></ul>
-                    </div>
+                    <div class="w-full xl:w-1/4 card self-start"><h2 class="text-sm font-semibold text-ios-textMuted uppercase mb-3">Linhas de Produção</h2><ul id="recipe-categories-list" class="space-y-1"></ul></div>
                     <div id="recipes-grid" class="w-full xl:w-3/4 grid grid-cols-1 md:grid-cols-2 gap-5 self-start"></div>
                 </div>
             </div>
 
-            <!-- Separação (Picking) -->
+            <!-- SEPARAÇÃO (PICKING) -->
             <div id="screen-picking" class="screen-panel hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h1 class="title-lg mb-0 text-ios-orange"><i class="fa-solid fa-dolly mr-3"></i>Separação (Kitting por Linha)</h1>
-                        <p class="text-ios-textMuted mt-1 text-sm">Acompanhe a barra de progresso do que já foi separado em cada linha.</p>
-                    </div>
+                    <div><h1 class="title-lg mb-0 text-ios-orange"><i class="fa-solid fa-dolly mr-3"></i>Separação (Kitting por Linha)</h1><p class="text-ios-textMuted mt-1 text-sm">Acompanhe a barra de progresso do que já foi separado em cada linha.</p></div>
                 </div>
                 <div id="picking-lines-container" class="space-y-6"></div>
             </div>
 
-            <!-- Produção (OP) -->
+            <!-- PRODUÇÃO (OP) -->
             <div id="screen-production" class="screen-panel hidden">
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="title-lg mb-0">Ordens de Produção (OP)</h1>
@@ -482,7 +385,7 @@
                 <div id="production-orders-list" class="grid grid-cols-1 xl:grid-cols-2 gap-5"></div>
             </div>
 
-            <!-- Consumo Mensal -->
+            <!-- CONSUMO MENSAL -->
             <div id="screen-consumption" class="screen-panel hidden">
                 <h1 class="title-lg">Relatório de Consumo</h1>
                 <div class="card p-0 bg-transparent border-none">
@@ -492,15 +395,12 @@
                         <input type="text" id="search-consumption" placeholder="Buscar produto..." class="form-input flex-1 py-2">
                     </div>
                     <div class="table-container">
-                        <table class="base-table">
-                            <thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th text-right">Volume Consumido</th></tr></thead>
-                            <tbody id="consumption-table-body"></tbody>
-                        </table>
+                        <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th text-right">Volume Consumido</th></tr></thead><tbody id="consumption-table-body"></tbody></table>
                     </div>
                 </div>
             </div>
 
-            <!-- Requisições -->
+            <!-- REQUISIÇÕES AVULSAS -->
             <div id="screen-requisitions" class="screen-panel hidden">
                 <h1 class="title-lg">Baixa Avulsa (Requisição)</h1>
                 <div class="card max-w-4xl mx-auto">
@@ -519,7 +419,7 @@
                 </div>
             </div>
 
-            <!-- Ajustes -->
+            <!-- AJUSTES MANUAIS -->
             <div id="screen-adjustments" class="screen-panel hidden">
                 <h1 class="title-lg">Ajuste Manual de Lote</h1>
                 <div class="card max-w-2xl mx-auto">
@@ -534,7 +434,7 @@
                 </div>
             </div>
 
-            <!-- Configurações e Banco de Dados -->
+            <!-- CONFIGURAÇÕES E BANCO DE DADOS -->
             <div id="screen-settings" class="screen-panel hidden max-w-3xl mx-auto">
                 <h1 class="title-lg">Banco de Dados</h1>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -550,77 +450,17 @@
                     </div>
                 </div>
             </div>
-
         </main>
     </div>
 
-    <!-- Modais Flutuantes -->
+    <!-- ===== MODAIS FLUTUANTES GLOBAIS ===== -->
 
-    <!-- Modal Editar Endereço -->
-    <div id="edit-location-modal" class="modal z-[6000]">
-        <div class="modal-content max-w-sm">
-            <h2 class="title-md mb-4 text-ios-blue">Editar Endereço</h2>
-            <form id="edit-location-form" class="space-y-4">
-                <input type="hidden" id="edit-loc-old-code">
-                <div>
-                    <label class="form-label">Código (Rua/Posição)</label>
-                    <input type="text" id="edit-loc-new-code" required class="form-input font-mono text-ios-blue">
-                </div>
-                <div>
-                    <label class="form-label">Nome Visível</label>
-                    <input type="text" id="edit-loc-new-name" required class="form-input">
-                </div>
-                <div class="flex justify-end gap-2 pt-4">
-                    <button type="button" class="btn-secondary close-modal" data-target="edit-location-modal">Cancelar</button>
-                    <button type="submit" class="btn-primary">Salvar e Atualizar Lotes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Editar Prazo Fornecedor -->
-    <div id="edit-supplier-modal" class="modal z-[6000]">
-        <div class="modal-content max-w-sm">
-            <h2 class="title-md mb-2 text-ios-blue">Editar Fornecedor</h2>
-            <p class="text-sm text-white mb-4" id="edit-supplier-name"></p>
-            <form id="edit-supplier-form" class="space-y-4">
-                <input type="hidden" id="edit-supplier-old-name">
-                <div><label class="form-label">Prazo Padrão de Entrega (Dias Úteis)</label><input type="number" id="edit-supplier-lead" min="0" required class="form-input"></div>
-                <div class="flex justify-end gap-2 pt-4">
-                    <button type="button" class="btn-secondary close-modal" data-target="edit-supplier-modal">Cancelar</button>
-                    <button type="submit" class="btn-primary">Salvar p/ Todos Itens</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Fazer Pedido (Compras) -->
-    <div id="place-order-modal" class="modal z-[6000]">
-        <div class="modal-content max-w-sm">
-            <h2 class="title-md mb-2 text-ios-blue">Registrar Pedido</h2>
-            <p class="text-sm text-white mb-4" id="order-product-name"></p>
-            <form id="place-order-form" class="space-y-4">
-                <input type="hidden" id="order-product-id">
-                <div><label class="form-label">Quantidade Solicitada ao Fornecedor</label><input type="number" id="order-qty" step="0.01" required class="form-input text-ios-blue font-bold"></div>
-                <div><label class="form-label">Previsão de Entrega</label><input type="date" id="order-date" required class="form-input"></div>
-                <div class="flex justify-end gap-2 pt-4">
-                    <button type="button" class="btn-secondary close-modal" data-target="place-order-modal">Cancelar</button>
-                    <button type="submit" class="btn-primary">Confirmar Pedido</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Scanner Câmera Modal Global Atualizado (Fecha e Digita) -->
+    <!-- Scanner Câmera Modal Global -->
     <div id="scanner-modal" class="modal z-[99999]">
         <div class="modal-content max-w-md w-full flex flex-col p-6 relative">
             <button type="button" class="absolute -top-4 -right-4 bg-ios-red text-white w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold border-2 border-ios-bg shadow-xl close-scanner cursor-pointer z-50">&times;</button>
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="title-md mb-0 text-white"><i class="fa-solid fa-camera mr-2"></i>Leitor de Código</h2>
-            </div>
-            <div class="bg-black rounded-xl overflow-hidden shadow-inner border border-ios-border flex items-center justify-center min-h-[300px] mb-4">
-                <div id="reader" class="w-full h-full"></div>
-            </div>
+            <div class="flex justify-between items-center mb-4"><h2 class="title-md mb-0 text-white"><i class="fa-solid fa-camera mr-2"></i>Leitor de Código</h2></div>
+            <div class="bg-black rounded-xl overflow-hidden shadow-inner border border-ios-border flex items-center justify-center min-h-[300px] mb-4"><div id="reader" class="w-full h-full"></div></div>
             <div class="flex gap-2">
                 <input type="text" id="scanner-manual-input" class="form-input flex-1 font-mono text-center text-lg" placeholder="Ou digite o código aqui..." autocomplete="off">
                 <button type="button" id="btn-scanner-manual-confirm" class="btn-primary px-6"><i class="fa-solid fa-check"></i></button>
@@ -634,14 +474,8 @@
             <h2 class="title-md mb-2 text-ios-orange">Quantidade Encontrada</h2>
             <p class="text-sm text-white mb-4" id="picking-scan-qty-name"></p>
             <form id="picking-scan-qty-form" class="space-y-4">
-                <div>
-                    <label class="form-label">Quantidade FÍSICA Coletada:</label>
-                    <input type="number" id="picking-scan-qty" step="0.001" required class="form-input text-ios-blue text-2xl font-bold text-center py-4">
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" class="btn-secondary close-modal" data-target="picking-scan-qty-modal">Cancelar</button>
-                    <button type="submit" class="btn-primary px-6">Confirmar Baixa Real</button>
-                </div>
+                <div><label class="form-label">Quantidade FÍSICA Coletada:</label><input type="number" id="picking-scan-qty" step="0.001" required class="form-input text-ios-blue text-2xl font-bold text-center py-4"></div>
+                <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary close-modal" data-target="picking-scan-qty-modal">Cancelar</button><button type="submit" class="btn-primary px-6">Confirmar Baixa Real</button></div>
             </form>
         </div>
     </div>
@@ -652,22 +486,49 @@
             <h2 class="title-md mb-4 text-ios-blue">Alocar Lote no Endereço</h2>
             <form id="add-loc-batch-form" class="space-y-4">
                 <input type="hidden" id="add-loc-target-code">
-                
-                <div class="z-50 relative">
-                    <label class="form-label">1. Buscar Produto</label>
-                    <div id="add-loc-searchable-container" class="searchable-container"></div>
-                </div>
-                <div>
-                    <label class="form-label">2. Selecionar Lote Físico Existente</label>
-                    <select id="add-loc-batch-select" required class="form-input bg-ios-input">
-                        <option value="">Aguardando produto...</option>
-                    </select>
-                </div>
+                <div class="z-50 relative"><label class="form-label">1. Buscar Produto</label><div id="add-loc-searchable-container" class="searchable-container"></div></div>
+                <div><label class="form-label">2. Selecionar Lote Físico Existente</label><select id="add-loc-batch-select" required class="form-input bg-ios-input"><option value="">Aguardando produto...</option></select></div>
+                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="modal-add-loc-batch">Cancelar</button><button type="submit" class="btn-primary">Confirmar Movimentação</button></div>
+            </form>
+        </div>
+    </div>
 
-                <div class="flex justify-end gap-2 pt-4">
-                    <button type="button" class="btn-secondary close-modal" data-target="modal-add-loc-batch">Cancelar</button>
-                    <button type="submit" class="btn-primary">Confirmar Movimentação</button>
-                </div>
+    <!-- Modal Editar Endereço -->
+    <div id="edit-location-modal" class="modal z-[6000]">
+        <div class="modal-content max-w-sm">
+            <h2 class="title-md mb-4 text-ios-blue">Editar Endereço</h2>
+            <form id="edit-location-form" class="space-y-4">
+                <input type="hidden" id="edit-loc-old-code">
+                <div><label class="form-label">Código (Rua/Posição)</label><input type="text" id="edit-loc-new-code" required class="form-input font-mono text-ios-blue"></div>
+                <div><label class="form-label">Nome Visível</label><input type="text" id="edit-loc-new-name" required class="form-input"></div>
+                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="edit-location-modal">Cancelar</button><button type="submit" class="btn-primary">Salvar e Atualizar Lotes</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Prazo Fornecedor -->
+    <div id="edit-supplier-modal" class="modal z-[6000]">
+        <div class="modal-content max-w-sm">
+            <h2 class="title-md mb-2 text-ios-blue">Editar Fornecedor</h2>
+            <p class="text-sm text-white mb-4" id="edit-supplier-name"></p>
+            <form id="edit-supplier-form" class="space-y-4">
+                <input type="hidden" id="edit-supplier-old-name">
+                <div><label class="form-label">Prazo Padrão de Entrega (Dias Úteis)</label><input type="number" id="edit-supplier-lead" min="0" required class="form-input"></div>
+                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="edit-supplier-modal">Cancelar</button><button type="submit" class="btn-primary">Salvar p/ Todos Itens</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Fazer Pedido (Compras) -->
+    <div id="place-order-modal" class="modal z-[6000]">
+        <div class="modal-content max-w-sm">
+            <h2 class="title-md mb-2 text-ios-blue">Registrar Pedido</h2>
+            <p class="text-sm text-white mb-4" id="order-product-name"></p>
+            <form id="place-order-form" class="space-y-4">
+                <input type="hidden" id="order-product-id">
+                <div><label class="form-label">Quantidade Solicitada ao Fornecedor</label><input type="number" id="order-qty" step="0.01" required class="form-input text-ios-blue font-bold"></div>
+                <div><label class="form-label">Previsão de Entrega</label><input type="date" id="order-date" required class="form-input"></div>
+                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="place-order-modal">Cancelar</button><button type="submit" class="btn-primary">Confirmar Pedido</button></div>
             </form>
         </div>
     </div>
@@ -676,13 +537,9 @@
     <div id="picking-modal" class="modal z-[60]">
         <div class="modal-content max-w-5xl max-h-[95vh] overflow-hidden flex flex-col p-0 bg-ios-bg border border-ios-border">
             <div class="flex justify-between items-start shrink-0 p-6 border-b border-ios-border bg-ios-cardHover">
-                <div>
-                    <h2 id="picking-modal-title" class="title-md mb-1 text-ios-orange flex items-center"><i class="fa-solid fa-dolly mr-3 text-2xl"></i><span>Check-list de Separação</span></h2>
-                    <p id="picking-modal-subtitle" class="text-sm text-ios-textMuted font-medium"></p>
-                </div>
+                <div><h2 id="picking-modal-title" class="title-md mb-1 text-ios-orange flex items-center"><i class="fa-solid fa-dolly mr-3 text-2xl"></i><span>Check-list de Separação</span></h2><p id="picking-modal-subtitle" class="text-sm text-ios-textMuted font-medium"></p></div>
                 <button type="button" class="text-ios-textMuted hover:text-white text-4xl ml-4 close-modal leading-none" data-target="picking-modal">&times;</button>
             </div>
-            
             <div id="picking-setup-view" class="p-10 flex flex-col items-center justify-center bg-ios-card h-[50vh]">
                 <i class="fa-solid fa-clipboard-user text-6xl text-ios-orange mb-6"></i>
                 <h3 class="text-2xl font-bold text-white mb-2">Quem vai separar esta linha?</h3>
@@ -690,14 +547,10 @@
                 <input type="text" id="picking-responsible" class="form-input max-w-xs text-center text-xl py-4 mb-6 shadow-inner border border-ios-border" placeholder="O seu nome aqui" autocomplete="off">
                 <button type="button" id="btn-start-picking" class="btn-success py-4 px-10 text-lg rounded-full shadow-lg shadow-ios-green/20 hover:-translate-y-1 transform transition"><i class="fa-solid fa-play mr-2"></i> Iniciar Cronômetro</button>
             </div>
-
             <div id="picking-active-view" class="hidden flex-col flex-1 overflow-hidden h-[70vh]">
                 <div class="bg-ios-bg px-6 py-4 flex flex-wrap justify-between items-center shrink-0 border-b border-ios-border shadow-inner gap-4">
                     <div class="flex gap-4 items-center">
-                        <div>
-                            <p class="text-[10px] text-ios-textMuted uppercase font-bold tracking-widest mb-1">Responsável</p>
-                            <p class="font-bold text-white text-lg flex items-center"><i class="fa-solid fa-user-check text-ios-blue mr-2"></i><span id="picking-active-resp">---</span></p>
-                        </div>
+                        <div><p class="text-[10px] text-ios-textMuted uppercase font-bold tracking-widest mb-1">Responsável</p><p class="font-bold text-white text-lg flex items-center"><i class="fa-solid fa-user-check text-ios-blue mr-2"></i><span id="picking-active-resp">---</span></p></div>
                         <div class="h-10 border-l border-ios-border mx-2"></div>
                         <button type="button" id="btn-picking-scan" class="bg-ios-cardHover border border-ios-blue text-ios-blue hover:bg-ios-blue hover:text-white py-2 px-4 rounded-xl transition font-bold flex items-center shadow-lg"><i class="fa-solid fa-camera mr-2"></i>Bipar Item Coletado</button>
                     </div>
@@ -707,18 +560,10 @@
                     </div>
                     <button type="button" id="btn-finish-picking" class="btn-primary py-3 px-6 shadow-lg shadow-ios-blue/20 rounded-xl"><i class="fa-solid fa-flag-checkered mr-2"></i>Finalizar OPs da Linha</button>
                 </div>
-
                 <div class="overflow-y-auto flex-1 bg-ios-bg p-6">
                     <div class="table-container shadow-xl">
                         <table class="base-table w-full text-left">
-                            <thead class="base-thead sticky top-0 z-10 shadow-sm">
-                                <tr>
-                                    <th class="base-th rounded-tl-lg text-sm">Item a Separar (Consolidado)</th>
-                                    <th class="base-th text-right text-sm">Necessário OP</th>
-                                    <th class="base-th text-center w-56 text-sm">Qtd Real no Carrinho</th>
-                                    <th class="base-th text-center rounded-tr-lg text-sm">Pronto</th>
-                                </tr>
-                            </thead>
+                            <thead class="base-thead sticky top-0 z-10 shadow-sm"><tr><th class="base-th rounded-tl-lg text-sm">Item a Separar (Consolidado)</th><th class="base-th text-right text-sm">Necessário OP</th><th class="base-th text-center w-56 text-sm">Qtd Real no Carrinho</th><th class="base-th text-center rounded-tr-lg text-sm">Pronto</th></tr></thead>
                             <tbody id="picking-checklist-body" class="divide-y divide-ios-border"></tbody>
                         </table>
                     </div>
@@ -748,7 +593,6 @@
                 <div><span class="text-ios-textMuted block mb-1">Estoque Mín.</span><span id="details-min-stock" class="text-ios-orange font-medium"></span></div>
                 <div><span class="text-ios-textMuted block mb-1">Saldo Físico</span><span id="details-total-quantity" class="text-ios-green font-bold text-xl"></span></div>
             </div>
-            
             <div id="item-details-edit" class="hidden mb-6 bg-ios-bg p-5 rounded-2xl border border-ios-border shadow-inner">
                 <form id="edit-item-form" class="grid grid-cols-1 md:grid-cols-6 gap-5">
                     <input type="hidden" id="edit-item-id">
@@ -761,34 +605,21 @@
                     <div class="md:col-span-6 flex justify-end gap-3 mt-2"><button type="button" id="btn-cancel-edit" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Salvar Edição</button></div>
                 </form>
             </div>
-            
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
                     <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3">Lotes Físicos na Prateleira</h3>
                     <div class="table-container mb-8 max-h-96 overflow-y-auto">
-                        <table class="base-table">
-                            <thead class="base-thead"><tr><th class="base-th">Lote</th><th class="base-th">Status</th><th class="base-th">Local</th><th class="base-th">Validade</th><th class="base-th">Volume</th><th class="base-th text-center">Gestão</th></tr></thead>
-                            <tbody id="details-batches-table"></tbody>
-                        </table>
+                        <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Lote</th><th class="base-th">Status</th><th class="base-th">Local</th><th class="base-th">Validade</th><th class="base-th">Volume</th><th class="base-th text-center">Gestão</th></tr></thead><tbody id="details-batches-table"></tbody></table>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3 flex justify-between items-center">
-                        Extrato de Movimentação
-                        <button type="button" id="btn-clear-hist-filters" class="text-xs text-ios-blue hover:text-blue-300 font-normal underline hidden">Limpar Filtros</button>
-                    </h3>
+                    <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3 flex justify-between items-center">Extrato de Movimentação<button type="button" id="btn-clear-hist-filters" class="text-xs text-ios-blue hover:text-blue-300 font-normal underline hidden">Limpar Filtros</button></h3>
                     <div class="flex flex-wrap gap-2 mb-3 bg-ios-bg p-3 rounded-xl border border-ios-border shadow-inner">
                         <div class="w-full text-xs text-ios-textMuted font-medium mb-1">Filtrar por Período e Tipo:</div>
                         <input type="date" id="hist-filter-start" class="form-input py-1 px-2 text-xs w-auto border-ios-border">
                         <span class="text-ios-textMuted flex items-center text-xs">até</span>
                         <input type="date" id="hist-filter-end" class="form-input py-1 px-2 text-xs w-auto border-ios-border">
-                        <select id="hist-filter-type" class="form-input py-1 px-2 text-xs w-auto border-ios-border ml-auto">
-                            <option value="">Todas Movimentações</option>
-                            <option value="entrada">Entradas</option>
-                            <option value="saída">Saídas (Consumo OP)</option>
-                            <option value="requisição">Baixa Avulsa (Requisição)</option>
-                            <option value="ajuste">Ajustes Manuais</option>
-                        </select>
+                        <select id="hist-filter-type" class="form-input py-1 px-2 text-xs w-auto border-ios-border ml-auto"><option value="">Todas Movimentações</option><option value="entrada">Entradas</option><option value="saída">Saídas (Consumo OP)</option><option value="requisição">Baixa Avulsa (Requisição)</option><option value="ajuste">Ajustes Manuais</option></select>
                     </div>
                     <div class="table-container max-h-72 overflow-y-auto bg-ios-bg p-2" id="details-history-container"></div>
                 </div>
@@ -828,21 +659,12 @@
     <div id="low-stock-modal" class="modal z-[60]">
         <div class="modal-content max-w-4xl max-h-[85vh] flex flex-col p-0 overflow-hidden bg-ios-bg">
             <div class="flex justify-between items-start shrink-0 p-6 border-b border-ios-border bg-ios-cardHover">
-                <div>
-                    <h2 class="title-md mb-1 text-white flex items-center"><i class="fa-solid fa-bell mr-3 text-2xl text-ios-red"></i><span>Central de Alertas</span></h2>
-                    <p class="text-sm text-ios-textMuted font-medium">Acompanhamento automático de mínimos e validades.</p>
-                </div>
+                <div><h2 class="title-md mb-1 text-white flex items-center"><i class="fa-solid fa-bell mr-3 text-2xl text-ios-red"></i><span>Central de Alertas</span></h2><p class="text-sm text-ios-textMuted font-medium">Acompanhamento automático de mínimos e validades.</p></div>
                 <button type="button" class="text-ios-textMuted hover:text-white text-4xl ml-4 close-modal leading-none" data-target="low-stock-modal">&times;</button>
             </div>
             <div class="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div>
-                    <h3 class="text-ios-orange font-bold mb-4 uppercase text-sm tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Abaixo do Mínimo</h3>
-                    <ul id="low-stock-list" class="space-y-3"></ul>
-                </div>
-                <div>
-                    <h3 class="text-ios-red font-bold mb-4 uppercase text-sm tracking-wider"><i class="fa-solid fa-clock mr-2"></i>Validades (Próx. 45 dias)</h3>
-                    <ul id="expiring-list" class="space-y-3"></ul>
-                </div>
+                <div><h3 class="text-ios-orange font-bold mb-4 uppercase text-sm tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Abaixo do Mínimo</h3><ul id="low-stock-list" class="space-y-3"></ul></div>
+                <div><h3 class="text-ios-red font-bold mb-4 uppercase text-sm tracking-wider"><i class="fa-solid fa-clock mr-2"></i>Validades (Próx. 45 dias)</h3><ul id="expiring-list" class="space-y-3"></ul></div>
             </div>
         </div>
     </div>
@@ -853,10 +675,69 @@
             <div class="w-16 h-16 rounded-full bg-ios-cardHover border border-ios-border flex items-center justify-center mb-5"><i class="fa-solid fa-circle-question text-3xl text-ios-blue"></i></div>
             <h3 id="confirm-title" class="title-md mb-2"></h3>
             <p id="confirm-message" class="text-ios-textMuted text-sm mb-8 leading-relaxed"></p>
-            <div class="flex gap-3 w-full justify-center">
-                <button type="button" id="cancel-action-btn" class="btn-secondary flex-1">Cancelar</button>
-                <button type="button" id="confirm-action-btn" class="btn-primary flex-1">Sim, Continuar</button>
-            </div>
+            <div class="flex gap-3 w-full justify-center"><button type="button" id="cancel-action-btn" class="btn-secondary flex-1">Cancelar</button><button type="button" id="confirm-action-btn" class="btn-primary flex-1">Sim, Continuar</button></div>
+        </div>
+    </div>
+
+    <!-- Modal Nova OP (Produção) -->
+    <div id="production-order-modal" class="modal z-[60]">
+        <div class="modal-content max-w-5xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6"><h2 id="production-order-modal-title" class="title-md mb-0">Gerar OP</h2><button type="button" class="text-ios-textMuted hover:text-white text-2xl close-modal" data-target="production-order-modal">&times;</button></div>
+            <form id="production-order-form">
+                <input type="hidden" id="edit-po-id">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-ios-bg border border-ios-border p-5 rounded-2xl mb-6 shadow-inner items-start relative z-50">
+                    <div class="md:col-span-2 relative"><label class="form-label">Receita / Produto a Fabricar</label><div id="po-recipe-searchable-container" class="searchable-container"></div></div>
+                    <div><label class="form-label">Multiplicador (Qtd Receitas)</label><input type="number" id="po-quantity" value="1" min="0.01" step="0.01" required class="form-input text-ios-blue font-bold text-lg"></div>
+                    <div class="md:col-span-1 mt-2"><label class="form-label">Data Agendada</label><input type="date" id="po-date" required class="form-input"></div>
+                    <div class="md:col-span-4 mt-2">
+                        <label class="flex items-center gap-3 cursor-pointer bg-ios-orange/10 p-3 rounded-xl border border-ios-orange/30 w-max hover:bg-ios-orange/20 transition-colors">
+                            <input type="checkbox" id="po-is-extra" class="check-nativo">
+                            <span class="text-sm font-bold text-ios-orange ml-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> OP Extra / Urgente (Menos de 48h)</span>
+                        </label>
+                    </div>
+                    <div id="po-output-fields" class="col-span-1 md:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-4 mt-2 pt-4 border-t border-ios-border hidden">
+                        <div><label class="form-label">Total Gerado (Entrada Físico)</label><input type="text" id="po-total-output" readonly class="form-input bg-gray-800 text-ios-green font-bold text-lg border-none" value="0.0000"></div>
+                        <div><label class="form-label">Lote Sugerido (Saída)</label><input type="text" id="po-output-batch" class="form-input"></div>
+                        <div><label class="form-label">Validade Lote Gerado</label><input type="date" id="po-output-expiry" class="form-input"></div>
+                    </div>
+                </div>
+                <h3 class="title-md text-sm uppercase text-ios-textMuted mb-3">Previsão de Consumo</h3>
+                <div class="table-container mb-6"><table class="base-table"><thead class="base-thead"><tr><th class="base-th">Insumo</th><th class="base-th">Estoque Atual</th><th class="base-th">Qtd a Descontar</th><th class="base-th">Lotes Reservados</th></tr></thead><tbody id="po-ingredients-body"></tbody></table></div>
+                <div class="flex justify-end"><button type="submit" class="btn-primary">Salvar OP na Fila</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Receita -->
+    <div id="recipe-modal" class="modal z-[60]">
+        <div class="modal-content max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6"><h2 id="recipe-modal-title" class="title-md mb-0">Nova Receita</h2><button type="button" class="text-ios-textMuted hover:text-white text-2xl close-modal" data-target="recipe-modal">&times;</button></div>
+            <form id="recipe-form" class="space-y-5">
+                <input type="hidden" id="edit-recipe-id">
+                <div><label class="form-label">Nome da Ficha Técnica / Receita</label><input type="text" id="recipe-name" required class="form-input font-semibold text-lg" placeholder="Ex: Massa de Coxinha ou Bolo de Cenoura"></div>
+                <div>
+                    <label class="form-label">Linha Produtiva</label>
+                    <input type="text" id="recipe-category" list="category-options" required class="form-input" placeholder="Selecione ou digite uma nova linha (ex: Salgados, Pães...)">
+                    <datalist id="category-options"><option value="Salgados"></option><option value="Pães"></option><option value="Confeitaria"></option><option value="Bases"></option></datalist>
+                </div>
+                <div class="p-5 bg-ios-blue/10 border border-ios-blue/30 rounded-xl">
+                    <label class="flex items-center space-x-3 cursor-pointer mb-2">
+                        <input type="checkbox" id="recipe-is-semi" class="check-nativo">
+                        <span class="text-sm font-semibold text-white ml-1">Esta receita gera um produto Semi-Acabado</span>
+                    </label>
+                    <p class="text-xs text-ios-textMuted mb-4 mt-2">Se marcado, a receita entra no estoque como Insumo (Massa, Base, etc).</p>
+                    <div id="yield-wrapper" class="hidden pt-4 border-t border-ios-blue/20">
+                        <label class="form-label text-ios-blue font-bold">Rendimento FÍSICO (Ex: 2.5 kg)</label>
+                        <input type="number" id="recipe-yield" min="0.001" step="0.001" value="1" class="form-input text-ios-blue font-bold text-lg">
+                    </div>
+                </div>
+                <div class="pt-2">
+                    <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3">Composição (Ingredientes)</h3>
+                    <div id="ingredients-container" class="space-y-3 mb-4"></div>
+                    <button type="button" id="add-ingredient-btn" class="text-ios-blue font-medium text-sm flex items-center"><i class="fa-solid fa-circle-plus mr-1"></i>Adicionar Ingrediente</button>
+                </div>
+                <div class="mt-6 flex justify-end"><button type="submit" class="btn-primary" id="save-recipe-btn">Salvar Ficha Técnica</button></div>
+            </form>
         </div>
     </div>
     
@@ -1049,7 +930,6 @@
     let activePickingOpIds = [];
     let pickingScanProductId = null;
     
-    // Lista de entrada em massa
     let bulkEntryItems = [];
 
     const typeLabels = { insumo: 'Insumo', semi_acabado: 'Semi-acabado' };
@@ -1076,7 +956,6 @@
         if(target==='consulta') { id('consulta-input').value = ''; id('consulta-results').innerHTML = '<div class="card flex flex-col items-center justify-center py-20 text-center border-dashed"><i class="fa-solid fa-magnifying-glass text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Aguardando leitura...</p></div>'; id('consulta-input').focus(); }
         if(target==='entry') { 
             createSearchableSelect(id('entry-searchable-container'), localInventory, 'Pesquisar insumo...', p => {
-                // Ao escolher, focar na quantidade
                 document.querySelector('#entry-form input[name="quantity"]').focus();
             }); 
             renderBulkEntry(); 
@@ -1140,7 +1019,6 @@
             
             let changed = false;
             for(let i of localInventory) {
-                // Migrate array barcodes if needed
                 if(i.barcode && !i.barcodes) { i.barcodes = [i.barcode]; delete i.barcode; changed = true; }
                 else if(!i.barcodes) { i.barcodes = []; changed = true; }
 
@@ -1194,7 +1072,6 @@
     // --- HOME SCREEN (ENTREGAS) ---
     function renderHome() {
         const todayStr = new Date().toISOString().split('T')[0];
-        // Encontra produtos com pedidos ativos previstos para hoje ou atrasados
         const incoming = localInventory.filter(i => i.pendingOrder && i.pendingOrder.active && i.pendingOrder.expectedDate <= todayStr);
         
         const cont = id('home-incoming-orders');
@@ -1233,17 +1110,15 @@
         if(btn) {
             const ids = JSON.parse(btn.dataset.ids);
             
-            // Push items into bulk entry array
             ids.forEach(idStr => {
                 const item = localInventory.find(x=>x.id===idStr);
                 if(!item) return;
                 
-                // Add if not already in list to avoid duplicates
                 if(!bulkEntryItems.some(b => b.productId === item.id)) {
                     bulkEntryItems.push({
                         productId: item.id,
                         qty: item.pendingOrder.qty || 0,
-                        batchCode: 'LT-' + new Date().getTime().toString(36).toUpperCase() + Math.floor(Math.random()*1000), // Random init
+                        batchCode: 'LT-' + new Date().getTime().toString(36).toUpperCase().substring(4) + Math.floor(Math.random()*100),
                         expiryDate: '',
                         locationCode: ''
                     });
@@ -1316,20 +1191,6 @@
     addEvt('low-stock-list', 'click', e => { const item = e.target.closest('.alert-item'); if (item) { hide(id('low-stock-modal')); window.navTo('inventory'); openDetails(item.dataset.id); } });
     addEvt('expiring-list', 'click', e => { const item = e.target.closest('.alert-item'); if (item) { hide(id('low-stock-modal')); window.navTo('inventory'); openDetails(item.dataset.id); } });
 
-    setInterval(() => {
-        document.querySelectorAll('.live-timer').forEach(el => {
-            const startTime = parseInt(el.dataset.start);
-            if(startTime && startTime > 0) {
-                const elapsed = Math.floor((Date.now() - startTime) / 1000);
-                const h = Math.floor(elapsed / 3600); const m = Math.floor((elapsed % 3600) / 60); const s = Math.floor(elapsed % 60);
-                let timeStr = '';
-                if (h > 0) timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                else timeStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                el.innerText = timeStr;
-            }
-        });
-    }, 1000);
-
     // --- CONSULTA UNIVERSAL (RÁPIDA) MÚLTIPLA ---
     function searchUniversal(q) {
         if(!q) return window.showNotif("Digite ou leia um código válido", true);
@@ -1338,7 +1199,6 @@
         resEl.innerHTML = '';
         let foundAny = false;
         
-        // Products Logic
         const pMatches = localInventory.filter(i => (i.code && i.code.toLowerCase() === q) || (i.barcodes && i.barcodes.some(b => b.toLowerCase() === q)));
         if(pMatches.length > 0) {
             foundAny = true;
@@ -1366,7 +1226,6 @@
             });
         }
 
-        // Location Logic
         const lMatches = localLocations.filter(l => l.code.toLowerCase() === q);
         if(lMatches.length > 0) {
             foundAny = true;
@@ -1734,16 +1593,6 @@
 
         const term = (id('search-purchasing')?.value || '').toLowerCase();
 
-        // Calculate average consumption over last 30 days
-        const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const startDateStr = thirtyDaysAgo.toISOString().split('T')[0];
-        
-        const consumptionMap = {};
-        localHistory.filter(h => (h.type === 'saída' || h.type === 'requisição') && h.date >= startDateStr).forEach(h => {
-            if(!consumptionMap[h.productId]) consumptionMap[h.productId] = 0;
-            consumptionMap[h.productId] += h.quantity;
-        });
-
         const suppliers = {};
         localInventory.filter(i => i.type !== 'semi_acabado').forEach(i => {
             const sup = i.supplier || 'Sem Fornecedor / Outros';
@@ -1752,23 +1601,23 @@
 
             if(!suppliers[sup]) suppliers[sup] = [];
             
-            const totalOut30d = consumptionMap[i.id] || 0;
-            const dailyAvg = totalOut30d / 30;
             const minStock = i.minStock || 0;
             const leadTime = i.leadTime || 0;
             const balance = i.totalQuantity || 0;
-            
-            // Duration calculation
-            let daysLeft = 999;
-            if (dailyAvg > 0) daysLeft = Math.floor(balance / dailyAvg);
-            else if (balance <= minStock && minStock > 0) daysLeft = 0;
 
-            suppliers[sup].push({ ...i, dailyAvg, daysLeft, leadTime });
+            suppliers[sup].push({ ...i, leadTime });
         });
 
         let html = '';
         Object.keys(suppliers).sort().forEach(sup => {
-            const items = suppliers[sup].sort((a,b) => a.daysLeft - b.daysLeft);
+            const items = suppliers[sup];
+            // Sort to show items below min stock first
+            items.sort((a,b) => {
+                const aPct = a.minStock > 0 ? a.totalQuantity / a.minStock : 999;
+                const bPct = b.minStock > 0 ? b.totalQuantity / b.minStock : 999;
+                return aPct - bPct;
+            });
+            
             html += `<div class="card p-0 overflow-hidden mb-6">
                 <div class="bg-ios-cardHover px-5 py-3 border-b border-ios-border flex justify-between items-center">
                     <h2 class="font-bold text-lg text-white"><i class="fa-solid fa-truck-field mr-2 text-ios-textMuted"></i>${sup}</h2>
@@ -1789,10 +1638,10 @@
                 if(balance <= minStock) { tankColor = 'bg-ios-red'; statusColor = 'bg-ios-red'; statusText = 'Reserva Intocada'; }
                 else if(balance <= minStock * 1.5) { tankColor = 'bg-ios-orange'; statusColor = 'bg-ios-orange'; statusText = 'Ponto de Pedido'; }
 
-                let orderHtml = `<button type="button" class="btn-primary py-2 px-3 text-xs w-full mt-3 btn-place-order" data-id="${i.id}"><i class="fa-solid fa-cart-plus mr-2"></i>Fazer Pedido</button>`;
+                let orderHtml = `<button type="button" class="btn-primary py-2 px-3 text-xs w-full btn-place-order" data-id="${i.id}"><i class="fa-solid fa-cart-plus mr-2"></i>Fazer Pedido</button>`;
                 
                 if(i.pendingOrder && i.pendingOrder.active) {
-                    orderHtml = `<div class="bg-ios-blue/20 border border-ios-blue text-ios-blue p-2 rounded-lg text-xs font-bold text-center mt-3"><i class="fa-solid fa-truck-fast mr-1"></i>Pedido em Trânsito<br><span class="font-normal text-[10px] text-white">Chega: ${new Date(i.pendingOrder.expectedDate+'T00:00:00').toLocaleDateString('pt-BR')} (Qtd: ${i.pendingOrder.qty})</span></div>`;
+                    orderHtml = `<div class="bg-ios-blue/20 border border-ios-blue text-ios-blue p-2 rounded-lg text-xs font-bold text-center"><i class="fa-solid fa-truck-fast mr-1"></i>Pedido em Trânsito<br><span class="font-normal text-[10px] text-white">Chega: ${new Date(i.pendingOrder.expectedDate+'T00:00:00').toLocaleDateString('pt-BR')} (Qtd: ${i.pendingOrder.qty})</span></div>`;
                 }
 
                 html += `<div class="bg-ios-bg p-4 rounded-xl border border-ios-border flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -1801,9 +1650,8 @@
                             <span class="font-bold text-white">${i.name}</span>
                             <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}/20 text-${statusColor.split('-')[1]} uppercase">${statusText}</span>
                         </div>
-                        <div class="text-xs text-ios-textMuted grid grid-cols-2 gap-2 mt-2">
+                        <div class="text-xs text-ios-textMuted mt-2">
                             <div>Prazo do Fornecedor: <strong class="text-ios-blue">${i.leadTime} dias úteis</strong></div>
-                            <div class="text-right">Durabilidade no Estoque: <strong class="font-mono text-white">${i.daysLeft===999 ? '> 99 dias' : i.daysLeft + ' dias'}</strong></div>
                         </div>
                         <div class="relative w-full h-6 bg-ios-input rounded-full overflow-hidden border border-ios-border mt-3 shadow-inner">
                             <div class="absolute left-0 top-0 bottom-0 bg-ios-red/30" style="width: ${minPct}%"></div>
@@ -1816,9 +1664,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="w-full md:w-48 shrink-0 border-t md:border-t-0 md:border-l border-ios-border pt-3 md:pt-0 md:pl-4">
-                        <p class="text-[10px] text-ios-textMuted uppercase mb-1">Consumo Médio</p>
-                        <p class="text-lg font-bold text-white">${i.dailyAvg.toFixed(2)} / dia</p>
+                    <div class="w-full md:w-48 shrink-0 border-t md:border-t-0 md:border-l border-ios-border pt-3 md:pt-0 md:pl-4 flex flex-col justify-center">
                         ${orderHtml}
                     </div>
                 </div>`;
