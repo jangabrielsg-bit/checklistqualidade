@@ -120,7 +120,7 @@
                 <span class="ml-3 font-bold text-xl text-white hidden lg:block tracking-tight">Estoque OS</span>
             </div>
             <nav class="flex-1 w-full px-3 space-y-2 overflow-y-auto">
-                <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-white bg-ios-card transition-all" data-target="home"><i class="fa-solid fa-house w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Ecrã Principal</span></a>
+                <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-white bg-ios-card transition-all" data-target="home"><i class="fa-solid fa-house w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Menu Inicial</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="consulta"><i class="fa-solid fa-magnifying-glass w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Consulta Rápida</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="inventory"><i class="fa-solid fa-boxes-stacked w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Estoque Geral</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="barcodes"><i class="fa-solid fa-barcode w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Cód. Barras</span></a>
@@ -173,8 +173,7 @@
             
             <!-- HOME -->
             <div id="screen-home" class="screen-panel w-full">
-                <h1 class="title-lg mb-2 text-center text-white text-4xl tracking-tight">Ecrã Principal</h1>
-                <p class="text-ios-textMuted text-center text-sm mb-10 italic max-w-2xl mx-auto tracking-wide">"Não se gere o que não se mede, não se mede o que não se define, não se define o que não se entende e não há sucesso no que não se gere."</p>
+                <h1 class="title-lg mb-8 text-center text-white text-4xl tracking-tight">Menu Inicial</h1>
 
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-10">
                     <button type="button" class="menu-window nav-btn" data-target="consulta"><i class="fa-solid fa-magnifying-glass" style="color:#32ade6;"></i><span>Consulta Universal</span></button>
@@ -488,6 +487,11 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- MARCA D'AGUA -->
+    <div class="fixed bottom-2 right-3 z-[9999] text-[10px] text-ios-textMuted/40 pointer-events-none select-none">
+        &copy; Jan Gabriel todos os direitos reservados
     </div>
 
     <!-- ===== MODAIS FLUTUANTES GLOBAIS ===== -->
@@ -958,9 +962,16 @@
             const isToday = dateStr === todayStr;
             const dayEvents = eventsMap[dateStr] || [];
             
-            let eventsHtml = dayEvents.map(ev => 
-                `<div class="text-[9px] mb-1 p-1 rounded font-semibold truncate ${ev.classes}" title="${ev.tooltip||ev.title}">${ev.title}</div>`
-            ).join('');
+            let eventsHtml = '';
+            if(dayEvents.length > 0) {
+                if(idPrefix === 'production') {
+                    eventsHtml = `<div class="flex justify-center gap-1 mt-1 flex-wrap">${dayEvents.map(e=>`<span class="w-2 h-2 rounded-full ${e.classes.split(' ')[0]}"></span>`).join('')}</div>`;
+                } else {
+                    eventsHtml = dayEvents.map(ev => 
+                        `<div class="text-[9px] mb-1 p-1 rounded font-semibold truncate ${ev.classes}" title="${ev.tooltip||ev.title}">${ev.title}</div>`
+                    ).join('');
+                }
+            }
             
             html += `
             <div class="bg-ios-card min-h-[90px] p-1 md:p-2 cursor-pointer hover:bg-ios-cardHover transition-colors relative group" onclick="window.selectDate('${idPrefix}', '${dateStr}')">
@@ -1147,7 +1158,6 @@
             
             let changed = false;
             for(let i of localInventory) {
-                // Migrate array barcodes if needed
                 if(i.barcode && !i.barcodes) { i.barcodes = [i.barcode]; delete i.barcode; changed = true; }
                 else if(!i.barcodes) { i.barcodes = []; changed = true; }
 
@@ -1457,6 +1467,7 @@
                     
                     if(ing.consumptionPlan && ing.consumptionPlan.length > 0) {
                         ing.consumptionPlan.forEach(plan => {
+                            // Fetch full batch info for expiry date
                             const b = localBatches.find(x => x.id === plan.batchId);
                             const valStr = b && b.expiryDate ? new Date(b.expiryDate+'T00:00:00').toLocaleDateString('pt-BR') : 'Indisponível';
                             
@@ -1468,6 +1479,7 @@
                             </tr>`;
                         });
                     } else {
+                        // Fallback (Older records before specific lot deduction was enforced)
                         let actualQty = ing.adjustedQuantity;
                         if(op.picking?.pickedItems && op.picking.pickedItems[ing.productId]) {
                             actualQty = op.picking.pickedItems[ing.productId];
@@ -1972,6 +1984,132 @@
         }
     });
 
+    // --- ENDEREÇAMENTO (LOCATIONS) ---
+    function searchLocation(code) {
+        const loc = localLocations.find(l => l.code === code);
+        if(loc) {
+            id('loc-detail-name').innerText = loc.name;
+            id('loc-detail-code').innerText = loc.code;
+            
+            const locBatches = localBatches.filter(b => b.locationCode === code && b.quantity > 0);
+            const tb = id('loc-batches-body');
+            tb.innerHTML = locBatches.map(b => {
+                const prod = localInventory.find(i => i.id === b.productId);
+                return `<tr class="base-tr"><td class="base-td font-medium text-white">${prod?prod.name:'?'}</td><td class="base-td">${b.code}</td><td class="base-td font-bold">${b.quantity.toFixed(2)}</td><td class="base-td text-center"><button type="button" class="btn-remove-batch-loc text-ios-red p-2" data-id="${b.id}"><i class="fa-solid fa-minus-circle"></i></button></td></tr>`;
+            }).join('');
+            if(!locBatches.length) tb.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-ios-textMuted">Endereço Vazio</td></tr>`;
+            
+            id('add-loc-target-code').value = code;
+            
+            hide(id('location-empty-state')); hide(id('location-create-panel')); show(id('location-details-panel'));
+        } else {
+            id('loc-form-code').value = code; id('loc-form-name').value = '';
+            hide(id('location-empty-state')); hide(id('location-details-panel')); show(id('location-create-panel'));
+        }
+    }
+
+    addEvt('btn-search-location', 'click', () => { const c = id('location-search-input').value.trim(); if(c) searchLocation(c); else window.showNotif("Digite o código do local", true); });
+    addEvt('btn-scan-location', 'click', () => { openScanner(code => { id('location-search-input').value = code; searchLocation(code); }); });
+
+    addEvt('location-form', 'submit', async (e) => {
+        e.preventDefault();
+        const code = id('loc-form-code').value; const name = id('loc-form-name').value;
+        await DB.add('locations', {code, name});
+        window.showNotif('Endereço criado!'); await refreshData(); searchLocation(code);
+    });
+
+    addEvt('btn-cancel-loc', 'click', () => { hide(id('location-create-panel')); show(id('location-empty-state')); id('location-search-input').value=''; });
+
+    addEvt('btn-delete-location', 'click', () => {
+        const code = id('loc-detail-code').innerText;
+        const loc = localLocations.find(l => l.code === code);
+        if(loc) {
+            showConfirmationModal("Excluir Local", "Deseja remover este endereço? Lotes continuarão existindo (mas sem local definido).", async () => {
+                await DB.remove('locations', loc.id); window.showNotif('Local removido');
+                hide(id('location-details-panel')); show(id('location-empty-state')); id('location-search-input').value='';
+                refreshData();
+            });
+        }
+    });
+
+    // Edição de Local
+    addEvt('btn-edit-location', 'click', () => {
+        const code = id('loc-detail-code').innerText;
+        const name = id('loc-detail-name').innerText;
+        id('edit-loc-old-code').value = code;
+        id('edit-loc-new-code').value = code;
+        id('edit-loc-new-name').value = name;
+        show(id('edit-location-modal'));
+    });
+
+    addEvt('edit-location-form', 'submit', async (e) => {
+        e.preventDefault();
+        const oldCode = id('edit-loc-old-code').value;
+        const newCode = id('edit-loc-new-code').value.trim();
+        const newName = id('edit-loc-new-name').value.trim();
+        
+        const loc = localLocations.find(l => l.code === oldCode);
+        if(!loc) return;
+
+        show(id('loading-overlay'));
+        try {
+            loc.code = newCode;
+            loc.name = newName;
+            await DB.update('locations', loc);
+
+            // Mover os lotes pro novo código se mudou
+            if(oldCode !== newCode) {
+                const batchesInLoc = localBatches.filter(b => b.locationCode === oldCode);
+                for(const b of batchesInLoc) {
+                    b.locationCode = newCode;
+                    await DB.update('batches', b);
+                }
+            }
+            window.showNotif('Endereço Atualizado!');
+            hide(id('edit-location-modal'));
+            await refreshData();
+            searchLocation(newCode);
+        } catch(err) { window.showNotif('Erro ao atualizar.', true); }
+        finally { hide(id('loading-overlay')); }
+    });
+
+    // Add / Remove Batch in Location
+    addEvt('btn-add-batch-to-loc', 'click', () => {
+        const ctn = id('add-loc-searchable-container');
+        createSearchableSelect(ctn, localInventory, 'Pesquise pelo Produto...', p => {
+            const batches = localBatches.filter(b => b.productId === p.id && b.quantity > 0);
+            const sel = id('add-loc-batch-select');
+            if(sel) {
+                sel.innerHTML = '<option value="">Escolha um Lote...</option>' + batches.map(b => `<option value="${b.code}">${b.code} (Saldo: ${b.quantity.toFixed(2)})</option>`).join('');
+            }
+        });
+        id('add-loc-batch-select').innerHTML = '<option value="">Aguardar produto...</option>';
+        show(id('modal-add-loc-batch'));
+    });
+
+    addEvt('add-loc-batch-form', 'submit', async (e) => {
+        e.preventDefault();
+        const batchCode = id('add-loc-batch-select').value;
+        const locCode = id('add-loc-target-code').value;
+        const batch = localBatches.find(b => b.code === batchCode && b.quantity > 0);
+        if(!batch) return window.showNotif('Selecione um lote válido', true);
+        
+        batch.locationCode = locCode;
+        await DB.update('batches', batch); window.showNotif('Lote Mapeado!');
+        hide(id('modal-add-loc-batch')); await refreshData(); searchLocation(locCode);
+    });
+
+    addEvt('loc-batches-body', 'click', async (e) => {
+        const btn = e.target.closest('.btn-remove-batch-loc');
+        if(btn) {
+            const batch = await DB.get('batches', btn.dataset.id);
+            if(batch) {
+                batch.locationCode = ''; await DB.update('batches', batch);
+                window.showNotif('Lote removido do local'); await refreshData(); searchLocation(id('loc-detail-code').innerText);
+            }
+        }
+    });
+
     // --- RECEITAS E REQUISIÇÃO ---
     function addIngRowReq(container, prefillId=null, prefillQty='') {
         if(!container) return;
@@ -2106,6 +2244,304 @@
     });
 
 
+    // --- SEPARAÇÃO AGRUPADA (PICKING KITTING) & CÂMERA ---
+    function renderPickingScreen() {
+        const container = id('picking-lines-container');
+        if(!container) return;
+
+        // Limite de 48h (Aparecer na separação se data da OP <= (hoje + 2 dias))
+        const limitDate = new Date();
+        limitDate.setDate(limitDate.getDate() + 2);
+        const limitDateStr = limitDate.toISOString().split('T')[0];
+
+        const pendingOps = localProductionOrders.filter(po => po.status === 'pendente' && po.date <= limitDateStr);
+        if(!pendingOps.length) { container.innerHTML = `<div class="card text-center py-10"><i class="fa-solid fa-clipboard-check text-5xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Não há Ordens de Produção pendentes para as próximas 48 horas.</p></div>`; return; }
+
+        const opsByLine = {};
+        pendingOps.forEach(op => { const line = op.recipeCategory || 'Diversos'; if(!opsByLine[line]) opsByLine[line] = []; opsByLine[line].push(op); });
+
+        container.innerHTML = Object.keys(opsByLine).sort().map(line => {
+            const ops = opsByLine[line];
+            const concluidas = ops.filter(o => o.picking?.status === 'concluido').length;
+            const emAndamento = ops.filter(o => o.picking?.status === 'em_andamento').length;
+            const extrasPendentes = ops.filter(o => o.isExtra === true && o.picking?.status !== 'concluido');
+            const pct = ops.length > 0 ? (concluidas / ops.length) * 100 : 0;
+            
+            let lineStatusHTML = ''; let isLineActive = emAndamento > 0; let allConcluido = concluidas === ops.length;
+            
+            if(allConcluido) lineStatusHTML = `<span class="badge bg-ios-green/20 text-ios-green"><i class="fa-solid fa-check-double mr-1"></i>Linha Separada</span>`;
+            else if(isLineActive) lineStatusHTML = `<span class="badge bg-ios-blue/20 text-ios-blue animate-pulse"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Em Separação</span>`;
+            else lineStatusHTML = `<span class="badge bg-ios-orange/20 text-ios-orange"><i class="fa-solid fa-clock mr-1"></i>A Separar</span>`;
+
+            const opIdsStr = JSON.stringify(ops.map(o=>o.id));
+
+            return `
+            <div class="card p-0 overflow-hidden border ${isLineActive ? 'border-ios-blue' : 'border-ios-border'} transition-all">
+                <div class="bg-ios-cardHover px-5 py-4 flex flex-col gap-2 ${isLineActive ? 'bg-ios-blue/10' : ''}">
+                    <div class="flex flex-wrap justify-between items-center gap-3">
+                        <div>
+                            <h3 class="font-bold text-white text-xl flex items-center">
+                                <i class="fa-solid fa-layer-group text-ios-blue mr-2"></i>Setor: ${line.toUpperCase()}
+                                ${extrasPendentes.length > 0 ? `<span class="ml-2 badge bg-ios-red text-white shadow shadow-ios-red">🚨 ${extrasPendentes.length} EXTRA(s)</span>` : ''}
+                            </h3>
+                            <p class="text-xs text-ios-textMuted mt-1">${ops.length} OP(s) programada(s) | ${concluidas} Separada(s)</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-4">
+                            ${lineStatusHTML}
+                            ${extrasPendentes.length > 0 ? `<button type="button" class="btn-secondary py-2 px-4 text-xs text-ios-red border-ios-red/50 hover:bg-ios-red/10 btn-print-extras" data-line="${line}"><i class="fa-solid fa-print mr-2"></i>Imprimir Extras</button>` : ''}
+                            ${!allConcluido ? `<button type="button" class="btn-primary py-2 px-4 shadow-lg shadow-ios-blue/20 btn-open-line-picking" data-line="${line}" data-opids='${opIdsStr}'><i class="fa-solid fa-dolly mr-2"></i>Separar Linha Completa</button>` : ''}
+                        </div>
+                    </div>
+                    <!-- Barra de Progresso da Linha -->
+                    <div class="w-full h-2 bg-ios-bg rounded-full mt-2 overflow-hidden border border-ios-border">
+                        <div class="h-full bg-ios-green transition-all" style="width: ${pct}%"></div>
+                    </div>
+                </div>
+                <div class="p-4 bg-ios-bg grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 border-t border-ios-border/50">
+                    ${ops.map(op => {
+                        let timerHtml = op.picking?.status === 'concluido' ? '<i class="fa-solid fa-check text-ios-green"></i>' : '<i class="fa-solid fa-clock text-ios-textMuted"></i>';
+                        if(op.picking?.status === 'em_andamento') {
+                            timerHtml = `<div class="live-timer text-ios-orange font-mono font-bold timer-active" data-start="${op.picking.start}">00:00</div>`;
+                        }
+                        return `
+                        <div class="bg-ios-card p-3 rounded-lg border border-ios-border text-sm flex justify-between items-center relative overflow-hidden">
+                            ${op.isExtra ? '<div class="absolute left-0 top-0 bottom-0 w-1 bg-ios-red"></div>' : ''}
+                            <div class="${op.isExtra ? 'pl-2' : ''}">
+                                <span class="font-bold text-white">${op.recipeName}</span> <span class="text-ios-blue">(${op.multiplier}x)</span>
+                            </div>
+                            <div class="ml-2">${timerHtml}</div>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    addEvt('picking-lines-container', 'click', e => {
+        const btnPick = e.target.closest('.btn-open-line-picking');
+        if(btnPick) openGroupedPickingModal(btnPick.dataset.line, JSON.parse(btnPick.dataset.opids));
+
+        const btnPrint = e.target.closest('.btn-print-extras');
+        if(btnPrint) printExtras(btnPrint.dataset.line);
+    });
+
+    function getAggregatedIngredients(opIds) {
+        const ops = localProductionOrders.filter(op => opIds.includes(op.id));
+        const agg = {};
+        ops.forEach(op => { op.ingredients.forEach(ing => { if (!agg[ing.productId]) agg[ing.productId] = { productId: ing.productId, adjustedQuantity: 0 }; agg[ing.productId].adjustedQuantity += ing.adjustedQuantity; }); });
+        return Object.values(agg);
+    }
+
+    function printExtras(lineName) {
+        const ops = localProductionOrders.filter(o => o.recipeCategory === lineName && o.status === 'pendente' && o.isExtra === true && o.picking?.status !== 'concluido');
+        if(!ops.length) return window.showNotif('Nenhuma OP Extra pendente para imprimir.', true);
+
+        const agg = {};
+        ops.forEach(op => {
+            op.ingredients.forEach(ing => {
+                if (!agg[ing.productId]) agg[ing.productId] = 0;
+                agg[ing.productId] += ing.adjustedQuantity;
+            });
+        });
+
+        const { jsPDF } = window.jspdf; const doc = new jsPDF();
+        doc.setFontSize(20); doc.setTextColor(255, 69, 58); doc.text(`Folha de Separação: EXTRAS / URGENTES`, 14, 20);
+        doc.setFontSize(12); doc.setTextColor(50, 50, 55); doc.text(`Setor: ${lineName.toUpperCase()}`, 14, 28);
+        doc.setFontSize(10); doc.setTextColor(150, 150, 150); doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Inclui ${ops.length} OPs`, 14, 34);
+        doc.setLineWidth(0.5); doc.line(14, 38, 196, 38);
+
+        const tableData = Object.keys(agg).map(pidStr => {
+            const pName = localInventory.find(p => p.id === pidStr)?.name || 'Desconhecido';
+            return [pName, agg[pidStr].toFixed(4)];
+        });
+
+        doc.autoTable({ startY: 45, head: [['Insumo a Separar', 'Quantidade Total FÍSICA Necessária']], body: tableData, theme: 'striped', headStyles: { fillColor: [255, 69, 58], textColor: [255, 255, 255] }, alternateRowStyles: { fillColor: [255, 245, 245] }, margin: { left: 14, right: 14 } });
+        doc.save(`Separacao_Extras_${lineName.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+        window.showNotif('Folha de Extras gerada para impressão!');
+    }
+
+    function openGroupedPickingModal(lineName, opIds) {
+        activePickingLine = lineName; activePickingOpIds = opIds;
+        const ops = localProductionOrders.filter(op => opIds.includes(op.id));
+        const sampleOp = ops[0];
+        const picking = sampleOp.picking || { status: 'pendente', responsible: '', start: null, end: null, pickedItems: {} };
+
+        const titleEl = id('picking-modal-title'); if(titleEl) titleEl.innerHTML = `<i class="fa-solid fa-dolly mr-3 text-2xl"></i><span>Check-list Setor: ${lineName.toUpperCase()}</span>`;
+        const subEl = id('picking-modal-subtitle'); if(subEl) subEl.innerText = `Agrupando os insumos de ${ops.length} OP(s) para separação única.`;
+        const respEl = id('picking-responsible'); if(respEl) respEl.value = picking.responsible || '';
+
+        const timerEl = id('picking-timer-display');
+        if(timerEl) {
+            timerEl.innerText = '00:00'; 
+            timerEl.classList.remove('timer-active');
+            timerEl.dataset.start = ""; 
+        }
+
+        if(picking.status === 'em_andamento' && picking.start) {
+            hide(id('picking-setup-view')); 
+            show(id('picking-active-view'));
+            const actResp = id('picking-active-resp'); if(actResp) actResp.innerText = picking.responsible;
+            if(timerEl) { timerEl.dataset.start = picking.start; timerEl.classList.add('timer-active'); }
+        } else {
+            show(id('picking-setup-view'));
+            hide(id('picking-active-view'));
+            if(respEl) respEl.focus();
+        }
+
+        const aggregatedItems = getAggregatedIngredients(opIds);
+        const checklistBody = id('picking-checklist-body');
+        if(checklistBody) {
+            checklistBody.innerHTML = aggregatedItems.map((ing) => {
+                const product = localInventory.find(p => p.id === ing.productId);
+                const needed = ing.adjustedQuantity;
+                let totalPicked = 0;
+                ops.forEach(op => { if(op.picking && op.picking.pickedItems && op.picking.pickedItems[ing.productId] !== undefined) totalPicked += op.picking.pickedItems[ing.productId]; });
+                
+                // Se ainda não pipou, mostra string vazia.
+                const hasPicked = ops.some(op => op.picking && op.picking.pickedItems && op.picking.pickedItems[ing.productId] !== undefined);
+                const isChecked = hasPicked && totalPicked > 0;
+                
+                return `
+                <tr class="border-b border-ios-border/50 hover:bg-ios-cardHover transition-colors ${isChecked ? 'opacity-50' : ''}" data-pid="${ing.productId}">
+                    <td class="px-6 py-4 font-medium text-white ${isChecked ? 'line-through text-ios-textMuted' : ''}">
+                        ${product ? product.name : 'Insumo Excluído'}
+                        <div class="text-[10px] text-ios-textMuted font-mono">BARRAS: ${product?.barcodes?.join(', ') || 'Sem Cód. Mapeado'}</div>
+                    </td>
+                    <td class="px-6 py-4 text-right font-bold text-ios-blue text-lg">${needed.toFixed(4)}</td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <input type="number" step="0.001" value="${hasPicked ? totalPicked : ''}" class="form-input py-2 px-3 w-28 text-center font-bold text-white picking-qty-input bg-ios-bg border-ios-border text-lg" placeholder="0.000">
+                            <button type="button" class="bg-ios-cardHover border border-ios-border text-xs px-3 py-2 rounded-lg hover:text-white btn-fill-all shadow" title="Preencher Total"><i class="fa-solid fa-check-double"></i></button>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-center"><input type="checkbox" class="ui-checkbox ui-checkbox-success picking-row-check" ${isChecked ? 'checked' : ''}></td>
+                </tr>`;
+            }).join('');
+        }
+        show(id('picking-modal'));
+    }
+
+    addEvt('btn-start-picking', 'click', async () => {
+        const respEl = id('picking-responsible');
+        const resp = respEl ? respEl.value.trim() : '';
+        if(!resp) return window.showNotif('Informe o nome do Estoquista para iniciar.', true);
+        const now = Date.now();
+        for(let opId of activePickingOpIds) {
+            let op = localProductionOrders.find(x => x.id === opId);
+            if(op) { op.picking.status = 'em_andamento'; op.picking.start = now; op.picking.responsible = resp; await DB.update('productionOrders', op); }
+        }
+        
+        hide(id('picking-setup-view')); 
+        show(id('picking-active-view'));
+        const actResp = id('picking-active-resp'); if(actResp) actResp.innerText = resp;
+        const timerEl = id('picking-timer-display');
+        if(timerEl) { timerEl.dataset.start = now; timerEl.classList.add('timer-active'); }
+        window.showNotif('Cronômetro Iniciado!'); 
+        
+        refreshData(); 
+    });
+
+    // Scanner no Picking
+    addEvt('btn-picking-scan', 'click', () => {
+        openScanner(code => {
+            const prod = localInventory.find(p => p.code === code || (p.barcodes && p.barcodes.includes(code)));
+            if (!prod) return window.showNotif('Código não reconhecido no sistema.', true);
+            
+            const row = document.querySelector(`#picking-checklist-body tr[data-pid="${prod.id}"]`);
+            if (!row) return window.showNotif('Este item NÃO faz parte desta separação!', true);
+            
+            pickingScanProductId = prod.id;
+            id('picking-scan-qty-name').innerText = prod.name;
+            id('picking-scan-qty').value = '';
+            show(id('picking-scan-qty-modal'));
+            id('picking-scan-qty').focus();
+        });
+    });
+
+    addEvt('picking-scan-qty-form', 'submit', (e) => {
+        e.preventDefault();
+        const qty = parseFloat(id('picking-scan-qty').value);
+        if(qty > 0 && pickingScanProductId) {
+            const row = document.querySelector(`#picking-checklist-body tr[data-pid="${pickingScanProductId}"]`);
+            if(row) {
+                const input = row.querySelector('.picking-qty-input');
+                const chk = row.querySelector('.picking-row-check');
+                input.value = qty.toFixed(4);
+                chk.checked = true;
+                row.classList.add('opacity-50');
+                row.cells[0].classList.add('line-through', 'text-ios-textMuted');
+                window.showNotif('Item marcado no check-list com quantidade Real!');
+            }
+        }
+        hide(id('picking-scan-qty-modal'));
+    });
+
+    addEvt('picking-checklist-body', 'click', e => {
+        const btnFill = e.target.closest('.btn-fill-all');
+        if(btnFill) {
+            const row = btnFill.closest('tr'); const neededStr = row.cells[1].innerText;
+            const input = row.querySelector('.picking-qty-input'); const chk = row.querySelector('.picking-row-check');
+            if(input && chk) { input.value = parseFloat(neededStr).toFixed(4); chk.checked = true; }
+            row.classList.add('opacity-50'); row.cells[0].classList.add('line-through', 'text-ios-textMuted');
+        }
+        if(e.target.classList.contains('picking-row-check')) {
+            const row = e.target.closest('tr');
+            if(e.target.checked) {
+                const input = row.querySelector('.picking-qty-input');
+                if(input && (!input.value || parseFloat(input.value) === 0)) input.value = parseFloat(row.cells[1].innerText).toFixed(4);
+                row.classList.add('opacity-50'); row.cells[0].classList.add('line-through', 'text-ios-textMuted');
+            } else {
+                row.classList.remove('opacity-50'); row.cells[0].classList.remove('line-through', 'text-ios-textMuted');
+            }
+        }
+    });
+
+    addEvt('btn-finish-picking', 'click', async () => {
+        const pickedTotals = {}; let allChecked = true;
+        const bodyEl = id('picking-checklist-body'); if(!bodyEl) return;
+        const rows = bodyEl.querySelectorAll('tr');
+        rows.forEach(row => {
+            const pid = row.dataset.pid; const input = row.querySelector('.picking-qty-input'); const qty = input ? (parseFloat(input.value) || 0) : 0;
+            const chk = row.querySelector('.picking-row-check'); const isChecked = chk ? chk.checked : false; 
+            pickedTotals[pid] = qty;
+            if(!isChecked || qty <= 0) allChecked = false;
+        });
+
+        const finishTask = async () => {
+            const now = Date.now();
+            let opsToUpdate = localProductionOrders.filter(op => activePickingOpIds.includes(op.id));
+            
+            // Distribute picked totals across OPs if multiple OPs need the same item
+            Object.keys(pickedTotals).forEach(pidStr => {
+                const pid = pidStr; let remainingPicked = pickedTotals[pid];
+                opsToUpdate.forEach(op => {
+                    const ing = op.ingredients.find(i => i.productId === pid);
+                    if(ing) {
+                        const take = Math.min(ing.adjustedQuantity, remainingPicked);
+                        if(!op.picking.pickedItems) op.picking.pickedItems = {};
+                        op.picking.pickedItems[pid] = take; remainingPicked -= take;
+                    }
+                });
+                // If there is excess remainingPicked (separated more than ALL OPs needed), give the excess to the first OP.
+                if (remainingPicked > 0 && opsToUpdate.length > 0) {
+                    const op = opsToUpdate.find(o => o.ingredients.some(i => i.productId === pid));
+                    if (op) op.picking.pickedItems[pid] += remainingPicked;
+                }
+            });
+
+            for(let op of opsToUpdate) {
+                op.picking.end = now; op.picking.status = 'concluido';
+                op.picking.duration = Math.floor((op.picking.end - op.picking.start) / 1000); 
+                await DB.update('productionOrders', op);
+            }
+            
+            hide(id('picking-modal')); await refreshData(); window.showNotif('Check-list Concluído com Quantidades Reais!');
+        };
+
+        if(!allChecked) showConfirmationModal('Existem itens não marcados!', 'A Linha não foi separada 100%. Deseja finalizar com pendências?', finishTask);
+        else finishTask();
+    });
+
     // --- LOGICA OP (PRODUCAO) ---
     addEvt('po-date', 'change', e => {
         const selectedDate = new Date(e.target.value);
@@ -2126,15 +2562,11 @@
         localProductionOrders.forEach(op => {
             const dateStr = op.date;
             if(!prodEvents[dateStr]) prodEvents[dateStr] = [];
-            let colorClass = 'bg-ios-orange/20 text-ios-orange border border-ios-orange/30';
-            if(op.status === 'concluído') colorClass = 'bg-ios-green/20 text-ios-green border border-ios-green/30';
-            else if(op.isExtra) colorClass = 'bg-ios-red/20 text-ios-red border border-ios-red/30';
+            let colorClass = 'bg-ios-orange'; // Just dot color
+            if(op.status === 'concluído') colorClass = 'bg-ios-green';
+            else if(op.isExtra) colorClass = 'bg-ios-red';
             
-            prodEvents[dateStr].push({
-                title: `OP-${op.id.substring(0,4)}: ${op.recipeName} (${op.multiplier}x)`,
-                tooltip: `Status: ${op.status}`,
-                classes: colorClass
-            });
+            prodEvents[dateStr].push({ classes: colorClass }); // No title needed
         });
         const calendarContainer = id('production-calendar-container');
         if(calendarContainer) {
