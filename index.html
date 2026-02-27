@@ -103,7 +103,7 @@
 
     <div id="loading-overlay" class="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-black bg-opacity-80 backdrop-blur-md transition-opacity">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-ios-cardHover border-t-ios-blue mb-4"></div>
-        <p class="text-ios-textMuted font-medium" id="loading-text">Conectando Nuvem...</p>
+        <p class="text-ios-textMuted font-medium" id="loading-text">Processando...</p>
     </div>
 
     <div id="notification-modal" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[2000] hidden py-3 px-6 rounded-full shadow-2xl font-semibold text-white transition-all text-sm backdrop-blur-md text-center max-w-sm"></div>
@@ -280,7 +280,9 @@
             <div id="screen-purchasing" class="screen-panel hidden">
                 <h1 class="title-lg mb-0 text-ios-blue"><i class="fa-solid fa-cart-shopping mr-3"></i>Gestão de Compras e Pedidos</h1>
                 <p class="text-ios-textMuted text-sm mb-6 mt-1">Acompanhe a duração do estoque com base no consumo diário (últimos 30 dias), estoque mínimo e prazo do fornecedor.</p>
-                
+                <div class="mb-6">
+                    <input type="text" id="search-purchasing" class="form-input w-full md:w-1/2" placeholder="Buscar fornecedor ou item..." autocomplete="off">
+                </div>
                 <div id="purchasing-container" class="space-y-8"></div>
             </div>
 
@@ -567,6 +569,22 @@
         </div>
     </div>
 
+    <!-- Modal Editar Prazo Fornecedor -->
+    <div id="edit-supplier-modal" class="modal z-[6000]">
+        <div class="modal-content max-w-sm">
+            <h2 class="title-md mb-2 text-ios-blue">Editar Fornecedor</h2>
+            <p class="text-sm text-white mb-4" id="edit-supplier-name"></p>
+            <form id="edit-supplier-form" class="space-y-4">
+                <input type="hidden" id="edit-supplier-old-name">
+                <div><label class="form-label">Prazo Padrão de Entrega (Dias Úteis)</label><input type="number" id="edit-supplier-lead" min="0" required class="form-input"></div>
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" class="btn-secondary close-modal" data-target="edit-supplier-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar p/ Todos Itens</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal Fazer Pedido (Compras) -->
     <div id="place-order-modal" class="modal z-[6000]">
         <div class="modal-content max-w-sm">
@@ -730,6 +748,7 @@
                     <div class="md:col-span-2"><label class="form-label">Cód Interno</label><input type="text" id="edit-product-code" class="form-input"></div>
                     <div class="md:col-span-3"><label class="form-label">Fornecedor</label><input type="text" id="edit-supplier" class="form-input"></div>
                     <div class="md:col-span-1"><label class="form-label">Estoque Mín.</label><input type="number" step="0.01" id="edit-min-stock" class="form-input text-ios-orange font-bold"></div>
+                    <div class="md:col-span-6"><label class="form-label">EANs (Separe por vírgula para múltiplos)</label><input type="text" id="edit-product-barcode" class="form-input font-mono"></div>
                     <div class="md:col-span-6 flex justify-end gap-3 mt-2"><button type="button" id="btn-cancel-edit" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Salvar Edição</button></div>
                 </form>
             </div>
@@ -739,7 +758,7 @@
                     <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3">Lotes Físicos na Prateleira</h3>
                     <div class="table-container mb-8 max-h-96 overflow-y-auto">
                         <table class="base-table">
-                            <thead class="base-thead"><tr><th class="base-th">Lote</th><th class="base-th">Status</th><th class="base-th">Local</th><th class="base-th">Volume</th><th class="base-th text-center">Gestão</th></tr></thead>
+                            <thead class="base-thead"><tr><th class="base-th">Lote</th><th class="base-th">Status</th><th class="base-th">Local</th><th class="base-th">Validade</th><th class="base-th">Volume</th><th class="base-th text-center">Gestão</th></tr></thead>
                             <tbody id="details-batches-table"></tbody>
                         </table>
                     </div>
@@ -1360,8 +1379,9 @@
                 else if (b.isReleased === false) { statusHtml = `<div class="flex items-center gap-2"><input type="checkbox" class="toggle-status toggle-release-batch" data-bid="${b.id}"><span class="text-xs font-bold text-ios-orange w-16">Bloqueado</span></div>`; }
                 
                 const locName = b.locationCode ? (localLocations.find(l=>l.code === b.locationCode)?.name || b.locationCode) : '-';
+                const expFormat = b.expiryDate ? new Date(b.expiryDate+'T00:00:00').toLocaleDateString('pt-BR') : '-';
 
-                return `<tr class="base-tr"><td class="base-td font-medium text-white">${b.code}</td><td class="base-td">${statusHtml}</td><td class="base-td text-ios-textMuted">${locName}</td><td class="base-td font-bold text-ios-blue">${b.quantity.toFixed(2)}</td><td class="base-td text-center"><button type="button" class="text-ios-blue hover:text-blue-400 p-2 edit-batch-btn bg-ios-bg rounded-lg border border-ios-border mr-1" data-id="${b.id}"><i class="fa-solid fa-pen"></i></button><button type="button" class="text-ios-red hover:text-red-400 p-2 del-batch-btn bg-ios-bg rounded-lg border border-ios-border" data-id="${b.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`
+                return `<tr class="base-tr"><td class="base-td font-medium text-white">${b.code}</td><td class="base-td">${statusHtml}</td><td class="base-td text-ios-textMuted">${locName}</td><td class="base-td text-ios-textMuted">${expFormat}</td><td class="base-td font-bold text-ios-blue">${b.quantity.toFixed(2)}</td><td class="base-td text-center"><button type="button" class="text-ios-blue hover:text-blue-400 p-2 edit-batch-btn bg-ios-bg rounded-lg border border-ios-border mr-1" data-id="${b.id}"><i class="fa-solid fa-pen"></i></button><button type="button" class="text-ios-red hover:text-red-400 p-2 del-batch-btn bg-ios-bg rounded-lg border border-ios-border" data-id="${b.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`
             }).join('');
         }
         renderItemDetailsHistory(); show(id('item-details-view')); hide(id('item-details-edit')); show(id('item-details-modal'));
@@ -1391,13 +1411,22 @@
     addEvt('btn-cancel-edit', 'click', () => { show(id('item-details-view')); hide(id('item-details-edit')); });
     
     addEvt('edit-item-form', 'submit', async e => { 
-        e.preventDefault(); const p = await DB.get('inventory', id('edit-item-id').value); 
-        if(!p) return;
-        p.name = id('edit-product-name').value; p.type = id('edit-product-type').value; p.code = id('edit-product-code').value; p.supplier = id('edit-supplier').value; 
-        const barcodesStr = id('edit-product-barcode').value.trim();
-        p.barcodes = barcodesStr ? barcodesStr.split(',').map(b=>b.trim()) : [];
-        p.minStock = parseFloat(id('edit-min-stock').value) || 0;
-        await DB.update('inventory', p); window.showNotif('Atualizado!'); hide(id('item-details-edit')); show(id('item-details-view')); refreshData(); openDetails(p.id); 
+        e.preventDefault(); 
+        show(id('loading-overlay'));
+        try {
+            const p = await DB.get('inventory', id('edit-item-id').value); 
+            if(!p) return;
+            p.name = id('edit-product-name').value; p.type = id('edit-product-type').value; p.code = id('edit-product-code').value; p.supplier = id('edit-supplier').value; 
+            const barcodesStr = id('edit-product-barcode').value.trim();
+            p.barcodes = barcodesStr ? barcodesStr.split(',').map(b=>b.trim()) : [];
+            p.minStock = parseFloat(id('edit-min-stock').value) || 0;
+            await DB.update('inventory', p); 
+            await refreshData(); 
+            openDetails(p.id); 
+            window.showNotif('Atualizado!'); 
+            hide(id('item-details-edit')); 
+            show(id('item-details-view')); 
+        } finally { hide(id('loading-overlay')); }
     });
     
     addEvt('btn-delete-item', 'click', () => { const pId = id('edit-item-id').value; showConfirmationModal('Excluir?', 'Histórico e lotes serão perdidos.', async () => { await DB.remove('inventory', pId); refreshData(); hide(id('item-details-modal')); window.showNotif('Excluído'); }); });
@@ -1538,9 +1567,13 @@
 
 
     // --- COMPRAS E PEDIDOS ---
+    addEvt('search-purchasing', 'input', renderPurchasing);
+
     function renderPurchasing() {
         const cont = id('purchasing-container');
         if(!cont) return;
+
+        const term = (id('search-purchasing')?.value || '').toLowerCase();
 
         // Calculate average consumption over last 30 days
         const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -1555,6 +1588,9 @@
         const suppliers = {};
         localInventory.filter(i => i.type !== 'semi_acabado').forEach(i => {
             const sup = i.supplier || 'Sem Fornecedor / Outros';
+            
+            if(term && !sup.toLowerCase().includes(term) && !i.name.toLowerCase().includes(term)) return;
+
             if(!suppliers[sup]) suppliers[sup] = [];
             
             const totalOut30d = consumptionMap[i.id] || 0;
@@ -1574,7 +1610,12 @@
         let html = '';
         Object.keys(suppliers).sort().forEach(sup => {
             const items = suppliers[sup].sort((a,b) => a.daysLeft - b.daysLeft);
-            html += `<div class="card p-0 overflow-hidden mb-6"><div class="bg-ios-cardHover px-5 py-3 border-b border-ios-border"><h2 class="font-bold text-lg text-white"><i class="fa-solid fa-truck-field mr-2 text-ios-textMuted"></i>${sup}</h2></div><div class="p-5 grid grid-cols-1 gap-4">`;
+            html += `<div class="card p-0 overflow-hidden mb-6">
+                <div class="bg-ios-cardHover px-5 py-3 border-b border-ios-border flex justify-between items-center">
+                    <h2 class="font-bold text-lg text-white"><i class="fa-solid fa-truck-field mr-2 text-ios-textMuted"></i>${sup}</h2>
+                    <button type="button" class="btn-edit-sup text-ios-blue text-xs bg-ios-blue/10 px-3 py-1 rounded-lg hover:bg-ios-blue/20 transition-colors" data-sup="${sup}"><i class="fa-solid fa-pen mr-1"></i>Editar Prazo</button>
+                </div>
+                <div class="p-5 grid grid-cols-1 gap-4">`;
             
             items.forEach(i => {
                 let statusColor = 'bg-ios-green'; let statusText = 'Adequado';
@@ -1622,6 +1663,18 @@
     }
 
     addEvt('purchasing-container', 'click', e => {
+        const editSupBtn = e.target.closest('.btn-edit-sup');
+        if(editSupBtn) {
+            const sup = editSupBtn.dataset.sup;
+            const items = localInventory.filter(i => (i.supplier || 'Sem Fornecedor / Outros') === sup);
+            const currentLead = items.length ? (items[0].leadTime || 0) : 0;
+            id('edit-supplier-old-name').value = sup;
+            id('edit-supplier-name').innerText = sup;
+            id('edit-supplier-lead').value = currentLead;
+            show(id('edit-supplier-modal'));
+            return;
+        }
+
         const btn = e.target.closest('.btn-place-order');
         if(btn) {
             const pId = btn.dataset.id;
@@ -1631,10 +1684,29 @@
                 id('order-product-name').innerText = p.name;
                 id('order-qty').value = '';
                 const today = new Date(); today.setDate(today.getDate() + (p.leadTime || 1));
-                id('order-date').value = today.toISOString().split('T')[0];
+                const expStr = today.toISOString().split('T')[0];
+                id('order-date').value = expStr;
+                id('order-date').dataset.estimated = expStr;
                 show(id('place-order-modal'));
             }
         }
+    });
+
+    addEvt('edit-supplier-form', 'submit', async e => {
+        e.preventDefault();
+        const supName = id('edit-supplier-old-name').value;
+        const newLead = parseInt(id('edit-supplier-lead').value) || 0;
+        show(id('loading-overlay'));
+        try {
+            const items = localInventory.filter(i => (i.supplier || 'Sem Fornecedor / Outros') === supName);
+            for(let item of items) {
+                item.leadTime = newLead;
+                await DB.update('inventory', item);
+            }
+            hide(id('edit-supplier-modal'));
+            await refreshData();
+            window.showNotif('Prazo do fornecedor atualizado para todos os itens!');
+        } finally { hide(id('loading-overlay')); }
     });
 
     addEvt('place-order-form', 'submit', async (e) => {
@@ -1642,14 +1714,26 @@
         const pId = id('order-product-id').value;
         const qty = parseFloat(id('order-qty').value);
         const expDate = id('order-date').value;
-        
-        const p = await DB.get('inventory', pId);
-        if(p) {
-            p.pendingOrder = { active: true, qty: qty, expectedDate: expDate };
-            await DB.update('inventory', p);
-            window.showNotif('Pedido Registrado!');
-            hide(id('place-order-modal'));
-            await refreshData();
+        const estimatedDate = id('order-date').dataset.estimated;
+
+        const executeOrder = async () => {
+            show(id('loading-overlay'));
+            try {
+                const p = await DB.get('inventory', pId);
+                if(p) {
+                    p.pendingOrder = { active: true, qty: qty, expectedDate: expDate };
+                    await DB.update('inventory', p);
+                    window.showNotif('Pedido Registrado!');
+                    hide(id('place-order-modal'));
+                    await refreshData();
+                }
+            } finally { hide(id('loading-overlay')); }
+        };
+
+        if(expDate < estimatedDate) {
+            showConfirmationModal("Atenção - Prazo Curto!", "A data informada é MENOR que o prazo estimado em sistema para o fornecedor. Certifique-se de se comunicar com o setor de compras. Deseja confirmar este pedido?", executeOrder);
+        } else {
+            executeOrder();
         }
     });
 
