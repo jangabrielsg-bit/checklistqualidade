@@ -136,6 +136,12 @@
                     <span id="badge-nav-prod" class="absolute top-3 right-3 w-2.5 h-2.5 bg-ios-blue rounded-full animate-pulse hidden"></span>
                 </a>
                 
+                <!-- Rastreabilidade -->
+                <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="traceability">
+                    <i class="fa-solid fa-route w-6 text-center text-lg" style="color:#5e5ce6;"></i>
+                    <span class="ml-3 hidden lg:block font-medium">Rastreabilidade</span>
+                </a>
+
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="purchasing">
                     <i class="fa-solid fa-cart-shopping w-6 text-center text-lg" style="color:#32ade6;"></i>
                     <span class="ml-3 hidden lg:block font-medium">Compras/Pedidos</span>
@@ -176,7 +182,7 @@
                     <button type="button" class="menu-window nav-btn" data-target="recipes"><i class="fa-solid fa-book-bookmark" style="color:#ff375f;"></i><span>Fichas/Receitas</span></button>
                     <button type="button" class="menu-window nav-btn relative" data-target="picking"><i class="fa-solid fa-dolly text-ios-orange"></i><span class="text-ios-orange">Separação</span></button>
                     <button type="button" class="menu-window nav-btn" data-target="production"><i class="fa-solid fa-hammer" style="color:#ff9f0a;"></i><span>Ordens Prod.</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="requisitions"><i class="fa-solid fa-arrow-right-from-bracket" style="color:#ff453a;"></i><span>Requisições</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="traceability"><i class="fa-solid fa-route" style="color:#5e5ce6;"></i><span>Rastreabilidade</span></button>
                     <button type="button" class="menu-window nav-btn" data-target="adjustments"><i class="fa-solid fa-sliders" style="color:#64d2ff;"></i><span>Ajuste Lotes</span></button>
                     <button type="button" class="menu-window nav-btn" data-target="settings"><i class="fa-solid fa-database" style="color:#98989d;"></i><span>Banco de Dados</span></button>
                 </div>
@@ -202,6 +208,26 @@
                         <i class="fa-solid fa-magnifying-glass text-6xl text-ios-cardHover mb-4"></i>
                         <p class="text-ios-textMuted">Aguardando leitura...</p>
                     </div>
+                </div>
+            </div>
+
+            <!-- RASTREABILIDADE (NOVO) -->
+            <div id="screen-traceability" class="screen-panel hidden max-w-6xl mx-auto">
+                <h1 class="title-lg">Rastreabilidade de Produção</h1>
+                <p class="text-ios-textMuted text-sm mb-6">Consulte quais lotes foram usados, suas validades e as quantidades entregues pela separação em cada Ordem de Produção concluída.</p>
+                <div class="card mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div><label class="form-label">Data OP Início</label><input type="date" id="trace-date-start" class="form-input"></div>
+                        <div><label class="form-label">Data OP Fim</label><input type="date" id="trace-date-end" class="form-input"></div>
+                        <div><label class="form-label">Linha de Produção</label><select id="trace-line-filter" class="form-input"><option value="">Todas</option></select></div>
+                        <div class="z-50"><label class="form-label">Insumo Utilizado</label><div id="trace-searchable-container" class="searchable-container"></div></div>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button type="button" id="btn-trace-search" class="btn-primary px-8"><i class="fa-solid fa-magnifying-glass mr-2"></i>Buscar Rastreabilidade</button>
+                    </div>
+                </div>
+                <div id="traceability-results" class="space-y-6">
+                    <!-- Resultados OPs -->
                 </div>
             </div>
 
@@ -326,7 +352,7 @@
                         <input type="text" id="search-inventory" placeholder="Pesquisar itens..." class="form-input w-full md:w-64">
                         <select id="type-filter" class="form-input w-auto"><option value="">Todos os Tipos</option><option value="insumo">Insumos</option><option value="semi_acabado">Semi-acabados</option></select>
                         <select id="supplier-filter" class="form-input w-auto"><option value="">Fornecedores</option></select>
-                        <button type="button" id="btn-export-excel" class="btn-secondary ml-auto"><i class="fa-solid fa-arrow-up-from-bracket mr-2"></i>Exportar</button>
+                        <button type="button" id="btn-export-excel" class="btn-primary ml-auto"><i class="fa-solid fa-file-excel mr-2"></i>Exportar Excel</button>
                     </div>
                     <div class="table-container">
                         <table class="base-table">
@@ -573,8 +599,8 @@
     </div>
 
     <!-- Modal Detalhes Item (Estoque) -->
-    <div id="item-details-modal" class="modal">
-        <div class="modal-content max-w-5xl max-h-[90vh] overflow-y-auto">
+    <div id="item-details-modal" class="modal z-[50]">
+        <div class="modal-content max-w-6xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-start mb-6">
                 <div>
                     <h2 class="title-md flex items-center mb-1 text-2xl tracking-tight"><span id="details-product-name"></span></h2>
@@ -605,7 +631,7 @@
                     <div class="md:col-span-6 flex justify-end gap-3 mt-2"><button type="button" id="btn-cancel-edit" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Salvar Edição</button></div>
                 </form>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <div>
                     <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3">Lotes Físicos na Prateleira</h3>
                     <div class="table-container mb-8 max-h-96 overflow-y-auto">
@@ -628,7 +654,7 @@
     </div>
 
     <!-- Modal Editar Lote -->
-    <div id="edit-batch-modal" class="modal z-[60]">
+    <div id="edit-batch-modal" class="modal z-[70]">
         <div class="modal-content max-w-sm">
             <h2 class="title-md mb-4">Editar Lote</h2>
             <form id="edit-batch-form" class="space-y-4">
@@ -939,7 +965,7 @@
         btn.addEventListener('click', () => { hide(id(btn.dataset.target)); });
     });
 
-    const screens = ['home','consulta','entry','inventory','recipes','production','requisitions','adjustments','consumption','locations','barcodes','picking','purchasing','settings'];
+    const screens = ['home','consulta','entry','inventory','recipes','production','requisitions','adjustments','consumption','locations','barcodes','picking','purchasing','settings','traceability'];
     window.navTo = function(target) {
         screens.forEach(s => { id('screen-'+s)?.classList.add('hidden'); });
         document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('bg-ios-card', 'text-white'); n.classList.add('text-ios-textMuted'); });
@@ -952,6 +978,7 @@
         if(target==='requisitions') { const reqCont = id('requisition-items-container'); if (reqCont) { reqCont.innerHTML=''; addIngRowReq(reqCont); } }
         if(target==='picking') { renderPickingScreen(); }
         if(target==='purchasing') { renderPurchasing(); }
+        if(target==='traceability') { updateTraceabilityFilters(); renderTraceability(); createSearchableSelect(id('trace-searchable-container'), localInventory, 'Selecione um insumo...'); }
         if(target==='barcodes') { renderBarcodesList(); createSearchableSelect(id('barcode-searchable-container'), localInventory, 'Selecione o produto do sistema...'); }
         if(target==='consulta') { id('consulta-input').value = ''; id('consulta-results').innerHTML = '<div class="card flex flex-col items-center justify-center py-20 text-center border-dashed"><i class="fa-solid fa-magnifying-glass text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Aguardando leitura...</p></div>'; id('consulta-input').focus(); }
         if(target==='entry') { 
@@ -1019,6 +1046,7 @@
             
             let changed = false;
             for(let i of localInventory) {
+                // Migrate array barcodes if needed
                 if(i.barcode && !i.barcodes) { i.barcodes = [i.barcode]; delete i.barcode; changed = true; }
                 else if(!i.barcodes) { i.barcodes = []; changed = true; }
 
@@ -1051,6 +1079,7 @@
                 if(target === 'picking') renderPickingScreen();
                 if(target === 'barcodes') renderBarcodesList();
                 if(target === 'purchasing') renderPurchasing();
+                if(target === 'traceability') { updateTraceabilityFilters(); renderTraceability(); }
             }
             if(currentHistoryProductId) renderItemDetailsHistory();
             
@@ -1191,6 +1220,20 @@
     addEvt('low-stock-list', 'click', e => { const item = e.target.closest('.alert-item'); if (item) { hide(id('low-stock-modal')); window.navTo('inventory'); openDetails(item.dataset.id); } });
     addEvt('expiring-list', 'click', e => { const item = e.target.closest('.alert-item'); if (item) { hide(id('low-stock-modal')); window.navTo('inventory'); openDetails(item.dataset.id); } });
 
+    setInterval(() => {
+        document.querySelectorAll('.live-timer').forEach(el => {
+            const startTime = parseInt(el.dataset.start);
+            if(startTime && startTime > 0) {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const h = Math.floor(elapsed / 3600); const m = Math.floor((elapsed % 3600) / 60); const s = Math.floor(elapsed % 60);
+                let timeStr = '';
+                if (h > 0) timeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                else timeStr = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                el.innerText = timeStr;
+            }
+        });
+    }, 1000);
+
     // --- CONSULTA UNIVERSAL (RÁPIDA) MÚLTIPLA ---
     function searchUniversal(q) {
         if(!q) return window.showNotif("Digite ou leia um código válido", true);
@@ -1258,6 +1301,111 @@
     addEvt('consulta-input', 'keydown', e => { if(e.key==='Enter'){ e.preventDefault(); searchUniversal(e.target.value); } });
 
 
+    // --- RASTREABILIDADE (NOVO) ---
+    function updateTraceabilityFilters() {
+        const lineSelect = id('trace-line-filter');
+        if(lineSelect) {
+            const lines = [...new Set(localRecipes.map(r=>r.category))].filter(Boolean).sort();
+            const currentVal = lineSelect.value;
+            lineSelect.innerHTML = '<option value="">Todas as Linhas</option>' + lines.map(l => `<option value="${l}">${l}</option>`).join('');
+            lineSelect.value = currentVal;
+        }
+    }
+
+    addEvt('btn-trace-search', 'click', renderTraceability);
+
+    function renderTraceability() {
+        const cont = id('traceability-results');
+        if(!cont) return;
+
+        const dateStart = id('trace-date-start').value;
+        const dateEnd = id('trace-date-end').value;
+        const lineFilter = id('trace-line-filter').value;
+        
+        const searchInput = id('trace-searchable-container').querySelector('input');
+        const pId = searchInput ? searchInput.dataset.selectedId : null;
+
+        let ops = localProductionOrders.filter(o => o.status === 'concluído');
+
+        if(dateStart) ops = ops.filter(o => o.date >= dateStart);
+        if(dateEnd) ops = ops.filter(o => o.date <= dateEnd);
+        if(lineFilter) ops = ops.filter(o => o.recipeCategory === lineFilter);
+        
+        if(pId) {
+            ops = ops.filter(o => o.ingredients && o.ingredients.some(ing => ing.productId === pId));
+        }
+
+        ops.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+        if(ops.length === 0) {
+            cont.innerHTML = '<div class="card text-center py-10 border-dashed text-ios-textMuted"><i class="fa-solid fa-box-open text-4xl mb-3"></i><p>Nenhuma OP concluída encontrada com os filtros selecionados.</p></div>';
+            return;
+        }
+
+        let html = '';
+        ops.forEach(op => {
+            html += `<div class="card p-0 overflow-hidden mb-4 border border-ios-border">
+                <div class="bg-ios-cardHover p-4 border-b border-ios-border flex flex-wrap justify-between items-center gap-2">
+                    <div>
+                        <h3 class="font-bold text-white text-lg">${op.recipeName} <span class="text-ios-blue text-sm">(${op.multiplier}x)</span></h3>
+                        <p class="text-xs text-ios-textMuted">OP ID: ${op.id.substring(0,8).toUpperCase()} | Execução: <strong class="text-gray-300">${new Date(op.date+'T00:00:00').toLocaleDateString('pt-BR')}</strong></p>
+                    </div>
+                    <span class="badge bg-ios-blue/20 text-ios-blue border border-ios-blue/30">${op.recipeCategory || 'Diversos'}</span>
+                </div>
+                <div class="p-0 overflow-x-auto">
+                    <table class="base-table w-full text-xs">
+                        <thead class="base-thead bg-black/40">
+                            <tr>
+                                <th class="base-th py-3">Insumo Utilizado</th>
+                                <th class="base-th py-3 text-center">Lote Vinculado</th>
+                                <th class="base-th py-3 text-center">Validade do Lote</th>
+                                <th class="base-th py-3 text-right">Qtd Entregue</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-ios-border">`;
+            
+            if(op.ingredients && op.ingredients.length > 0) {
+                op.ingredients.forEach(ing => {
+                    const prodName = localInventory.find(p => p.id === ing.productId)?.name || 'Insumo Excluído';
+                    
+                    if(ing.consumptionPlan && ing.consumptionPlan.length > 0) {
+                        ing.consumptionPlan.forEach(plan => {
+                            // Fetch full batch info for expiry date
+                            const b = localBatches.find(x => x.id === plan.batchId);
+                            const valStr = b && b.expiryDate ? new Date(b.expiryDate+'T00:00:00').toLocaleDateString('pt-BR') : 'Indisponível';
+                            
+                            html += `<tr class="hover:bg-ios-cardHover/50 transition-colors">
+                                <td class="px-5 py-3 font-medium text-white">${prodName}</td>
+                                <td class="px-5 py-3 text-center font-mono text-ios-textMuted">${plan.batchCode}</td>
+                                <td class="px-5 py-3 text-center text-ios-textMuted">${valStr}</td>
+                                <td class="px-5 py-3 text-right font-bold text-ios-green">${plan.quantity.toFixed(4)}</td>
+                            </tr>`;
+                        });
+                    } else {
+                        // Fallback (Older records before specific lot deduction was enforced)
+                        let actualQty = ing.adjustedQuantity;
+                        if(op.picking?.pickedItems && op.picking.pickedItems[ing.productId]) {
+                            actualQty = op.picking.pickedItems[ing.productId];
+                        }
+                        html += `<tr class="hover:bg-ios-cardHover/50 transition-colors">
+                            <td class="px-5 py-3 font-medium text-white">${prodName}</td>
+                            <td class="px-5 py-3 text-center text-ios-textMuted">-</td>
+                            <td class="px-5 py-3 text-center text-ios-textMuted">-</td>
+                            <td class="px-5 py-3 text-right font-bold text-ios-green">${actualQty.toFixed(4)}</td>
+                        </tr>`;
+                    }
+                });
+            } else {
+                html += `<tr><td colspan="4" class="text-center text-ios-textMuted py-4">Sem insumos registrados para esta OP.</td></tr>`;
+            }
+
+            html += `</tbody></table></div></div>`;
+        });
+        
+        cont.innerHTML = html;
+    }
+
+
     // --- ESTOQUE GERAL E EXTRATO COM FILTROS ---
     addEvt('search-inventory', 'input', renderInv); addEvt('supplier-filter', 'input', renderInv); addEvt('type-filter', 'input', renderInv);
     document.querySelectorAll('#screen-inventory .table-header-sortable').forEach(th => { th.addEventListener('click', () => { if (invSort.col === th.dataset.sort) invSort.asc = !invSort.asc; else { invSort.col = th.dataset.sort; invSort.asc = true; } renderInv(); }); });
@@ -1278,6 +1426,41 @@
     }
     
     addEvt('inventory-table-body', 'click', e => { const row = e.target.closest('tr'); if(row && row.dataset.id) openDetails(row.dataset.id); });
+
+    // --- EXPORTAR EXCEL ---
+    addEvt('btn-export-excel', 'click', () => {
+        if(!localInventory || !localInventory.length) return window.showNotif('Estoque vazio!', true);
+        
+        const term = id('search-inventory')?.value.toLowerCase() || ''; const sup = id('supplier-filter')?.value || ''; const typ = id('type-filter')?.value || '';
+        let list = localInventory.filter(i => (i.name.toLowerCase().includes(term) || (i.barcodes && i.barcodes.some(b=>b.toLowerCase().includes(term)))) && (!sup || i.supplier === sup) && (!typ || i.type === typ));
+
+        const dataToExport = list.map(item => {
+            const batches = localBatches.filter(b => b.productId === item.id && b.quantity > 0);
+            const expDateRaw = batches.sort((x,y)=>new Date(x.expiryDate)-new Date(y.expiryDate))[0]?.expiryDate;
+            const expStr = expDateRaw ? new Date(expDateRaw+'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
+            
+            return {
+                'Código': item.code || '-',
+                'Produto': item.name,
+                'Tipo': typeLabels[item.type] || 'Insumo',
+                'Fornecedor': item.supplier || '-',
+                'Estoque Mínimo': item.minStock || 0,
+                'Saldo Total Físico': item.totalQuantity || 0,
+                'Validade Mais Próxima': expStr,
+                'Cód. Barras (EANs)': item.barcodes ? item.barcodes.join(', ') : '-'
+            };
+        });
+
+        try {
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Estoque");
+            XLSX.writeFile(wb, `Estoque_Geral_${new Date().toISOString().split('T')[0]}.xlsx`);
+            window.showNotif('Planilha exportada com sucesso!');
+        } catch(e) {
+            window.showNotif('Erro ao gerar Excel.', true);
+        }
+    });
 
     addEvt('hist-filter-start', 'change', renderItemDetailsHistory); 
     addEvt('hist-filter-end', 'change', renderItemDetailsHistory); 
