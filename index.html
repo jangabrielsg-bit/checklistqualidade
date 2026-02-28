@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle de Estoque e Produção</title>
+    <title>Estoque OS - Controle e Produção</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -37,17 +37,16 @@
             .title-md { @apply text-xl font-semibold text-white mb-4 tracking-tight; }
             .form-label { @apply block text-sm font-medium text-ios-textMuted mb-1; }
             .form-input { @apply block w-full bg-ios-input text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-ios-blue transition-all border border-ios-border/50; }
-            .btn-primary { @apply bg-ios-blue hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center; }
-            .btn-secondary { @apply bg-ios-cardHover hover:bg-gray-700 text-white font-semibold py-3 px-5 rounded-xl transition-all border border-ios-border flex items-center justify-center; }
-            .btn-danger { @apply bg-ios-red hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center; }
-            .btn-success { @apply bg-ios-green hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center; }
+            .btn-primary { @apply bg-ios-blue hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center cursor-pointer; }
+            .btn-secondary { @apply bg-ios-cardHover hover:bg-gray-700 text-white font-semibold py-3 px-5 rounded-xl transition-all border border-ios-border flex items-center justify-center cursor-pointer; }
+            .btn-danger { @apply bg-ios-red hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center cursor-pointer; }
+            .btn-success { @apply bg-ios-green hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center cursor-pointer; }
             .table-container { @apply overflow-x-auto rounded-xl border border-ios-border bg-ios-card; }
             .base-table { @apply w-full text-sm text-left text-ios-textMuted; }
             .base-thead { @apply text-xs uppercase bg-ios-cardHover text-gray-400 border-b border-ios-border; }
             .base-tr { @apply border-b border-ios-border hover:bg-ios-cardHover transition-colors; }
             .base-th { @apply px-5 py-4 font-semibold whitespace-nowrap; }
             .base-td { @apply px-5 py-4; }
-            .stat-icon { @apply p-3 rounded-xl flex items-center justify-center w-12 h-12 text-xl; }
             .modal-content { @apply bg-ios-card border border-ios-border rounded-3xl shadow-2xl p-6 w-full transform transition-all max-h-[90vh] overflow-y-auto; }
             .badge { @apply text-xs font-semibold px-2 py-1 rounded-md; }
             
@@ -57,17 +56,12 @@
         }
     </style>
     <style>
-        .sidebar { transition: width 0.3s ease-in-out; }
         .modal { display: none; position: fixed; z-index: 50; inset: 0; align-items: center; justify-content: center; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); }
         .table-header-sortable { cursor: pointer; user-select: none; }
         .table-header-sortable:hover { color: #ffffff; }
         
         .searchable-container { position: relative; width: 100%; }
-        .searchable-dropdown { 
-            position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; max-height: 280px; 
-            overflow-y: auto; background-color: #2c2c2e; border: 1px solid #38383a; 
-            border-radius: 0.75rem; box-shadow: 0 10px 30px rgba(0,0,0,0.8); margin-top: 4px;
-        }
+        .searchable-dropdown { position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; max-height: 280px; overflow-y: auto; background-color: #2c2c2e; border: 1px solid #38383a; border-radius: 0.75rem; box-shadow: 0 10px 30px rgba(0,0,0,0.8); margin-top: 4px; }
         .searchable-item { padding: 0.85rem 1rem; cursor: pointer; color: #ffffff; border-bottom: 1px solid #38383a; transition: background-color 0.2s; }
         .searchable-item:last-child { border-bottom: none; }
         .searchable-item:hover { background-color: #0a84ff; }
@@ -76,7 +70,6 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #48484a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #636366; }
-
         .custom-scroll::-webkit-scrollbar { width: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #48484a; border-radius: 10px; }
 
@@ -89,7 +82,6 @@
         @keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         
         .check-nativo { appearance: auto !important; width: 1.5rem !important; height: 1.5rem !important; cursor: pointer; accent-color: #30d158; margin: 0; padding: 0; }
-        .form-input { transition: all 0.4s ease; }
         #reader video { border-radius: 0.75rem; object-fit: cover; }
     </style>
 </head>
@@ -106,7 +98,7 @@
         <div class="card max-w-md w-full py-10 px-6 border border-ios-border/50 shadow-2xl">
             <div class="w-20 h-20 rounded-2xl bg-ios-blue flex items-center justify-center text-white font-bold text-4xl shadow-lg shadow-ios-blue/30 mx-auto mb-6"><i class="fa-solid fa-layer-group"></i></div>
             <h2 class="title-lg mb-2 text-white">Acesso Restrito</h2>
-            <p class="text-ios-textMuted mb-8 text-sm">Faça login com sua conta Google para sincronizar com o banco de dados da fábrica (Firebase).</p>
+            <p class="text-ios-textMuted mb-8 text-sm">Faça login com a sua conta Google para sincronizar com o banco de dados.</p>
             <button type="button" id="btn-login-google" class="btn-primary w-full py-4 text-lg font-bold"><i class="fa-brands fa-google mr-2"></i>Entrar com o Google</button>
             <button type="button" id="btn-bypass-login" class="btn-secondary w-full py-3 mt-4 text-sm"><i class="fa-solid fa-flask mr-2"></i>Testar sem Login (Visualização)</button>
             <div id="mensagem-erro" class="text-ios-red mt-4 font-medium text-sm text-left bg-ios-red/10 p-3 rounded-lg hidden"></div>
@@ -119,7 +111,7 @@
                 <div class="w-10 h-10 rounded-xl bg-ios-blue flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-ios-blue/30"><i class="fa-solid fa-layer-group"></i></div>
                 <span class="ml-3 font-bold text-xl text-white hidden lg:block tracking-tight">Estoque OS</span>
             </div>
-            <nav class="flex-1 w-full px-3 space-y-2 overflow-y-auto">
+            <nav class="flex-1 w-full px-3 space-y-2 overflow-y-auto custom-scroll">
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-white bg-ios-card transition-all" data-target="home"><i class="fa-solid fa-house w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Menu Inicial</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="consulta"><i class="fa-solid fa-magnifying-glass w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Consulta Rápida</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="inventory"><i class="fa-solid fa-boxes-stacked w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Estoque Geral</span></a>
@@ -177,8 +169,8 @@
 
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-10">
                     <button type="button" class="menu-window nav-btn" data-target="consulta"><i class="fa-solid fa-magnifying-glass" style="color:#32ade6;"></i><span>Consulta Universal</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="entry"><i class="fa-solid fa-box-open"></i><span>Entrada (Massa)</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="inventory"><i class="fa-solid fa-boxes-stacked" style="color:#30d158;"></i><span>Estoque Atual</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="entry"><i class="fa-solid fa-box-open"></i><span>Nova Entrada</span></button>
+                    <button type="button" class="menu-window nav-btn" data-target="inventory"><i class="fa-solid fa-boxes-stacked" style="color:#30d158;"></i><span>Estoque Geral</span></button>
                     <button type="button" class="menu-window nav-btn" data-target="locations"><i class="fa-solid fa-map-location-dot" style="color:#5e5ce6;"></i><span>Endereçamento</span></button>
                     <button type="button" class="menu-window nav-btn" data-target="barcodes"><i class="fa-solid fa-barcode" style="color:#bf5af2;"></i><span>Cód. Barras</span></button>
                     <button type="button" class="menu-window nav-btn" data-target="purchasing"><i class="fa-solid fa-cart-shopping" style="color:#32ade6;"></i><span>Compras/Pedidos</span></button>
@@ -189,6 +181,7 @@
                     <button type="button" class="menu-window nav-btn" data-target="adjustments"><i class="fa-solid fa-sliders" style="color:#64d2ff;"></i><span>Ajuste Lotes</span></button>
                     <button type="button" class="menu-window nav-btn" data-target="settings"><i class="fa-solid fa-database" style="color:#98989d;"></i><span>Banco de Dados</span></button>
                 </div>
+                
                 <div class="max-w-6xl mx-auto border-t border-ios-border pt-8">
                     <h2 class="title-md mb-4 text-ios-blue"><i class="fa-solid fa-truck-ramp-box mr-2"></i>📦 Entregas Previstas para Hoje</h2>
                     <div id="home-incoming-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -229,21 +222,19 @@
                         <button type="button" id="btn-trace-search" class="btn-primary px-8"><i class="fa-solid fa-magnifying-glass mr-2"></i>Pesquisar</button>
                     </div>
                 </div>
-                <div id="traceability-results" class="space-y-6">
-                    <!-- Resultados OPs -->
-                </div>
+                <div id="traceability-results" class="space-y-6"></div>
             </div>
 
             <!-- CODIGOS DE BARRAS -->
             <div id="screen-barcodes" class="screen-panel hidden max-w-4xl mx-auto">
                 <h1 class="title-lg">Registo de Código de Barras</h1>
                 <div class="card mb-8">
-                    <p class="text-sm text-ios-textMuted mb-6">Vincule os códigos de barras das embalagens físicas aos produtos internos.</p>
+                    <p class="text-sm text-ios-textMuted mb-6">Vincule os códigos de barras físicos aos produtos internos. Permite múltiplos códigos por produto.</p>
                     <form id="barcode-form" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
                             <div class="z-50"><label class="form-label">Produto do Sistema</label><div id="barcode-searchable-container" class="searchable-container"></div></div>
                             <div class="z-40">
-                                <label class="form-label">Código de Barras (Novo)</label>
+                                <label class="form-label">Código de Barras (Novo/Similar)</label>
                                 <div class="flex gap-2">
                                     <input type="text" id="barcode-input" required class="form-input font-mono" placeholder="Digite ou leia o código...">
                                     <button type="button" id="btn-scan-barcode" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600 transition"><i class="fa-solid fa-camera text-xl"></i></button>
@@ -262,16 +253,13 @@
             <!-- COMPRAS / PEDIDOS -->
             <div id="screen-purchasing" class="screen-panel hidden">
                 <h1 class="title-lg mb-0 text-ios-blue"><i class="fa-solid fa-cart-shopping mr-3"></i>Gestão de Compras e Pedidos</h1>
-                <p class="text-ios-textMuted text-sm mb-6 mt-1">Acompanhe a duração do stock visualmente e gira as encomendas de fornecedores no calendário.</p>
+                <p class="text-ios-textMuted text-sm mb-6 mt-1">Acompanhe a duração do stock e gire as encomendas de fornecedores no calendário.</p>
                 <div class="mb-6 flex gap-4"><input type="text" id="search-purchasing" class="form-input w-full md:w-1/2" placeholder="Buscar fornecedor ou item..." autocomplete="off"></div>
-                
-                <!-- Calendário Compras -->
-                <div id="purchasing-calendar-container" class="mb-8"></div>
-
+                <div id="purchasing-calendar-container" class="mb-8 max-w-4xl mx-auto"></div>
                 <div id="purchasing-container" class="space-y-8"></div>
             </div>
 
-            <!-- ENDEREÇAMENTO (LOCATIONS) -->
+            <!-- ENDEREÇAMENTO -->
             <div id="screen-locations" class="screen-panel hidden max-w-5xl mx-auto">
                 <h1 class="title-lg">Endereçamento (Ruas e Locais)</h1>
                 <div class="flex flex-col md:flex-row gap-6 mb-8">
@@ -296,7 +284,7 @@
                                 <h3 class="text-sm font-semibold text-ios-textMuted uppercase">Lotes Neste Endereço</h3>
                                 <button type="button" id="btn-add-batch-to-loc" class="text-ios-green bg-ios-green/10 px-4 py-2 rounded-xl font-bold hover:bg-ios-green/20 text-sm transition-colors"><i class="fa-solid fa-plus mr-1"></i>Alocar Lote</button>
                             </div>
-                            <div class="table-container max-h-64 overflow-y-auto">
+                            <div class="table-container max-h-64 overflow-y-auto custom-scroll">
                                 <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Lote</th><th class="base-th">Qtd</th><th class="base-th text-center">Retirar</th></tr></thead><tbody id="loc-batches-body"></tbody></table>
                             </div>
                         </div>
@@ -318,25 +306,53 @@
                 </div>
             </div>
 
-            <!-- ENTRADA EM MASSA -->
+            <!-- ENTRADA INTELIGENTE / MASSA -->
             <div id="screen-entry" class="screen-panel hidden">
-                <h1 class="title-lg">Entrada de Insumos (Lotes Físicos)</h1>
-                <div class="card mb-6">
-                    <h2 class="title-md mb-4">Adicionar Item à Lista de Entrada</h2>
+                <h1 class="title-lg">Entrada de Insumos</h1>
+                <div class="card mb-6 overflow-visible relative">
+                    <h2 class="title-md mb-4">Adicionar Item à Lista de Recebimento</h2>
                     <form id="entry-form">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 items-start relative">
                             <div class="md:col-span-1">
-                                <label class="form-label">Buscar / Bipar Produto</label>
+                                <label class="form-label">Cód Produto / Barras</label>
                                 <div class="flex gap-2">
-                                    <div id="entry-searchable-container" class="searchable-container flex-1"></div>
-                                    <button type="button" id="btn-scan-entry-code" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600 transition"><i class="fa-solid fa-camera"></i></button>
+                                    <input type="text" id="entry-dynamic-code" required class="form-input font-mono" placeholder="Bipar ou digitar..." autocomplete="off">
+                                    <button type="button" id="btn-scan-dynamic-code" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600 transition"><i class="fa-solid fa-camera"></i></button>
                                 </div>
                             </div>
-                            <div class="md:col-span-1"><label class="form-label">Quantidade</label><input type="number" name="quantity" required min="0.01" step="0.01" class="form-input text-ios-blue font-bold"></div>
-                            <div class="md:col-span-1"><button type="submit" class="btn-secondary w-full"><i class="fa-solid fa-plus mr-2"></i>Adicionar à Lista</button></div>
+                            <div class="md:col-span-3 flex items-center h-[46px] mt-6">
+                                <div id="entry-status-msg" class="text-sm text-ios-textMuted bg-ios-bg p-3 rounded-xl border border-ios-border w-full">A aguardar código...</div>
+                            </div>
+
+                            <div id="entry-pending-order-alert" class="col-span-1 md:col-span-4 hidden bg-ios-blue/10 border-l-4 border-ios-blue p-3 rounded-r-xl">
+                                <p class="text-ios-blue font-bold text-sm"><i class="fa-solid fa-truck-fast mr-2"></i>Atenção: Existe um pedido em trânsito para este item!</p>
+                            </div>
+
+                            <!-- Campos Novo Produto -->
+                            <div id="entry-new-fields" class="col-span-1 md:col-span-4 grid grid-cols-1 md:grid-cols-4 gap-5 hidden bg-ios-cardHover p-5 rounded-xl border border-ios-orange shadow-inner mt-2">
+                                <div class="md:col-span-4 text-ios-orange font-bold text-sm mb-1"><i class="fa-solid fa-sparkles mr-2"></i>Registar Novo Produto</div>
+                                <div class="md:col-span-2"><label class="form-label">Nome do Produto *</label><input type="text" id="entry-new-name" class="form-input bg-ios-bg"></div>
+                                <div class="md:col-span-2"><label class="form-label">Fornecedor *</label><input type="text" id="entry-new-supplier" class="form-input bg-ios-bg"></div>
+                                <div><label class="form-label">Tipo</label><select id="entry-new-type" class="form-input bg-ios-bg"><option value="insumo">Insumo</option><option value="semi_acabado">Semi-acabado</option></select></div>
+                                <div><label class="form-label">Prazo (Dias Úteis)</label><input type="number" id="entry-new-lead" class="form-input bg-ios-bg" value="0" min="0"></div>
+                                <div><label class="form-label">Estoque Mínimo</label><input type="number" step="0.01" id="entry-new-min" class="form-input bg-ios-bg" value="0" min="0"></div>
+                            </div>
+
+                            <div class="col-span-1 md:col-span-4 border-t border-ios-border my-2"></div>
+
+                            <div class="md:col-span-1"><label class="form-label">Quantidade</label><input type="number" id="entry-qty" required min="0.001" step="0.001" class="form-input text-ios-blue font-bold"></div>
+                            <div class="md:col-span-1"><label class="form-label">Validade (Opcional)</label><input type="date" id="entry-expiry" class="form-input"></div>
+                            <div class="md:col-span-1"><label class="form-label">Endereço (Opcional)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="entry-loc" class="form-input font-mono" placeholder="Ex: RUA-A">
+                                    <button type="button" id="btn-scan-entry-loc" class="bg-ios-cardHover text-ios-blue px-3 rounded-xl border border-ios-border"><i class="fa-solid fa-camera"></i></button>
+                                </div>
+                            </div>
+                            <div class="md:col-span-1 flex items-end"><button type="submit" class="btn-secondary w-full py-3 h-[46px]"><i class="fa-solid fa-plus mr-2"></i>Adicionar à Lista</button></div>
                         </div>
                     </form>
                 </div>
+                
                 <div class="card">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="title-md mb-0">Lista de Recebimentos</h2>
@@ -397,9 +413,9 @@
             <!-- SEPARAÇÃO (PICKING) -->
             <div id="screen-picking" class="screen-panel hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <div><h1 class="title-lg mb-0 text-ios-orange"><i class="fa-solid fa-dolly mr-3"></i>Separação (Kitting)</h1><p class="text-ios-textMuted mt-1 text-sm">Acompanhe a barra de progresso do que já foi separado em cada linha.</p></div>
+                    <div><h1 class="title-lg mb-0 text-ios-orange"><i class="fa-solid fa-dolly mr-3"></i>Separação (Kitting)</h1><p class="text-ios-textMuted mt-1 text-sm">Acompanhe a barra de progresso do que já foi separado. Inclui OPs em até 48h.</p></div>
                 </div>
-                <div id="picking-lines-container" class="space-y-6"></div>
+                <div id="picking-lines-container" class="space-y-8"></div>
             </div>
 
             <!-- PRODUÇÃO (OP) -->
@@ -410,13 +426,6 @@
                         <button type="button" id="btn-confirm-production" class="btn-success"><i class="fa-solid fa-check-double mr-2"></i>Efetivar OPs</button>
                         <button type="button" id="btn-new-production-order" class="btn-primary"><i class="fa-solid fa-plus mr-2"></i>Nova OP</button>
                     </div>
-                </div>
-                <!-- Calendário Produção -->
-                <div id="production-calendar-container" class="mb-6"></div>
-                
-                <div class="card mb-5 flex flex-wrap gap-4 items-center border-l-4 border-l-ios-blue">
-                    <label class="text-sm font-medium text-ios-textMuted"><i class="fa-solid fa-filter mr-2"></i>Filtrar Programação:</label>
-                    <input type="date" id="search-po-by-date" class="form-input w-auto py-2">
                 </div>
                 <div id="production-orders-list" class="grid grid-cols-1 xl:grid-cols-2 gap-5"></div>
             </div>
@@ -489,14 +498,11 @@
         </main>
     </div>
 
-    <!-- MARCA D'AGUA -->
     <div class="fixed bottom-2 right-3 z-[9999] text-[10px] text-ios-textMuted/40 pointer-events-none select-none">
         &copy; Jan Gabriel todos os direitos reservados
     </div>
 
     <!-- ===== MODAIS FLUTUANTES GLOBAIS ===== -->
-
-    <!-- Scanner Câmera Modal Global -->
     <div id="scanner-modal" class="modal z-[99999]">
         <div class="modal-content max-w-md w-full flex flex-col p-6 relative">
             <button type="button" class="absolute -top-4 -right-4 bg-ios-red text-white w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold border-2 border-ios-bg shadow-xl close-scanner cursor-pointer z-50">&times;</button>
@@ -893,7 +899,7 @@
             },
             (err) => { }
         ).catch(err => {
-            window.showNotif("Câmera indisponível. Digite o código.", true);
+            window.showNotif("Câmara indisponível. Digite o código.", true);
         });
     }
 
@@ -924,103 +930,6 @@
             id('btn-scanner-manual-confirm').click();
         }
     });
-
-    // --- CALENDÁRIOS ---
-    window.purchCalendarDate = new Date();
-    window.prodCalendarDate = new Date();
-
-    function generateCalendarHTML(currentDate, eventsMap, idPrefix) {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        
-        let html = `
-        <div class="bg-ios-card rounded-2xl border border-ios-border overflow-hidden shadow-sm">
-            <div class="flex justify-between items-center p-4 bg-ios-cardHover border-b border-ios-border">
-                <button type="button" class="px-3 py-1 bg-ios-bg rounded-lg hover:bg-gray-700 text-white transition-colors" onclick="window.changeMonth('${idPrefix}', -1)"><i class="fa-solid fa-chevron-left"></i></button>
-                <h3 class="font-bold text-lg text-white">${monthNames[month]} ${year}</h3>
-                <button type="button" class="px-3 py-1 bg-ios-bg rounded-lg hover:bg-gray-700 text-white transition-colors" onclick="window.changeMonth('${idPrefix}', 1)"><i class="fa-solid fa-chevron-right"></i></button>
-            </div>
-            <div class="grid grid-cols-7 text-center text-[10px] uppercase tracking-wider font-bold text-ios-textMuted bg-ios-bg border-b border-ios-border">
-                <div class="py-2">Dom</div><div class="py-2">Seg</div><div class="py-2">Ter</div><div class="py-2">Qua</div><div class="py-2">Qui</div><div class="py-2">Sex</div><div class="py-2">Sáb</div>
-            </div>
-            <div class="grid grid-cols-7 auto-rows-fr bg-ios-border gap-px border border-ios-border">
-        `;
-        
-        for(let i=0; i<firstDay; i++) {
-            html += `<div class="bg-ios-card min-h-[80px] opacity-50"></div>`;
-        }
-        
-        const tDate = new Date();
-        const todayStr = tDate.getFullYear() + '-' + String(tDate.getMonth()+1).padStart(2,'0') + '-' + String(tDate.getDate()).padStart(2,'0');
-
-        for(let d=1; d<=daysInMonth; d++) {
-            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const isToday = dateStr === todayStr;
-            const dayEvents = eventsMap[dateStr] || [];
-            
-            let eventsHtml = '';
-            if(dayEvents.length > 0) {
-                if(idPrefix === 'production') {
-                    eventsHtml = `<div class="flex justify-center gap-1 mt-1 flex-wrap">${dayEvents.map(e=>`<span class="w-2 h-2 rounded-full ${e.classes.split(' ')[0]}"></span>`).join('')}</div>`;
-                } else {
-                    eventsHtml = dayEvents.map(ev => 
-                        `<div class="text-[9px] mb-1 p-1 rounded font-semibold truncate ${ev.classes}" title="${ev.tooltip||ev.title}">${ev.title}</div>`
-                    ).join('');
-                }
-            }
-            
-            html += `
-            <div class="bg-ios-card min-h-[90px] p-1 md:p-2 cursor-pointer hover:bg-ios-cardHover transition-colors relative group" onclick="window.selectDate('${idPrefix}', '${dateStr}')">
-                <div class="text-right text-xs mb-1 ${isToday ? 'text-white bg-ios-blue w-5 h-5 rounded-full flex items-center justify-center ml-auto' : 'text-ios-textMuted'}">${d}</div>
-                <div class="flex flex-col gap-px overflow-y-auto max-h-[60px] custom-scroll">
-                    ${eventsHtml}
-                </div>
-            </div>
-            `;
-        }
-        
-        const totalCells = firstDay + daysInMonth;
-        const remainder = totalCells % 7;
-        if(remainder > 0) {
-            for(let i=0; i < (7 - remainder); i++) {
-                html += `<div class="bg-ios-card min-h-[80px] opacity-50"></div>`;
-            }
-        }
-        
-        html += `</div></div>`;
-        return html;
-    }
-
-    window.changeMonth = function(prefix, delta) {
-        if(prefix === 'purchasing') {
-            window.purchCalendarDate.setMonth(window.purchCalendarDate.getMonth() + delta);
-            renderPurchasing();
-        } else if(prefix === 'production') {
-            window.prodCalendarDate.setMonth(window.prodCalendarDate.getMonth() + delta);
-            renderPO();
-        }
-    };
-
-    window.selectDate = function(prefix, dateStr) {
-        if(prefix === 'production') {
-            const dateInput = id('search-po-by-date');
-            if(dateInput) {
-                dateInput.value = dateStr;
-                renderPO();
-                id('production-orders-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        } else if(prefix === 'purchasing') {
-            const incoming = localInventory.filter(i => i.pendingOrder?.active && i.pendingOrder.expectedDate === dateStr);
-            if(incoming.length > 0) {
-                const names = incoming.map(i => i.name).join(', ');
-                window.showNotif(`${incoming.length} encomenda(s) prevista(s) para este dia: ${names}`);
-            }
-        }
-    };
 
     // --- LOGIN ---
     addEvt('btn-login-google', 'click', () => {
@@ -1094,9 +1003,10 @@
         if(target==='barcodes') { renderBarcodesList(); createSearchableSelect(id('barcode-searchable-container'), localInventory, 'Selecione o produto do sistema...'); }
         if(target==='consulta') { id('consulta-input').value = ''; id('consulta-results').innerHTML = '<div class="card flex flex-col items-center justify-center py-20 text-center border-dashed"><i class="fa-solid fa-magnifying-glass text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">A aguardar leitura...</p></div>'; id('consulta-input').focus(); }
         if(target==='entry') { 
-            createSearchableSelect(id('entry-searchable-container'), localInventory, 'Pesquisar insumo...', p => {
-                document.querySelector('#entry-form input[name="quantity"]').focus();
-            }); 
+            id('entry-form').reset();
+            id('entry-new-fields').classList.add('hidden');
+            id('entry-status-msg').innerHTML = 'A aguardar código...';
+            id('entry-dynamic-code').focus();
             renderBulkEntry(); 
         }
     }
@@ -1158,6 +1068,7 @@
             
             let changed = false;
             for(let i of localInventory) {
+                // Migrate array barcodes if needed
                 if(i.barcode && !i.barcodes) { i.barcodes = [i.barcode]; delete i.barcode; changed = true; }
                 else if(!i.barcodes) { i.barcodes = []; changed = true; }
 
@@ -1256,6 +1167,7 @@
                 
                 if(!bulkEntryItems.some(b => b.productId === item.id)) {
                     bulkEntryItems.push({
+                        isNew: false,
                         productId: item.id,
                         qty: item.pendingOrder.qty || 0,
                         batchCode: 'LT-' + new Date().getTime().toString(36).toUpperCase().substring(4) + Math.floor(Math.random()*100),
@@ -1449,7 +1361,7 @@
                     </div>
                     <span class="badge bg-ios-blue/20 text-ios-blue border border-ios-blue/30">${op.recipeCategory || 'Diversos'}</span>
                 </div>
-                <div class="p-0 overflow-x-auto">
+                <div class="p-0 overflow-x-auto custom-scroll">
                     <table class="base-table w-full text-xs">
                         <thead class="base-thead bg-black/40">
                             <tr>
@@ -1657,37 +1569,89 @@
     
     addEvt('btn-delete-item', 'click', () => { const pId = id('edit-item-id').value; showConfirmationModal('Excluir?', 'Histórico e lotes serão perdidos.', async () => { await DB.remove('inventory', pId); refreshData(); hide(id('item-details-modal')); window.showNotif('Excluído'); }); });
 
-    // --- NOVA ENTRADA EM MASSA ---
-    addEvt('btn-scan-entry-code', 'click', () => { 
+    // --- NOVA ENTRADA EM MASSA / AVULSA (INTELIGENTE) ---
+    
+    let isNewEntryItem = false;
+    let currentEntryDynamicItem = null;
+
+    addEvt('entry-dynamic-code', 'input', e => {
+        const val = e.target.value.trim().toLowerCase();
+        if(!val) {
+            id('entry-status-msg').innerHTML = 'A aguardar código...';
+            hide(id('entry-new-fields')); hide(id('entry-pending-order-alert'));
+            currentEntryDynamicItem = null; isNewEntryItem = false;
+            return;
+        }
+
+        const found = localInventory.find(i => (i.code && i.code.toLowerCase() === val) || (i.barcodes && i.barcodes.some(b => b.toLowerCase() === val)));
+        
+        if(found) {
+            id('entry-status-msg').innerHTML = `<span class="text-ios-green font-bold"><i class="fa-solid fa-check mr-1"></i>Produto Encontrado: ${found.name}</span>`;
+            hide(id('entry-new-fields'));
+            currentEntryDynamicItem = found; isNewEntryItem = false;
+            
+            if(found.pendingOrder && found.pendingOrder.active) show(id('entry-pending-order-alert'));
+            else hide(id('entry-pending-order-alert'));
+        } else {
+            id('entry-status-msg').innerHTML = `<span class="text-ios-orange font-bold"><i class="fa-solid fa-plus mr-1"></i>Produto Novo. Preencha os dados abaixo:</span>`;
+            show(id('entry-new-fields'));
+            hide(id('entry-pending-order-alert'));
+            currentEntryDynamicItem = null; isNewEntryItem = true;
+        }
+    });
+
+    addEvt('btn-scan-dynamic-code', 'click', () => { 
         openScanner(c => { 
-            const inp = document.querySelector('#entry-searchable-container input'); 
-            if(inp){ inp.value=c; inp.dispatchEvent(new Event('input')); } 
+            const inp = id('entry-dynamic-code');
+            if(inp){ inp.value=c; inp.dispatchEvent(new Event('input')); id('entry-qty').focus(); } 
         }); 
+    });
+
+    addEvt('btn-scan-entry-loc', 'click', () => { 
+        openScanner(c => { const inp = id('entry-loc'); if(inp){ inp.value=c; } }); 
     });
 
     addEvt('entry-form', 'submit', e => {
         e.preventDefault();
-        const searchInput = document.querySelector('#entry-searchable-container input');
-        const pId = searchInput ? searchInput.dataset.selectedId : null;
-        if(!pId) return window.showNotif('Selecione um produto primeiro.', true);
+        const code = id('entry-dynamic-code').value.trim();
+        if(!code) return window.showNotif('Digite o código do produto', true);
+        const qty = parseFloat(id('entry-qty').value);
+        if(!qty || qty <= 0) return window.showNotif('Quantidade inválida', true);
         
-        const qty = parseFloat(document.querySelector('#entry-form input[name="quantity"]').value);
-        if(!qty || qty <= 0) return window.showNotif('Quantidade inválida.', true);
-
-        const item = localInventory.find(i=>i.id===pId);
-        if(item) {
-            bulkEntryItems.push({
-                productId: item.id,
-                qty: qty,
-                batchCode: 'LT-' + new Date().getTime().toString(36).toUpperCase().substring(4) + Math.floor(Math.random()*100),
-                expiryDate: '',
-                locationCode: ''
-            });
-            e.target.reset();
-            searchInput.value = '';
-            delete searchInput.dataset.selectedId;
-            renderBulkEntry();
+        let itemData = {};
+        if(isNewEntryItem) {
+            const name = id('entry-new-name').value.trim();
+            if(!name) return window.showNotif('Nome do novo produto é obrigatório', true);
+            itemData = {
+                isNew: true,
+                code: code,
+                name: name,
+                supplier: id('entry-new-supplier').value.trim() || 'Desconhecido',
+                type: id('entry-new-type').value,
+                leadTime: parseInt(id('entry-new-lead').value) || 0,
+                minStock: parseFloat(id('entry-new-min').value) || 0,
+            };
+        } else {
+            itemData = {
+                isNew: false,
+                productId: currentEntryDynamicItem.id,
+                name: currentEntryDynamicItem.name,
+                code: currentEntryDynamicItem.code || code,
+                hasPendingAlert: (currentEntryDynamicItem.pendingOrder && currentEntryDynamicItem.pendingOrder.active)
+            };
         }
+
+        bulkEntryItems.push({
+            ...itemData,
+            qty: qty,
+            batchCode: 'LT-' + new Date().getTime().toString(36).toUpperCase().substring(4) + Math.floor(Math.random()*100),
+            expiryDate: id('entry-expiry').value,
+            locationCode: id('entry-loc').value.trim()
+        });
+
+        e.target.reset();
+        id('entry-dynamic-code').dispatchEvent(new Event('input')); 
+        renderBulkEntry();
     });
 
     function renderBulkEntry() {
@@ -1700,14 +1664,12 @@
         }
 
         tbody.innerHTML = bulkEntryItems.map((bItem, idx) => {
-            const prod = localInventory.find(i=>i.id===bItem.productId);
-            
+            const badgeNew = bItem.isNew ? '<span class="ml-2 badge bg-ios-orange text-white text-[9px]"><i class="fa-solid fa-sparkles"></i> Novo</span>' : '';
+            const badgePending = bItem.hasPendingAlert ? '<span class="ml-2 badge bg-ios-blue text-white shadow shadow-ios-blue text-[9px]"><i class="fa-solid fa-truck-fast"></i> Pedido em Trânsito</span>' : '';
+
             return `
             <tr class="base-tr" data-idx="${idx}">
-                <td class="base-td font-medium text-white">
-                    ${prod?.name || '?'}
-                    ${prod?.pendingOrder?.active ? '<span class="ml-2 badge bg-ios-blue text-white shadow shadow-ios-blue text-[9px]"><i class="fa-solid fa-truck-fast"></i> Pedido em Trânsito</span>' : ''}
-                </td>
+                <td class="base-td font-medium text-white">${bItem.name} ${badgeNew} ${badgePending}</td>
                 <td class="base-td"><input type="number" step="0.01" class="form-input py-1 px-2 w-full bulk-qty" value="${bItem.qty}"></td>
                 <td class="base-td"><input type="text" class="form-input py-1 px-2 w-full bulk-batch font-mono text-xs" value="${bItem.batchCode}"></td>
                 <td class="base-td"><input type="date" class="form-input py-1 px-2 w-full bulk-exp" value="${bItem.expiryDate}"></td>
@@ -1767,7 +1729,19 @@
             const todayStr = new Date().toISOString().split('T')[0];
             
             for(let bItem of bulkEntryItems) {
-                let p = await DB.get('inventory', bItem.productId);
+                let pId = bItem.productId;
+                let p;
+                
+                if(bItem.isNew) {
+                    p = {
+                        code: bItem.code, name: bItem.name, type: bItem.type, supplier: bItem.supplier, leadTime: bItem.leadTime, minStock: bItem.minStock, barcodes: [], totalQuantity: 0
+                    };
+                    pId = await DB.add('inventory', p);
+                    p.id = pId; 
+                } else {
+                    p = await DB.get('inventory', pId);
+                }
+
                 if(!p) continue;
                 
                 // Clear pending order flag if present
@@ -1796,318 +1770,6 @@
             await refreshData();
         } catch(e) { window.showNotif('Erro crítico ao salvar entradas.', true); }
         finally { hide(id('loading-overlay')); }
-    });
-
-    // --- COMPRAS E PEDIDOS ---
-    addEvt('search-purchasing', 'input', renderPurchasing);
-
-    function renderPurchasing() {
-        const cont = id('purchasing-container');
-        if(!cont) return;
-
-        const term = (id('search-purchasing')?.value || '').toLowerCase();
-
-        const purchEvents = {};
-        localInventory.forEach(i => {
-            if(i.pendingOrder && i.pendingOrder.active && i.pendingOrder.expectedDate) {
-                const d = i.pendingOrder.expectedDate;
-                if(!purchEvents[d]) purchEvents[d] = [];
-                purchEvents[d].push({
-                    title: `${i.supplier ? i.supplier.substring(0,6) : 'Forn'}: ${i.name}`,
-                    tooltip: `Qtd: ${i.pendingOrder.qty}`,
-                    classes: 'bg-ios-blue/20 text-ios-blue border border-ios-blue/30'
-                });
-            }
-        });
-
-        const calendarContainer = id('purchasing-calendar-container');
-        if(calendarContainer) {
-            calendarContainer.innerHTML = generateCalendarHTML(window.purchCalendarDate, purchEvents, 'purchasing');
-        }
-
-        const suppliers = {};
-        localInventory.filter(i => i.type !== 'semi_acabado').forEach(i => {
-            const sup = i.supplier || 'Sem Fornecedor / Outros';
-            
-            if(term && !sup.toLowerCase().includes(term) && !i.name.toLowerCase().includes(term)) return;
-
-            if(!suppliers[sup]) suppliers[sup] = [];
-            
-            const minStock = i.minStock || 0;
-            const leadTime = i.leadTime || 0;
-            const balance = i.totalQuantity || 0;
-
-            suppliers[sup].push({ ...i, leadTime });
-        });
-
-        let html = '';
-        Object.keys(suppliers).sort().forEach(sup => {
-            const items = suppliers[sup];
-            // Sort to show items below min stock first
-            items.sort((a,b) => {
-                const aPct = a.minStock > 0 ? a.totalQuantity / a.minStock : 999;
-                const bPct = b.minStock > 0 ? b.totalQuantity / b.minStock : 999;
-                return aPct - bPct;
-            });
-            
-            html += `<div class="card p-0 overflow-hidden mb-6">
-                <div class="bg-ios-cardHover px-5 py-3 border-b border-ios-border flex justify-between items-center">
-                    <h2 class="font-bold text-lg text-white"><i class="fa-solid fa-truck-field mr-2 text-ios-textMuted"></i>${sup}</h2>
-                    <button type="button" class="btn-edit-sup text-ios-blue text-xs bg-ios-blue/10 px-3 py-1 rounded-lg hover:bg-ios-blue/20 transition-colors" data-sup="${sup}"><i class="fa-solid fa-pen mr-1"></i>Editar Prazo</button>
-                </div>
-                <div class="p-5 grid grid-cols-1 gap-4">`;
-            
-            items.forEach(i => {
-                const minStock = i.minStock || 0;
-                const balance = i.totalQuantity || 0;
-                const maxTank = Math.max(balance, minStock * 3, 1); 
-                const fillPct = Math.min(100, (balance / maxTank) * 100);
-                const minPct = Math.min(100, (minStock / maxTank) * 100);
-                
-                let tankColor = 'bg-ios-green';
-                let statusColor = 'bg-ios-green'; let statusText = 'Adequado';
-
-                if(balance <= minStock) { tankColor = 'bg-ios-red'; statusColor = 'bg-ios-red'; statusText = 'Reserva Intocada'; }
-                else if(balance <= minStock * 1.5) { tankColor = 'bg-ios-orange'; statusColor = 'bg-ios-orange'; statusText = 'Ponto de Pedido'; }
-
-                let orderHtml = `<button type="button" class="btn-primary py-2 px-3 text-xs w-full btn-place-order" data-id="${i.id}"><i class="fa-solid fa-cart-plus mr-2"></i>Fazer Pedido</button>`;
-                
-                if(i.pendingOrder && i.pendingOrder.active) {
-                    orderHtml = `<div class="bg-ios-blue/20 border border-ios-blue text-ios-blue p-2 rounded-lg text-xs font-bold text-center"><i class="fa-solid fa-truck-fast mr-1"></i>Pedido em Trânsito<br><span class="font-normal text-[10px] text-white">Chega: ${new Date(i.pendingOrder.expectedDate+'T00:00:00').toLocaleDateString('pt-BR')} (Qtd: ${i.pendingOrder.qty})</span></div>`;
-                }
-
-                html += `<div class="bg-ios-bg p-4 rounded-xl border border-ios-border flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div class="flex-1 w-full">
-                        <div class="flex justify-between mb-1">
-                            <span class="font-bold text-white">${i.name}</span>
-                            <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}/20 text-${statusColor.split('-')[1]} uppercase">${statusText}</span>
-                        </div>
-                        <div class="text-xs text-ios-textMuted mt-2">
-                            <div>Prazo do Fornecedor: <strong class="text-ios-blue">${i.leadTime} dias úteis</strong></div>
-                        </div>
-                        <div class="relative w-full h-6 bg-ios-input rounded-full overflow-hidden border border-ios-border mt-3 shadow-inner">
-                            <div class="absolute left-0 top-0 bottom-0 bg-ios-red/30" style="width: ${minPct}%"></div>
-                            <div class="absolute left-0 top-0 bottom-0 ${tankColor} transition-all" style="width: ${fillPct}%"></div>
-                            <div class="absolute top-0 bottom-0 border-r-2 border-dashed border-white z-10 drop-shadow-md" style="left: ${minPct}%;" title="Reserva (Mínimo)"></div>
-                            <div class="absolute inset-0 flex justify-between items-center px-3 z-20 text-[10px] font-bold text-white drop-shadow-md">
-                                <span>0</span>
-                                <span class="absolute" style="left: calc(${minPct}% - 12px);">MÍN</span>
-                                <span class="absolute right-3">${balance.toFixed(2)} Atual</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="w-full md:w-48 shrink-0 border-t md:border-t-0 md:border-l border-ios-border pt-3 md:pt-0 md:pl-4 flex flex-col justify-center">
-                        ${orderHtml}
-                    </div>
-                </div>`;
-            });
-            html += `</div></div>`;
-        });
-
-        if(!html) html = '<p class="text-ios-textMuted text-center py-10">Nenhum insumo encontrado para gestão de compras.</p>';
-        cont.innerHTML = html;
-    }
-
-    addEvt('purchasing-container', 'click', e => {
-        const editSupBtn = e.target.closest('.btn-edit-sup');
-        if(editSupBtn) {
-            const sup = editSupBtn.dataset.sup;
-            const items = localInventory.filter(i => (i.supplier || 'Sem Fornecedor / Outros') === sup);
-            const currentLead = items.length ? (items[0].leadTime || 0) : 0;
-            id('edit-supplier-old-name').value = sup;
-            id('edit-supplier-name').innerText = sup;
-            id('edit-supplier-lead').value = currentLead;
-            show(id('edit-supplier-modal'));
-            return;
-        }
-
-        const btn = e.target.closest('.btn-place-order');
-        if(btn) {
-            const pId = btn.dataset.id;
-            const p = localInventory.find(i=>i.id===pId);
-            if(p) {
-                id('order-product-id').value = p.id;
-                id('order-product-name').innerText = p.name;
-                id('order-qty').value = '';
-                // Business days calculation
-                const expDate = addBusinessDays(new Date(), (p.leadTime || 0));
-                const expStr = expDate.toISOString().split('T')[0];
-                id('order-date').value = expStr;
-                id('order-date').dataset.estimated = expStr;
-                show(id('place-order-modal'));
-            }
-        }
-    });
-
-    addEvt('edit-supplier-form', 'submit', async e => {
-        e.preventDefault();
-        const supName = id('edit-supplier-old-name').value;
-        const newLead = parseInt(id('edit-supplier-lead').value) || 0;
-        show(id('loading-overlay'));
-        try {
-            const items = localInventory.filter(i => (i.supplier || 'Sem Fornecedor / Outros') === supName);
-            for(let item of items) {
-                item.leadTime = newLead;
-                await DB.update('inventory', item);
-            }
-            hide(id('edit-supplier-modal'));
-            await refreshData();
-            window.showNotif('Prazo do fornecedor atualizado para todos os itens!');
-        } finally { hide(id('loading-overlay')); }
-    });
-
-    addEvt('place-order-form', 'submit', async (e) => {
-        e.preventDefault();
-        const pId = id('order-product-id').value;
-        const qty = parseFloat(id('order-qty').value);
-        const expDate = id('order-date').value;
-        const estimatedDate = id('order-date').dataset.estimated;
-
-        const executeOrder = async () => {
-            show(id('loading-overlay'));
-            try {
-                const p = await DB.get('inventory', pId);
-                if(p) {
-                    p.pendingOrder = { active: true, qty: qty, expectedDate: expDate };
-                    await DB.update('inventory', p);
-                    window.showNotif('Pedido Registado!');
-                    hide(id('place-order-modal'));
-                    await refreshData();
-                }
-            } finally { hide(id('loading-overlay')); }
-        };
-
-        if(expDate < estimatedDate) {
-            showConfirmationModal("Atenção - Prazo Curto!", "A data informada é MENOR que o prazo estimado em sistema para o fornecedor. Certifique-se que comunicou com o Setor de Compras. Deseja confirmar esta encomenda?", executeOrder);
-        } else {
-            executeOrder();
-        }
-    });
-
-    // --- ENDEREÇAMENTO (LOCATIONS) ---
-    function searchLocation(code) {
-        const loc = localLocations.find(l => l.code === code);
-        if(loc) {
-            id('loc-detail-name').innerText = loc.name;
-            id('loc-detail-code').innerText = loc.code;
-            
-            const locBatches = localBatches.filter(b => b.locationCode === code && b.quantity > 0);
-            const tb = id('loc-batches-body');
-            tb.innerHTML = locBatches.map(b => {
-                const prod = localInventory.find(i => i.id === b.productId);
-                return `<tr class="base-tr"><td class="base-td font-medium text-white">${prod?prod.name:'?'}</td><td class="base-td">${b.code}</td><td class="base-td font-bold">${b.quantity.toFixed(2)}</td><td class="base-td text-center"><button type="button" class="btn-remove-batch-loc text-ios-red p-2" data-id="${b.id}"><i class="fa-solid fa-minus-circle"></i></button></td></tr>`;
-            }).join('');
-            if(!locBatches.length) tb.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-ios-textMuted">Endereço Vazio</td></tr>`;
-            
-            id('add-loc-target-code').value = code;
-            
-            hide(id('location-empty-state')); hide(id('location-create-panel')); show(id('location-details-panel'));
-        } else {
-            id('loc-form-code').value = code; id('loc-form-name').value = '';
-            hide(id('location-empty-state')); hide(id('location-details-panel')); show(id('location-create-panel'));
-        }
-    }
-
-    addEvt('btn-search-location', 'click', () => { const c = id('location-search-input').value.trim(); if(c) searchLocation(c); else window.showNotif("Digite o código do local", true); });
-    addEvt('btn-scan-location', 'click', () => { openScanner(code => { id('location-search-input').value = code; searchLocation(code); }); });
-
-    addEvt('location-form', 'submit', async (e) => {
-        e.preventDefault();
-        const code = id('loc-form-code').value; const name = id('loc-form-name').value;
-        await DB.add('locations', {code, name});
-        window.showNotif('Endereço criado!'); await refreshData(); searchLocation(code);
-    });
-
-    addEvt('btn-cancel-loc', 'click', () => { hide(id('location-create-panel')); show(id('location-empty-state')); id('location-search-input').value=''; });
-
-    addEvt('btn-delete-location', 'click', () => {
-        const code = id('loc-detail-code').innerText;
-        const loc = localLocations.find(l => l.code === code);
-        if(loc) {
-            showConfirmationModal("Excluir Local", "Deseja remover este endereço? Lotes continuarão existindo (mas sem local definido).", async () => {
-                await DB.remove('locations', loc.id); window.showNotif('Local removido');
-                hide(id('location-details-panel')); show(id('location-empty-state')); id('location-search-input').value='';
-                refreshData();
-            });
-        }
-    });
-
-    // Edição de Local
-    addEvt('btn-edit-location', 'click', () => {
-        const code = id('loc-detail-code').innerText;
-        const name = id('loc-detail-name').innerText;
-        id('edit-loc-old-code').value = code;
-        id('edit-loc-new-code').value = code;
-        id('edit-loc-new-name').value = name;
-        show(id('edit-location-modal'));
-    });
-
-    addEvt('edit-location-form', 'submit', async (e) => {
-        e.preventDefault();
-        const oldCode = id('edit-loc-old-code').value;
-        const newCode = id('edit-loc-new-code').value.trim();
-        const newName = id('edit-loc-new-name').value.trim();
-        
-        const loc = localLocations.find(l => l.code === oldCode);
-        if(!loc) return;
-
-        show(id('loading-overlay'));
-        try {
-            loc.code = newCode;
-            loc.name = newName;
-            await DB.update('locations', loc);
-
-            // Mover os lotes pro novo código se mudou
-            if(oldCode !== newCode) {
-                const batchesInLoc = localBatches.filter(b => b.locationCode === oldCode);
-                for(const b of batchesInLoc) {
-                    b.locationCode = newCode;
-                    await DB.update('batches', b);
-                }
-            }
-            window.showNotif('Endereço Atualizado!');
-            hide(id('edit-location-modal'));
-            await refreshData();
-            searchLocation(newCode);
-        } catch(err) { window.showNotif('Erro ao atualizar.', true); }
-        finally { hide(id('loading-overlay')); }
-    });
-
-    // Add / Remove Batch in Location
-    addEvt('btn-add-batch-to-loc', 'click', () => {
-        const ctn = id('add-loc-searchable-container');
-        createSearchableSelect(ctn, localInventory, 'Pesquise pelo Produto...', p => {
-            const batches = localBatches.filter(b => b.productId === p.id && b.quantity > 0);
-            const sel = id('add-loc-batch-select');
-            if(sel) {
-                sel.innerHTML = '<option value="">Escolha um Lote...</option>' + batches.map(b => `<option value="${b.code}">${b.code} (Saldo: ${b.quantity.toFixed(2)})</option>`).join('');
-            }
-        });
-        id('add-loc-batch-select').innerHTML = '<option value="">Aguardar produto...</option>';
-        show(id('modal-add-loc-batch'));
-    });
-
-    addEvt('add-loc-batch-form', 'submit', async (e) => {
-        e.preventDefault();
-        const batchCode = id('add-loc-batch-select').value;
-        const locCode = id('add-loc-target-code').value;
-        const batch = localBatches.find(b => b.code === batchCode && b.quantity > 0);
-        if(!batch) return window.showNotif('Selecione um lote válido', true);
-        
-        batch.locationCode = locCode;
-        await DB.update('batches', batch); window.showNotif('Lote Mapeado!');
-        hide(id('modal-add-loc-batch')); await refreshData(); searchLocation(locCode);
-    });
-
-    addEvt('loc-batches-body', 'click', async (e) => {
-        const btn = e.target.closest('.btn-remove-batch-loc');
-        if(btn) {
-            const batch = await DB.get('batches', btn.dataset.id);
-            if(batch) {
-                batch.locationCode = ''; await DB.update('batches', batch);
-                window.showNotif('Lote removido do local'); await refreshData(); searchLocation(id('loc-detail-code').innerText);
-            }
-        }
     });
 
     // --- RECEITAS E REQUISIÇÃO ---
@@ -2249,7 +1911,6 @@
         const container = id('picking-lines-container');
         if(!container) return;
 
-        // Limite de 48h (Aparecer na separação se data da OP <= (hoje + 2 dias))
         const limitDate = new Date();
         limitDate.setDate(limitDate.getDate() + 2);
         const limitDateStr = limitDate.toISOString().split('T')[0];
@@ -2257,64 +1918,80 @@
         const pendingOps = localProductionOrders.filter(po => po.status === 'pendente' && po.date <= limitDateStr);
         if(!pendingOps.length) { container.innerHTML = `<div class="card text-center py-10"><i class="fa-solid fa-clipboard-check text-5xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Não há Ordens de Produção pendentes para as próximas 48 horas.</p></div>`; return; }
 
-        const opsByLine = {};
-        pendingOps.forEach(op => { const line = op.recipeCategory || 'Diversos'; if(!opsByLine[line]) opsByLine[line] = []; opsByLine[line].push(op); });
+        pendingOps.sort((a,b) => {
+            if(a.date !== b.date) return a.date.localeCompare(b.date);
+            return (a.recipeCategory||'').localeCompare(b.recipeCategory||'');
+        });
 
-        container.innerHTML = Object.keys(opsByLine).sort().map(line => {
-            const ops = opsByLine[line];
-            const concluidas = ops.filter(o => o.picking?.status === 'concluido').length;
-            const emAndamento = ops.filter(o => o.picking?.status === 'em_andamento').length;
-            const extrasPendentes = ops.filter(o => o.isExtra === true && o.picking?.status !== 'concluido');
-            const pct = ops.length > 0 ? (concluidas / ops.length) * 100 : 0;
+        const grouped = {};
+        pendingOps.forEach(op => {
+            if(!grouped[op.date]) grouped[op.date] = {};
+            if(!grouped[op.date][op.recipeCategory]) grouped[op.date][op.recipeCategory] = [];
+            grouped[op.date][op.recipeCategory].push(op);
+        });
+
+        let html = '';
+        Object.keys(grouped).sort().forEach(dateStr => {
+            const displayDate = new Date(dateStr+'T00:00:00').toLocaleDateString('pt-BR');
+            html += `<h2 class="title-md mt-6 mb-4 text-ios-blue border-b border-ios-border pb-2"><i class="fa-regular fa-calendar mr-2"></i>Data OP: ${displayDate}</h2>`;
             
-            let lineStatusHTML = ''; let isLineActive = emAndamento > 0; let allConcluido = concluidas === ops.length;
-            
-            if(allConcluido) lineStatusHTML = `<span class="badge bg-ios-green/20 text-ios-green"><i class="fa-solid fa-check-double mr-1"></i>Linha Separada</span>`;
-            else if(isLineActive) lineStatusHTML = `<span class="badge bg-ios-blue/20 text-ios-blue animate-pulse"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Em Separação</span>`;
-            else lineStatusHTML = `<span class="badge bg-ios-orange/20 text-ios-orange"><i class="fa-solid fa-clock mr-1"></i>A Separar</span>`;
+            Object.keys(grouped[dateStr]).sort().forEach(line => {
+                const ops = grouped[dateStr][line];
+                const concluidas = ops.filter(o => o.picking?.status === 'concluido').length;
+                const emAndamento = ops.filter(o => o.picking?.status === 'em_andamento').length;
+                const extrasPendentes = ops.filter(o => o.isExtra === true && o.picking?.status !== 'concluido');
+                const pct = ops.length > 0 ? (concluidas / ops.length) * 100 : 0;
+                
+                let lineStatusHTML = ''; let isLineActive = emAndamento > 0; let allConcluido = concluidas === ops.length;
+                
+                if(allConcluido) lineStatusHTML = `<span class="badge bg-ios-green/20 text-ios-green"><i class="fa-solid fa-check-double mr-1"></i>Linha Separada</span>`;
+                else if(isLineActive) lineStatusHTML = `<span class="badge bg-ios-blue/20 text-ios-blue animate-pulse"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Em Separação</span>`;
+                else lineStatusHTML = `<span class="badge bg-ios-orange/20 text-ios-orange"><i class="fa-solid fa-clock mr-1"></i>A Separar</span>`;
 
-            const opIdsStr = JSON.stringify(ops.map(o=>o.id));
+                const opIdsStr = JSON.stringify(ops.map(o=>o.id));
 
-            return `
-            <div class="card p-0 overflow-hidden border ${isLineActive ? 'border-ios-blue' : 'border-ios-border'} transition-all">
-                <div class="bg-ios-cardHover px-5 py-4 flex flex-col gap-2 ${isLineActive ? 'bg-ios-blue/10' : ''}">
-                    <div class="flex flex-wrap justify-between items-center gap-3">
-                        <div>
-                            <h3 class="font-bold text-white text-xl flex items-center">
-                                <i class="fa-solid fa-layer-group text-ios-blue mr-2"></i>Setor: ${line.toUpperCase()}
-                                ${extrasPendentes.length > 0 ? `<span class="ml-2 badge bg-ios-red text-white shadow shadow-ios-red">🚨 ${extrasPendentes.length} EXTRA(s)</span>` : ''}
-                            </h3>
-                            <p class="text-xs text-ios-textMuted mt-1">${ops.length} OP(s) programada(s) | ${concluidas} Separada(s)</p>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-4">
-                            ${lineStatusHTML}
-                            ${extrasPendentes.length > 0 ? `<button type="button" class="btn-secondary py-2 px-4 text-xs text-ios-red border-ios-red/50 hover:bg-ios-red/10 btn-print-extras" data-line="${line}"><i class="fa-solid fa-print mr-2"></i>Imprimir Extras</button>` : ''}
-                            ${!allConcluido ? `<button type="button" class="btn-primary py-2 px-4 shadow-lg shadow-ios-blue/20 btn-open-line-picking" data-line="${line}" data-opids='${opIdsStr}'><i class="fa-solid fa-dolly mr-2"></i>Separar Linha Completa</button>` : ''}
-                        </div>
-                    </div>
-                    <!-- Barra de Progresso da Linha -->
-                    <div class="w-full h-2 bg-ios-bg rounded-full mt-2 overflow-hidden border border-ios-border">
-                        <div class="h-full bg-ios-green transition-all" style="width: ${pct}%"></div>
-                    </div>
-                </div>
-                <div class="p-4 bg-ios-bg grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 border-t border-ios-border/50">
-                    ${ops.map(op => {
-                        let timerHtml = op.picking?.status === 'concluido' ? '<i class="fa-solid fa-check text-ios-green"></i>' : '<i class="fa-solid fa-clock text-ios-textMuted"></i>';
-                        if(op.picking?.status === 'em_andamento') {
-                            timerHtml = `<div class="live-timer text-ios-orange font-mono font-bold timer-active" data-start="${op.picking.start}">00:00</div>`;
-                        }
-                        return `
-                        <div class="bg-ios-card p-3 rounded-lg border border-ios-border text-sm flex justify-between items-center relative overflow-hidden">
-                            ${op.isExtra ? '<div class="absolute left-0 top-0 bottom-0 w-1 bg-ios-red"></div>' : ''}
-                            <div class="${op.isExtra ? 'pl-2' : ''}">
-                                <span class="font-bold text-white">${op.recipeName}</span> <span class="text-ios-blue">(${op.multiplier}x)</span>
+                html += `
+                <div class="card p-0 overflow-hidden border ${isLineActive ? 'border-ios-blue' : 'border-ios-border'} transition-all mb-4">
+                    <div class="bg-ios-cardHover px-5 py-4 flex flex-col gap-2 ${isLineActive ? 'bg-ios-blue/10' : ''}">
+                        <div class="flex flex-wrap justify-between items-center gap-3">
+                            <div>
+                                <h3 class="font-bold text-white text-xl flex items-center">
+                                    <i class="fa-solid fa-layer-group text-ios-blue mr-2"></i>Setor: ${line.toUpperCase()}
+                                    ${extrasPendentes.length > 0 ? `<span class="ml-2 badge bg-ios-red text-white shadow shadow-ios-red">🚨 ${extrasPendentes.length} EXTRA(s)</span>` : ''}
+                                </h3>
+                                <p class="text-xs text-ios-textMuted mt-1">${ops.length} OP(s) programada(s) | ${concluidas} Separada(s)</p>
                             </div>
-                            <div class="ml-2">${timerHtml}</div>
-                        </div>`;
-                    }).join('')}
-                </div>
-            </div>`;
-        }).join('');
+                            <div class="flex flex-wrap items-center gap-4">
+                                ${lineStatusHTML}
+                                ${extrasPendentes.length > 0 ? `<button type="button" class="btn-secondary py-2 px-4 text-xs text-ios-red border-ios-red/50 hover:bg-ios-red/10 btn-print-extras" data-line="${line}" data-date="${dateStr}"><i class="fa-solid fa-print mr-2"></i>Imprimir Extras</button>` : ''}
+                                ${!allConcluido ? `<button type="button" class="btn-primary py-2 px-4 shadow-lg shadow-ios-blue/20 btn-open-line-picking" data-line="${line} - ${displayDate}" data-opids='${opIdsStr}'><i class="fa-solid fa-dolly mr-2"></i>Separar Linha</button>` : ''}
+                            </div>
+                        </div>
+                        <div class="w-full h-2 bg-ios-bg rounded-full mt-2 overflow-hidden border border-ios-border">
+                            <div class="h-full bg-ios-green transition-all" style="width: ${pct}%"></div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-ios-bg grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 border-t border-ios-border/50">
+                        ${ops.map(op => {
+                            let timerHtml = op.picking?.status === 'concluido' ? '<i class="fa-solid fa-check text-ios-green"></i>' : '<i class="fa-solid fa-clock text-ios-textMuted"></i>';
+                            if(op.picking?.status === 'em_andamento') {
+                                timerHtml = `<div class="live-timer text-ios-orange font-mono font-bold timer-active" data-start="${op.picking.start}">00:00</div>`;
+                            }
+                            return `
+                            <div class="bg-ios-card p-3 rounded-lg border border-ios-border text-sm flex justify-between items-center relative overflow-hidden">
+                                ${op.isExtra ? '<div class="absolute left-0 top-0 bottom-0 w-1 bg-ios-red"></div>' : ''}
+                                <div class="${op.isExtra ? 'pl-2' : ''}">
+                                    <span class="font-bold text-white">${op.recipeName}</span> <span class="text-ios-blue">(${op.multiplier}x)</span>
+                                </div>
+                                <div class="ml-2">${timerHtml}</div>
+                            </div>`;
+                        }).join('')}
+                    </div>
+                </div>`;
+            });
+        });
+        
+        container.innerHTML = html;
     }
 
     addEvt('picking-lines-container', 'click', e => {
@@ -2322,7 +1999,7 @@
         if(btnPick) openGroupedPickingModal(btnPick.dataset.line, JSON.parse(btnPick.dataset.opids));
 
         const btnPrint = e.target.closest('.btn-print-extras');
-        if(btnPrint) printExtras(btnPrint.dataset.line);
+        if(btnPrint) printExtras(btnPrint.dataset.line, btnPrint.dataset.date);
     });
 
     function getAggregatedIngredients(opIds) {
@@ -2332,8 +2009,8 @@
         return Object.values(agg);
     }
 
-    function printExtras(lineName) {
-        const ops = localProductionOrders.filter(o => o.recipeCategory === lineName && o.status === 'pendente' && o.isExtra === true && o.picking?.status !== 'concluido');
+    function printExtras(lineName, dateStr) {
+        const ops = localProductionOrders.filter(o => o.recipeCategory === lineName && o.date === dateStr && o.status === 'pendente' && o.isExtra === true && o.picking?.status !== 'concluido');
         if(!ops.length) return window.showNotif('Nenhuma OP Extra pendente para imprimir.', true);
 
         const agg = {};
@@ -2346,7 +2023,7 @@
 
         const { jsPDF } = window.jspdf; const doc = new jsPDF();
         doc.setFontSize(20); doc.setTextColor(255, 69, 58); doc.text(`Folha de Separação: EXTRAS / URGENTES`, 14, 20);
-        doc.setFontSize(12); doc.setTextColor(50, 50, 55); doc.text(`Setor: ${lineName.toUpperCase()}`, 14, 28);
+        doc.setFontSize(12); doc.setTextColor(50, 50, 55); doc.text(`Setor: ${lineName.toUpperCase()} | Data OP: ${new Date(dateStr+'T00:00:00').toLocaleDateString('pt-BR')}`, 14, 28);
         doc.setFontSize(10); doc.setTextColor(150, 150, 150); doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Inclui ${ops.length} OPs`, 14, 34);
         doc.setLineWidth(0.5); doc.line(14, 38, 196, 38);
 
@@ -2356,7 +2033,7 @@
         });
 
         doc.autoTable({ startY: 45, head: [['Insumo a Separar', 'Quantidade Total FÍSICA Necessária']], body: tableData, theme: 'striped', headStyles: { fillColor: [255, 69, 58], textColor: [255, 255, 255] }, alternateRowStyles: { fillColor: [255, 245, 245] }, margin: { left: 14, right: 14 } });
-        doc.save(`Separacao_Extras_${lineName.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+        doc.save(`Separacao_Extras_${lineName.replace(/\s+/g,'_')}_${dateStr}.pdf`);
         window.showNotif('Folha de Extras gerada para impressão!');
     }
 
@@ -2397,7 +2074,6 @@
                 let totalPicked = 0;
                 ops.forEach(op => { if(op.picking && op.picking.pickedItems && op.picking.pickedItems[ing.productId] !== undefined) totalPicked += op.picking.pickedItems[ing.productId]; });
                 
-                // Se ainda não pipou, mostra string vazia.
                 const hasPicked = ops.some(op => op.picking && op.picking.pickedItems && op.picking.pickedItems[ing.productId] !== undefined);
                 const isChecked = hasPicked && totalPicked > 0;
                 
@@ -2543,40 +2219,27 @@
     });
 
     // --- LOGICA OP (PRODUCAO) ---
-    addEvt('po-date', 'change', e => {
-        const selectedDate = new Date(e.target.value);
-        const today = new Date();
-        const diffTime = selectedDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-        const extraChk = id('po-is-extra'); if (extraChk) extraChk.checked = diffDays <= 2;
-    });
-
     addEvt('search-po-by-date', 'change', renderPO);
+    
     function renderPO() {
         const dateInput = id('search-po-by-date');
         const d = dateInput ? dateInput.value : ''; 
-        const list = d ? localProductionOrders.filter(po => po.date === d) : localProductionOrders;
         
-        // Render Calendar
-        const prodEvents = {};
-        localProductionOrders.forEach(op => {
-            const dateStr = op.date;
-            if(!prodEvents[dateStr]) prodEvents[dateStr] = [];
-            let colorClass = 'bg-ios-orange'; // Just dot color
-            if(op.status === 'concluído') colorClass = 'bg-ios-green';
-            else if(op.isExtra) colorClass = 'bg-ios-red';
-            
-            prodEvents[dateStr].push({ classes: colorClass }); // No title needed
-        });
-        const calendarContainer = id('production-calendar-container');
-        if(calendarContainer) {
-            calendarContainer.innerHTML = generateCalendarHTML(window.prodCalendarDate, prodEvents, 'production');
+        let list = localProductionOrders.filter(po => po.status === 'pendente');
+        if(d) {
+            list = list.filter(po => po.date === d);
+        } else {
+            // Sort by Date then Name
+            list.sort((a,b) => {
+                if(a.date !== b.date) return a.date.localeCompare(b.date);
+                return (a.recipeName||'').localeCompare(b.recipeName||'');
+            });
         }
-
+        
         const container = id('production-orders-list'); 
         if(!container) return;
 
-        if(!list.length) { container.innerHTML = `<div class="col-span-full text-center text-ios-textMuted py-10 bg-ios-card rounded-2xl border border-ios-border">Fila de produção vazia nesta data. Selecione um dia no calendário.</div>`; return; }
+        if(!list.length) { container.innerHTML = `<div class="col-span-full text-center text-ios-textMuted py-10 bg-ios-card rounded-2xl border border-ios-border">Nenhuma OP pendente encontrada.</div>`; return; }
         
         container.innerHTML = list.map(po => {
             const p = po.picking || { status: 'pendente' }; let pickBadge = '';
@@ -2649,6 +2312,7 @@
     }
 
     addEvt('po-quantity', 'input', updatePOIngredients);
+    
     addEvt('btn-new-production-order', 'click', () => {
         const form = id('production-order-form'); if(form) form.reset(); 
         const bodyEl = id('po-ingredients-body'); if(bodyEl) bodyEl.innerHTML = '';
