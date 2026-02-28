@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estoque OS - Controle e Produção</title>
+    <title>Controle de Estoque e Produção</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -37,31 +37,38 @@
             .title-md { @apply text-xl font-semibold text-white mb-4 tracking-tight; }
             .form-label { @apply block text-sm font-medium text-ios-textMuted mb-1; }
             .form-input { @apply block w-full bg-ios-input text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-ios-blue transition-all border border-ios-border/50; }
-            .btn-primary { @apply bg-ios-blue hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center cursor-pointer; }
-            .btn-secondary { @apply bg-ios-cardHover hover:bg-gray-700 text-white font-semibold py-3 px-5 rounded-xl transition-all border border-ios-border flex items-center justify-center cursor-pointer; }
-            .btn-danger { @apply bg-ios-red hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center cursor-pointer; }
-            .btn-success { @apply bg-ios-green hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center cursor-pointer; }
+            .btn-primary { @apply bg-ios-blue hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center; }
+            .btn-secondary { @apply bg-ios-cardHover hover:bg-gray-700 text-white font-semibold py-3 px-5 rounded-xl transition-all border border-ios-border flex items-center justify-center; }
+            .btn-danger { @apply bg-ios-red hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center; }
+            .btn-success { @apply bg-ios-green hover:opacity-90 text-white font-semibold py-3 px-5 rounded-xl transition-all flex items-center justify-center; }
             .table-container { @apply overflow-x-auto rounded-xl border border-ios-border bg-ios-card; }
             .base-table { @apply w-full text-sm text-left text-ios-textMuted; }
             .base-thead { @apply text-xs uppercase bg-ios-cardHover text-gray-400 border-b border-ios-border; }
             .base-tr { @apply border-b border-ios-border hover:bg-ios-cardHover transition-colors; }
             .base-th { @apply px-5 py-4 font-semibold whitespace-nowrap; }
             .base-td { @apply px-5 py-4; }
+            .stat-icon { @apply p-3 rounded-xl flex items-center justify-center w-12 h-12 text-xl; }
             .modal-content { @apply bg-ios-card border border-ios-border rounded-3xl shadow-2xl p-6 w-full transform transition-all max-h-[90vh] overflow-y-auto; }
             .badge { @apply text-xs font-semibold px-2 py-1 rounded-md; }
             
+            /* Home Grid Menu Button */
             .menu-window { @apply flex flex-col items-center justify-center p-8 bg-ios-card border border-ios-border rounded-3xl shadow-lg hover:bg-ios-cardHover hover:scale-105 transition-all duration-300 cursor-pointer text-center; }
             .menu-window i { @apply text-5xl mb-4 text-ios-blue drop-shadow-md; }
             .menu-window span { @apply font-bold text-white text-lg tracking-wide; }
         }
     </style>
     <style>
+        .sidebar { transition: width 0.3s ease-in-out; }
         .modal { display: none; position: fixed; z-index: 50; inset: 0; align-items: center; justify-content: center; background-color: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); }
         .table-header-sortable { cursor: pointer; user-select: none; }
         .table-header-sortable:hover { color: #ffffff; }
         
         .searchable-container { position: relative; width: 100%; }
-        .searchable-dropdown { position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; max-height: 280px; overflow-y: auto; background-color: #2c2c2e; border: 1px solid #38383a; border-radius: 0.75rem; box-shadow: 0 10px 30px rgba(0,0,0,0.8); margin-top: 4px; }
+        .searchable-dropdown { 
+            position: absolute; top: 100%; left: 0; right: 0; z-index: 9999; max-height: 280px; 
+            overflow-y: auto; background-color: #2c2c2e; border: 1px solid #38383a; 
+            border-radius: 0.75rem; box-shadow: 0 10px 30px rgba(0,0,0,0.8); margin-top: 4px;
+        }
         .searchable-item { padding: 0.85rem 1rem; cursor: pointer; color: #ffffff; border-bottom: 1px solid #38383a; transition: background-color 0.2s; }
         .searchable-item:last-child { border-bottom: none; }
         .searchable-item:hover { background-color: #0a84ff; }
@@ -70,18 +77,21 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #48484a; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #636366; }
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #48484a; border-radius: 10px; }
 
         .toggle-status { appearance: none; width: 40px; height: 20px; background: #38383a; border-radius: 20px; position: relative; cursor: pointer; outline: none; transition: background 0.3s; }
         .toggle-status::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: white; border-radius: 50%; transition: transform 0.3s; }
         .toggle-status:checked { background: #30d158; }
         .toggle-status:checked::after { transform: translateX(20px); }
-
-        .timer-active { color: #ff9f0a; animation: pulse-text 1.5s infinite; }
-        @keyframes pulse-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
         
-        .check-nativo { appearance: auto !important; width: 1.5rem !important; height: 1.5rem !important; cursor: pointer; accent-color: #30d158; margin: 0; padding: 0; }
+        .check-nativo {
+            appearance: auto !important;
+            width: 1.5rem !important; 
+            height: 1.5rem !important; 
+            cursor: pointer;
+            accent-color: #30d158;
+            margin: 0;
+            padding: 0;
+        }
         .form-input { transition: all 0.4s ease; }
         #reader video { border-radius: 0.75rem; object-fit: cover; }
     </style>
@@ -90,30 +100,34 @@
 
     <div id="loading-overlay" class="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-black bg-opacity-80 backdrop-blur-md transition-opacity">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-ios-cardHover border-t-ios-blue mb-4"></div>
-        <p class="text-ios-textMuted font-medium" id="loading-text">A processar...</p>
+        <p class="text-ios-textMuted font-medium" id="loading-text">Processando...</p>
     </div>
 
     <div id="notification-modal" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-[2000] hidden py-3 px-6 rounded-full shadow-2xl font-semibold text-white transition-all text-sm backdrop-blur-md text-center max-w-sm"></div>
 
+    <!-- Tela de Login -->
     <div id="login-wrapper" class="absolute inset-0 z-[999] flex flex-col items-center justify-center bg-ios-bg text-center px-4 hidden">
         <div class="card max-w-md w-full py-10 px-6 border border-ios-border/50 shadow-2xl">
             <div class="w-20 h-20 rounded-2xl bg-ios-blue flex items-center justify-center text-white font-bold text-4xl shadow-lg shadow-ios-blue/30 mx-auto mb-6"><i class="fa-solid fa-layer-group"></i></div>
             <h2 class="title-lg mb-2 text-white">Acesso Restrito</h2>
-            <p class="text-ios-textMuted mb-8 text-sm">Faça login com a sua conta Google para sincronizar com o banco de dados.</p>
+            <p class="text-ios-textMuted mb-8 text-sm">Faça login com sua conta Google para sincronizar com o banco de dados da fábrica (Firebase).</p>
             <button type="button" id="btn-login-google" class="btn-primary w-full py-4 text-lg font-bold"><i class="fa-brands fa-google mr-2"></i>Entrar com o Google</button>
             <button type="button" id="btn-bypass-login" class="btn-secondary w-full py-3 mt-4 text-sm"><i class="fa-solid fa-flask mr-2"></i>Testar sem Login (Visualização)</button>
             <div id="mensagem-erro" class="text-ios-red mt-4 font-medium text-sm text-left bg-ios-red/10 p-3 rounded-lg hidden"></div>
         </div>
     </div>
 
+    <!-- App Principal -->
     <div id="app-wrapper" class="flex h-screen overflow-hidden w-full hidden">
+        
+        <!-- Sidebar Menu -->
         <aside class="w-20 lg:w-64 bg-[#000000] border-r border-ios-border flex flex-col py-6 transition-all duration-300 z-40">
             <div class="px-4 mb-8 flex items-center justify-center lg:justify-start cursor-pointer" onclick="navTo('home')">
                 <div class="w-10 h-10 rounded-xl bg-ios-blue flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-ios-blue/30"><i class="fa-solid fa-layer-group"></i></div>
                 <span class="ml-3 font-bold text-xl text-white hidden lg:block tracking-tight">Estoque OS</span>
             </div>
-            <nav class="flex-1 w-full px-3 space-y-2 overflow-y-auto custom-scroll">
-                <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-white bg-ios-card transition-all" data-target="home"><i class="fa-solid fa-house w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Menu Inicial</span></a>
+            <nav class="flex-1 w-full px-3 space-y-2 overflow-y-auto">
+                <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-white bg-ios-card transition-all" data-target="home"><i class="fa-solid fa-house w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Início</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="consulta"><i class="fa-solid fa-magnifying-glass w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Consulta Rápida</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="inventory"><i class="fa-solid fa-boxes-stacked w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Estoque Geral</span></a>
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="barcodes"><i class="fa-solid fa-barcode w-6 text-center text-lg"></i><span class="ml-3 hidden lg:block font-medium">Cód. Barras</span></a>
@@ -132,11 +146,6 @@
                     <span id="badge-nav-prod" class="absolute top-3 right-3 w-2.5 h-2.5 bg-ios-blue rounded-full animate-pulse hidden"></span>
                 </a>
                 
-                <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="traceability">
-                    <i class="fa-solid fa-route w-6 text-center text-lg" style="color:#5e5ce6;"></i>
-                    <span class="ml-3 hidden lg:block font-medium">Rastreabilidade</span>
-                </a>
-
                 <a href="#" class="nav-item p-3 rounded-xl flex items-center w-full text-ios-textMuted hover:bg-ios-card hover:text-white transition-all" data-target="purchasing">
                     <i class="fa-solid fa-cart-shopping w-6 text-center text-lg" style="color:#32ade6;"></i>
                     <span class="ml-3 hidden lg:block font-medium">Compras/Pedidos</span>
@@ -164,36 +173,65 @@
 
         <main class="flex-1 p-6 lg:p-10 overflow-y-auto bg-ios-bg relative z-0 h-full">
             
-            <!-- HOME -->
+            <!-- Home / Janelas de Menu -->
             <div id="screen-home" class="screen-panel w-full">
-                <h1 class="title-lg mb-2 text-center text-white text-4xl tracking-tight">Menu Inicial</h1>
-                <p class="text-ios-textMuted text-center text-sm mb-10 italic max-w-2xl mx-auto tracking-wide">"Não se gerencia o que não se mede, não se mede o que não se define, não se define o que não se entende e não há sucesso no que não se gerencia."</p>
-
+                <h1 class="title-lg mb-8 text-center text-white text-4xl tracking-tight">Menu Principal</h1>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-10">
-                    <button type="button" class="menu-window nav-btn" data-target="consulta"><i class="fa-solid fa-magnifying-glass" style="color:#32ade6;"></i><span>Consulta Universal</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="entry"><i class="fa-solid fa-box-open"></i><span>Entrada (Massa)</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="inventory"><i class="fa-solid fa-boxes-stacked" style="color:#30d158;"></i><span>Estoque Geral</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="locations"><i class="fa-solid fa-map-location-dot" style="color:#5e5ce6;"></i><span>Endereçamento</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="barcodes"><i class="fa-solid fa-barcode" style="color:#bf5af2;"></i><span>Cód. Barras</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="purchasing"><i class="fa-solid fa-cart-shopping" style="color:#32ade6;"></i><span>Compras/Pedidos</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="recipes"><i class="fa-solid fa-book-bookmark" style="color:#ff375f;"></i><span>Fichas/Receitas</span></button>
-                    <button type="button" class="menu-window nav-btn relative" data-target="picking"><i class="fa-solid fa-dolly text-ios-orange"></i><span class="text-ios-orange">Separação</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="production"><i class="fa-solid fa-hammer" style="color:#ff9f0a;"></i><span>Ordens Prod.</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="traceability"><i class="fa-solid fa-route" style="color:#5e5ce6;"></i><span>Rastreabilidade</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="adjustments"><i class="fa-solid fa-sliders" style="color:#64d2ff;"></i><span>Ajuste Lotes</span></button>
-                    <button type="button" class="menu-window nav-btn" data-target="settings"><i class="fa-solid fa-database" style="color:#98989d;"></i><span>Banco de Dados</span></button>
+                    
+                    <button type="button" class="menu-window nav-btn" data-target="consulta">
+                        <i class="fa-solid fa-magnifying-glass" style="color:#32ade6;"></i><span>Consulta Universal</span>
+                    </button>
+                    <button type="button" class="menu-window nav-btn" data-target="entry">
+                        <i class="fa-solid fa-box-open"></i><span>Entrada (Massa)</span>
+                    </button>
+                    <button type="button" class="menu-window nav-btn" data-target="inventory">
+                        <i class="fa-solid fa-boxes-stacked" style="color:#30d158;"></i><span>Estoque Atual</span>
+                    </button>
+                    <button type="button" class="menu-window nav-btn" data-target="locations">
+                        <i class="fa-solid fa-map-location-dot" style="color:#5e5ce6;"></i><span>Endereçamento</span>
+                    </button>
+                    
+                    <button type="button" class="menu-window nav-btn" data-target="barcodes">
+                        <i class="fa-solid fa-barcode" style="color:#bf5af2;"></i><span>Cód. Barras</span>
+                    </button>
+                    <button type="button" class="menu-window nav-btn" data-target="purchasing">
+                        <i class="fa-solid fa-cart-shopping" style="color:#32ade6;"></i><span>Compras/Pedidos</span>
+                    </button>
+                    <button type="button" class="menu-window nav-btn" data-target="recipes">
+                        <i class="fa-solid fa-book-bookmark" style="color:#ff375f;"></i><span>Fichas/Receitas</span>
+                    </button>
+                    <button type="button" class="menu-window nav-btn relative" data-target="picking">
+                        <i class="fa-solid fa-dolly text-ios-orange"></i><span class="text-ios-orange">Separação</span>
+                    </button>
+
+                    <button type="button" class="menu-window nav-btn" data-target="production">
+                        <i class="fa-solid fa-hammer" style="color:#ff9f0a;"></i><span>Ordens Prod.</span>
+                    </button>
+                    <button type="button" class="menu-window nav-btn" data-target="requisitions">
+                        <i class="fa-solid fa-arrow-right-from-bracket" style="color:#ff453a;"></i><span>Requisições</span>
+                    </button>
+                    <button type="button" class="menu-window nav-btn" data-target="adjustments">
+                        <i class="fa-solid fa-sliders" style="color:#64d2ff;"></i><span>Ajuste Lotes</span>
+                    </button>
+                    <button type="button" class="menu-window nav-btn" data-target="settings">
+                        <i class="fa-solid fa-database" style="color:#98989d;"></i><span>Banco de Dados</span>
+                    </button>
                 </div>
+
+                <!-- Recebimentos do Dia -->
                 <div class="max-w-6xl mx-auto border-t border-ios-border pt-8">
                     <h2 class="title-md mb-4 text-ios-blue"><i class="fa-solid fa-truck-ramp-box mr-2"></i>📦 Entregas Previstas para Hoje</h2>
-                    <div id="home-incoming-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+                    <div id="home-incoming-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
             </div>
 
-            <!-- CONSULTA RAPIDA -->
+            <!-- Consulta Rápida (Universal) -->
             <div id="screen-consulta" class="screen-panel hidden max-w-4xl mx-auto">
                 <h1 class="title-lg">Consulta Rápida</h1>
                 <div class="card mb-8">
-                    <p class="text-sm text-ios-textMuted mb-6">Leia um código de barras, código interno do produto ou código de um endereço para ver o saldo e localização.</p>
+                    <p class="text-sm text-ios-textMuted mb-6">Leia um código de barras, código interno do produto ou código de um endereço para ver o saldo e localização. O sistema trará todas as correspondências.</p>
                     <div class="flex gap-2">
                         <input type="text" id="consulta-input" class="form-input flex-1 font-mono text-lg" placeholder="Digite ou bipar código..." autocomplete="off">
                         <button type="button" id="btn-consulta-scan" class="bg-ios-blue text-white p-4 rounded-xl hover:bg-blue-600 transition shadow-lg"><i class="fa-solid fa-camera text-2xl"></i></button>
@@ -203,183 +241,179 @@
                 <div id="consulta-results" class="space-y-6">
                     <div class="card flex flex-col items-center justify-center py-20 text-center border-dashed">
                         <i class="fa-solid fa-magnifying-glass text-6xl text-ios-cardHover mb-4"></i>
-                        <p class="text-ios-textMuted">A aguardar leitura...</p>
+                        <p class="text-ios-textMuted">Aguardando leitura...</p>
                     </div>
                 </div>
             </div>
 
-            <!-- RASTREABILIDADE -->
-            <div id="screen-traceability" class="screen-panel hidden max-w-6xl mx-auto">
-                <h1 class="title-lg">Rastreabilidade de Produção</h1>
-                <p class="text-ios-textMuted text-sm mb-6">Consulte quais lotes foram usados, suas validades e as quantidades entregues pela separação em cada Ordem de Produção concluída.</p>
-                <div class="card mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div><label class="form-label">Data OP Início</label><input type="date" id="trace-date-start" class="form-input"></div>
-                        <div><label class="form-label">Data OP Fim</label><input type="date" id="trace-date-end" class="form-input"></div>
-                        <div><label class="form-label">Linha de Produção</label><select id="trace-line-filter" class="form-input"><option value="">Todas</option></select></div>
-                        <div class="z-50"><label class="form-label">Insumo Utilizado</label><div id="trace-searchable-container" class="searchable-container"></div></div>
-                    </div>
-                    <div class="mt-4 flex justify-end">
-                        <button type="button" id="btn-trace-search" class="btn-primary px-8"><i class="fa-solid fa-magnifying-glass mr-2"></i>Pesquisar</button>
-                    </div>
-                </div>
-                <div id="traceability-results" class="space-y-6"></div>
-            </div>
-
-            <!-- CODIGOS DE BARRAS -->
+            <!-- Códigos de Barras -->
             <div id="screen-barcodes" class="screen-panel hidden max-w-4xl mx-auto">
-                <h1 class="title-lg">Registo de Código de Barras</h1>
+                <h1 class="title-lg">Cadastro de Código de Barras</h1>
                 <div class="card mb-8">
-                    <p class="text-sm text-ios-textMuted mb-6">Vincule os códigos de barras físicos aos produtos internos. Permite múltiplos códigos por produto.</p>
+                    <p class="text-sm text-ios-textMuted mb-6">Vincule os códigos de barras das embalagens físicas aos produtos internos. Um mesmo produto pode ter vários EANs similares.</p>
                     <form id="barcode-form" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-                            <div class="z-50"><label class="form-label">Produto do Sistema</label><div id="barcode-searchable-container" class="searchable-container"></div></div>
+                            <div class="z-50">
+                                <label class="form-label">Produto do Sistema</label>
+                                <div id="barcode-searchable-container" class="searchable-container"></div>
+                            </div>
                             <div class="z-40">
-                                <label class="form-label">Código de Barras (Novo/Similar)</label>
+                                <label class="form-label">Código de Barras (Novo)</label>
                                 <div class="flex gap-2">
-                                    <input type="text" id="barcode-input" required class="form-input font-mono" placeholder="Digite ou leia o código..." autocomplete="off">
+                                    <input type="text" id="barcode-input" required class="form-input font-mono" placeholder="Digite ou leia o código...">
                                     <button type="button" id="btn-scan-barcode" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600 transition"><i class="fa-solid fa-camera text-xl"></i></button>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-end pt-4"><button type="submit" class="btn-primary px-8"><i class="fa-solid fa-link mr-2"></i>Vincular Código</button></div>
+                        <div class="flex justify-end pt-4">
+                            <button type="submit" class="btn-primary px-8"><i class="fa-solid fa-link mr-2"></i>Vincular / Adicionar Código</button>
+                        </div>
                     </form>
                 </div>
+                
                 <h2 class="title-md mt-10 mb-4">Produtos Mapeados</h2>
                 <div class="table-container">
-                    <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Cód Interno</th><th class="base-th">Códigos de Barras (EANs)</th><th class="base-th text-center">Ações</th></tr></thead><tbody id="barcodes-table-body"></tbody></table>
+                    <table class="base-table">
+                        <thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Cód Interno</th><th class="base-th">Códigos de Barras (EANs)</th><th class="base-th text-center">Gestão</th></tr></thead>
+                        <tbody id="barcodes-table-body"></tbody>
+                    </table>
                 </div>
             </div>
 
-            <!-- COMPRAS / PEDIDOS -->
+            <!-- Compras / Pedidos -->
             <div id="screen-purchasing" class="screen-panel hidden">
                 <h1 class="title-lg mb-0 text-ios-blue"><i class="fa-solid fa-cart-shopping mr-3"></i>Gestão de Compras e Pedidos</h1>
-                <p class="text-ios-textMuted text-sm mb-6 mt-1">Acompanhe a duração do stock visualmente e gira as encomendas de fornecedores no calendário.</p>
-                <div class="mb-6 flex gap-4"><input type="text" id="search-purchasing" class="form-input w-full md:w-1/2" placeholder="Buscar fornecedor ou item..." autocomplete="off"></div>
-                
-                <div id="purchasing-calendar-container" class="mb-8 max-w-4xl mx-auto"></div>
-
+                <p class="text-ios-textMuted text-sm mb-6 mt-1">Acompanhe a duração do estoque visualmente, baseando-se no tanque de reserva (estoque mínimo) e no prazo de entrega do fornecedor.</p>
+                <div class="mb-6 flex gap-4">
+                    <input type="text" id="search-purchasing" class="form-input w-full md:w-1/2" placeholder="Buscar fornecedor ou item..." autocomplete="off">
+                </div>
                 <div id="purchasing-container" class="space-y-8"></div>
             </div>
 
-            <!-- ENDEREÇAMENTO -->
+            <!-- Endereçamento (Locations) -->
             <div id="screen-locations" class="screen-panel hidden max-w-5xl mx-auto">
                 <h1 class="title-lg">Endereçamento (Ruas e Locais)</h1>
                 <div class="flex flex-col md:flex-row gap-6 mb-8">
                     <div class="w-full md:w-1/3 card self-start">
                         <h2 class="title-md mb-4 text-lg">Buscar Local</h2>
-                        <form id="search-location-form" class="flex flex-col gap-4">
-                            <div class="flex gap-2">
-                                <input type="text" id="location-search-input" class="form-input font-mono" placeholder="Cód: RUA-A-01" required autocomplete="off">
-                                <button type="button" id="btn-scan-location" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600"><i class="fa-solid fa-camera"></i></button>
-                            </div>
-                            <button type="submit" class="btn-secondary w-full">Pesquisar / Abrir</button>
-                        </form>
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="location-search-input" class="form-input font-mono" placeholder="Cód: RUA-A-01">
+                            <button type="button" id="btn-scan-location" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600"><i class="fa-solid fa-camera"></i></button>
+                        </div>
+                        <button type="button" id="btn-search-location" class="btn-secondary w-full">Pesquisar / Abrir</button>
                     </div>
+                    
                     <div class="w-full md:w-2/3">
                         <div id="location-details-panel" class="card hidden mb-6 border-ios-blue shadow-lg shadow-ios-blue/10">
                             <div class="flex justify-between items-start mb-6 border-b border-ios-border pb-4">
-                                <div><h2 class="text-2xl font-bold text-white mb-1" id="loc-detail-name">Nome do Local</h2><p class="text-ios-blue font-mono font-bold bg-ios-blue/10 px-2 py-1 rounded inline-block" id="loc-detail-code">CODIGO</p></div>
+                                <div>
+                                    <h2 class="text-2xl font-bold text-white mb-1" id="loc-detail-name">Nome do Local</h2>
+                                    <p class="text-ios-blue font-mono font-bold bg-ios-blue/10 px-2 py-1 rounded inline-block" id="loc-detail-code">CODIGO</p>
+                                </div>
                                 <div class="flex gap-2">
                                     <button type="button" id="btn-edit-location" class="text-ios-blue bg-ios-blue/10 p-3 rounded-xl hover:bg-ios-blue/20 transition-colors" title="Editar Endereço"><i class="fa-solid fa-pen"></i></button>
                                     <button type="button" id="btn-delete-location" class="text-ios-red bg-ios-red/10 p-3 rounded-xl hover:bg-ios-red/20 transition-colors" title="Apagar Endereço"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </div>
+                            
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-sm font-semibold text-ios-textMuted uppercase">Lotes Neste Endereço</h3>
-                                <button type="button" id="btn-add-batch-to-loc" class="text-ios-green bg-ios-green/10 px-4 py-2 rounded-xl font-bold hover:bg-ios-green/20 text-sm transition-colors"><i class="fa-solid fa-plus mr-1"></i>Alocar Lote</button>
+                                <button type="button" id="btn-add-batch-to-loc" class="text-ios-green bg-ios-green/10 px-4 py-2 rounded-xl font-bold hover:bg-ios-green/20 text-sm transition-colors"><i class="fa-solid fa-plus mr-1"></i>Alocar Lote Aqui</button>
                             </div>
-                            <div class="table-container max-h-64 overflow-y-auto custom-scroll">
-                                <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Lote</th><th class="base-th">Qtd</th><th class="base-th text-center">Retirar</th></tr></thead><tbody id="loc-batches-body"></tbody></table>
+                            <div class="table-container max-h-64 overflow-y-auto">
+                                <table class="base-table">
+                                    <thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Lote</th><th class="base-th">Qtd</th><th class="base-th text-center">Retirar</th></tr></thead>
+                                    <tbody id="loc-batches-body"></tbody>
+                                </table>
                             </div>
                         </div>
 
+                        <!-- Estado Vazio e Forms... -->
                         <div id="location-create-panel" class="card hidden border-ios-orange border-dashed">
                             <h2 class="title-md mb-2 text-ios-orange">Local não cadastrado!</h2>
-                            <p class="text-sm text-ios-textMuted mb-6">O código não existe. Deseja registar este novo endereço?</p>
+                            <p class="text-sm text-ios-textMuted mb-6">O código não existe. Deseja registrar este novo endereço?</p>
                             <form id="location-form" class="space-y-4">
-                                <div><label class="form-label">Código Lido/Digitado</label><input type="text" id="loc-form-code" required readonly class="form-input bg-ios-bg text-ios-textMuted font-mono"></div>
-                                <div><label class="form-label">Nome de Identificação (Ex: Prateleira B Nível 2)</label><input type="text" id="loc-form-name" required class="form-input" autocomplete="off"></div>
-                                <div class="flex justify-end gap-3 mt-4"><button type="button" id="btn-cancel-loc" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Criar Endereço</button></div>
+                                <div><label class="form-label">Código Lida/Digitado</label><input type="text" id="loc-form-code" required readonly class="form-input bg-ios-bg text-ios-textMuted font-mono"></div>
+                                <div><label class="form-label">Nome de Identificação (Ex: Prateleira B Nível 2)</label><input type="text" id="loc-form-name" required class="form-input"></div>
+                                <div class="flex justify-end gap-3 mt-4">
+                                    <button type="button" id="btn-cancel-loc" class="btn-secondary">Cancelar</button>
+                                    <button type="submit" class="btn-primary">Criar Endereço</button>
+                                </div>
                             </form>
                         </div>
                         
                         <div id="location-empty-state" class="card flex flex-col items-center justify-center py-20 text-center border-dashed">
-                            <i class="fa-solid fa-map-location-dot text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Busque ou leia o código de barras de um local para gerir o stock.</p>
+                            <i class="fa-solid fa-map-location-dot text-6xl text-ios-cardHover mb-4"></i>
+                            <p class="text-ios-textMuted">Busque ou leia o código de barras de um local para gerenciar o estoque nele.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- ENTRADA INTELIGENTE / MASSA -->
+            <!-- Entrada em Massa -->
             <div id="screen-entry" class="screen-panel hidden">
-                <h1 class="title-lg">Entrada de Insumos</h1>
-                <div class="card mb-6 overflow-visible relative">
-                    <h2 class="title-md mb-4">Adicionar Item à Lista de Recebimento</h2>
+                <h1 class="title-lg">Entrada de Insumos (Lotes Físicos)</h1>
+                
+                <div class="card mb-6">
+                    <h2 class="title-md mb-4">Adicionar Item à Lista de Entrada</h2>
                     <form id="entry-form">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-5 items-start relative">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
                             <div class="md:col-span-1">
-                                <label class="form-label">Cód Produto / Barras</label>
+                                <label class="form-label">Buscar / Bipar Produto</label>
                                 <div class="flex gap-2">
-                                    <input type="text" id="entry-dynamic-code" required class="form-input font-mono" placeholder="Bipar ou digitar..." autocomplete="off">
-                                    <button type="button" id="btn-scan-dynamic-code" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600 transition"><i class="fa-solid fa-camera"></i></button>
+                                    <div id="entry-searchable-container" class="searchable-container flex-1"></div>
+                                    <button type="button" id="btn-scan-entry-code" class="bg-ios-blue text-white p-3 rounded-xl hover:bg-blue-600 transition"><i class="fa-solid fa-camera"></i></button>
                                 </div>
                             </div>
-                            <div class="md:col-span-3 flex items-center h-[46px] mt-6">
-                                <div id="entry-status-msg" class="text-sm text-ios-textMuted bg-ios-bg p-3 rounded-xl border border-ios-border w-full">A aguardar código...</div>
+                            <div class="md:col-span-1">
+                                <label class="form-label">Quantidade</label>
+                                <input type="number" name="quantity" required min="0.01" step="0.01" class="form-input text-ios-blue font-bold">
                             </div>
-
-                            <div id="entry-pending-order-alert" class="col-span-1 md:col-span-4 hidden bg-ios-blue/10 border-l-4 border-ios-blue p-3 rounded-r-xl">
-                                <p class="text-ios-blue font-bold text-sm"><i class="fa-solid fa-truck-fast mr-2"></i>Atenção: Existe um pedido em trânsito para este item!</p>
+                            <div class="md:col-span-1">
+                                <button type="submit" class="btn-secondary w-full"><i class="fa-solid fa-plus mr-2"></i>Adicionar Lote à Lista</button>
                             </div>
-
-                            <div id="entry-new-fields" class="col-span-1 md:col-span-4 grid grid-cols-1 md:grid-cols-4 gap-5 hidden bg-ios-cardHover p-5 rounded-xl border border-ios-orange shadow-inner mt-2">
-                                <div class="md:col-span-4 text-ios-orange font-bold text-sm mb-1"><i class="fa-solid fa-sparkles mr-2"></i>Registar Novo Produto</div>
-                                <div class="md:col-span-2"><label class="form-label">Nome do Produto *</label><input type="text" id="entry-new-name" class="form-input bg-ios-bg"></div>
-                                <div class="md:col-span-2"><label class="form-label">Fornecedor *</label><input type="text" id="entry-new-supplier" class="form-input bg-ios-bg"></div>
-                                <div><label class="form-label">Tipo</label><select id="entry-new-type" class="form-input bg-ios-bg"><option value="insumo">Insumo</option><option value="semi_acabado">Semi-acabado</option></select></div>
-                                <div><label class="form-label">Prazo (Dias Úteis)</label><input type="number" id="entry-new-lead" class="form-input bg-ios-bg" value="0" min="0"></div>
-                                <div><label class="form-label">Estoque Mínimo</label><input type="number" step="0.01" id="entry-new-min" class="form-input bg-ios-bg" value="0" min="0"></div>
-                            </div>
-
-                            <div class="col-span-1 md:col-span-4 border-t border-ios-border my-2"></div>
-
-                            <div class="md:col-span-1"><label class="form-label">Quantidade</label><input type="number" id="entry-qty" required min="0.001" step="0.001" class="form-input text-ios-blue font-bold"></div>
-                            <div class="md:col-span-1"><label class="form-label">Validade (Opcional)</label><input type="date" id="entry-expiry" class="form-input"></div>
-                            <div class="md:col-span-1"><label class="form-label">Endereço (Opcional)</label>
-                                <div class="flex gap-2">
-                                    <input type="text" id="entry-loc" class="form-input font-mono" placeholder="Ex: RUA-A" autocomplete="off">
-                                    <button type="button" id="btn-scan-entry-loc" class="bg-ios-cardHover text-ios-blue px-3 rounded-xl border border-ios-border"><i class="fa-solid fa-camera"></i></button>
-                                </div>
-                            </div>
-                            <div class="md:col-span-1 flex items-end"><button type="submit" class="btn-secondary w-full py-3 h-[46px]"><i class="fa-solid fa-plus mr-2"></i>Adicionar à Lista</button></div>
                         </div>
                     </form>
                 </div>
-                
+
                 <div class="card">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="title-md mb-0">Lista de Recebimentos</h2>
+                        <h2 class="title-md mb-0">Lista de Recebimento</h2>
                         <button type="button" id="btn-save-bulk-entry" class="btn-primary shadow-lg shadow-ios-blue/20"><i class="fa-solid fa-check-double mr-2"></i>Efetivar Entradas</button>
                     </div>
                     <div class="table-container overflow-visible">
                         <table class="base-table min-w-full">
-                            <thead class="base-thead"><tr><th class="base-th w-1/4">Produto</th><th class="base-th w-24">Qtd</th><th class="base-th">Lote (Auto/Manual)</th><th class="base-th w-32">Validade</th><th class="base-th w-40">Endereço (Opcional)</th><th class="base-th w-12 text-center"><i class="fa-solid fa-trash"></i></th></tr></thead>
-                            <tbody id="bulk-entry-list" class="divide-y divide-ios-border"><tr><td colspan="6" class="base-td text-center text-ios-textMuted py-8">Nenhum item na lista. Busque e adicione acima.</td></tr></tbody>
+                            <thead class="base-thead">
+                                <tr>
+                                    <th class="base-th w-1/4">Produto</th>
+                                    <th class="base-th w-24">Qtd</th>
+                                    <th class="base-th">Lote (Auto/Manual)</th>
+                                    <th class="base-th w-32">Validade</th>
+                                    <th class="base-th w-40">Endereço (Opcional)</th>
+                                    <th class="base-th w-12 text-center"><i class="fa-solid fa-trash"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="bulk-entry-list" class="divide-y divide-ios-border">
+                                <tr><td colspan="6" class="base-td text-center text-ios-textMuted py-8">Nenhum item na lista. Busque e adicione acima.</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- ESTOQUE GERAL -->
+            <!-- Estoque -->
             <div id="screen-inventory" class="screen-panel hidden">
                 <h1 class="title-lg">Estoque Atual</h1>
                 <div class="card p-0 overflow-hidden border-none bg-transparent">
                     <div class="flex flex-wrap gap-3 mb-5 p-1">
-                        <input type="text" id="search-inventory" placeholder="Pesquisar itens..." class="form-input w-full md:w-64" autocomplete="off">
-                        <select id="type-filter" class="form-input w-auto"><option value="">Todos os Tipos</option><option value="insumo">Insumos</option><option value="semi_acabado">Semi-acabados</option></select>
+                        <input type="text" id="search-inventory" placeholder="Pesquisar itens..." class="form-input w-full md:w-64">
+                        <select id="type-filter" class="form-input w-auto">
+                            <option value="">Todos os Tipos</option>
+                            <option value="insumo">Insumos</option>
+                            <option value="semi_acabado">Semi-acabados</option>
+                        </select>
                         <select id="supplier-filter" class="form-input w-auto"><option value="">Fornecedores</option></select>
-                        <button type="button" id="btn-export-excel" class="btn-primary ml-auto"><i class="fa-solid fa-file-excel mr-2"></i>Exportar Excel</button>
+                        <button type="button" id="btn-export-excel" class="btn-secondary ml-auto"><i class="fa-solid fa-arrow-up-from-bracket mr-2"></i>Exportar</button>
                     </div>
                     <div class="table-container">
                         <table class="base-table">
@@ -398,42 +432,45 @@
                 </div>
             </div>
 
-            <!-- RECEITAS -->
+            <!-- Receitas -->
             <div id="screen-recipes" class="screen-panel hidden">
                 <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
                     <h1 class="title-lg mb-0">Fichas Técnicas / Receitas</h1>
                     <div class="flex gap-3">
-                        <input type="text" id="search-recipe" placeholder="Buscar receita..." class="form-input w-64" autocomplete="off">
+                        <input type="text" id="search-recipe" placeholder="Buscar receita..." class="form-input w-64">
                         <button type="button" id="btn-export-recipe-book" class="btn-secondary"><i class="fa-solid fa-file-pdf mr-2"></i>Livro PDF</button>
-                        <button type="button" id="btn-new-recipe" class="btn-primary"><i class="fa-solid fa-plus mr-2"></i>Nova Receita</button>
+                        <button type="button" id="btn-new-recipe" class="btn-primary"><i class="fa-solid fa-plus mr-2"></i>Criar Receita</button>
                     </div>
                 </div>
                 <div class="flex flex-col xl:flex-row gap-6">
-                    <div class="w-full xl:w-1/4 card self-start"><h2 class="text-sm font-semibold text-ios-textMuted uppercase mb-3">Linhas de Produção</h2><ul id="recipe-categories-list" class="space-y-1"></ul></div>
+                    <div class="w-full xl:w-1/4 card self-start">
+                        <h2 class="text-sm font-semibold text-ios-textMuted uppercase mb-3">Linhas de Produção</h2>
+                        <ul id="recipe-categories-list" class="space-y-1"></ul>
+                    </div>
                     <div id="recipes-grid" class="w-full xl:w-3/4 grid grid-cols-1 md:grid-cols-2 gap-5 self-start"></div>
                 </div>
             </div>
 
-            <!-- SEPARAÇÃO (PICKING) -->
+            <!-- Separação (Picking) -->
             <div id="screen-picking" class="screen-panel hidden">
                 <div class="flex justify-between items-center mb-6">
-                    <div><h1 class="title-lg mb-0 text-ios-orange"><i class="fa-solid fa-dolly mr-3"></i>Separação (Kitting)</h1><p class="text-ios-textMuted mt-1 text-sm">Acompanhe a barra de progresso do que já foi separado. Inclui OPs em até 48h.</p></div>
+                    <div>
+                        <h1 class="title-lg mb-0 text-ios-orange"><i class="fa-solid fa-dolly mr-3"></i>Separação (Kitting por Linha)</h1>
+                        <p class="text-ios-textMuted mt-1 text-sm">Acompanhe o check-list do que já foi separado em cada linha.</p>
+                    </div>
                 </div>
-                <div id="picking-lines-container" class="space-y-8"></div>
+                <div id="picking-lines-container" class="space-y-6"></div>
             </div>
 
-            <!-- PRODUÇÃO (OP) -->
+            <!-- Produção (OP) -->
             <div id="screen-production" class="screen-panel hidden">
                 <div class="flex justify-between items-center mb-6">
                     <h1 class="title-lg mb-0">Ordens de Produção (OP)</h1>
                     <div class="flex gap-3">
-                        <button type="button" id="btn-confirm-production" class="btn-success"><i class="fa-solid fa-check-double mr-2"></i>Efetivar OPs</button>
+                        <button type="button" id="btn-confirm-production" class="btn-success"><i class="fa-solid fa-check-double mr-2"></i>Efetivar OPs Selecionadas</button>
                         <button type="button" id="btn-new-production-order" class="btn-primary"><i class="fa-solid fa-plus mr-2"></i>Nova OP</button>
                     </div>
                 </div>
-                <!-- Calendário Produção -->
-                <div id="production-calendar-container" class="mb-6 max-w-4xl mx-auto"></div>
-                
                 <div class="card mb-5 flex flex-wrap gap-4 items-center border-l-4 border-l-ios-blue">
                     <label class="text-sm font-medium text-ios-textMuted"><i class="fa-solid fa-filter mr-2"></i>Filtrar Programação:</label>
                     <input type="date" id="search-po-by-date" class="form-input w-auto py-2">
@@ -441,28 +478,31 @@
                 <div id="production-orders-list" class="grid grid-cols-1 xl:grid-cols-2 gap-5"></div>
             </div>
 
-            <!-- CONSUMO MENSAL -->
+            <!-- Consumo Mensal -->
             <div id="screen-consumption" class="screen-panel hidden">
                 <h1 class="title-lg">Relatório de Consumo</h1>
                 <div class="card p-0 bg-transparent border-none">
                     <div class="flex gap-3 mb-5">
                         <select id="consumption-month-filter" class="form-input w-auto py-2"></select>
                         <select id="consumption-year-filter" class="form-input w-auto py-2"></select>
-                        <input type="text" id="search-consumption" placeholder="Buscar produto..." class="form-input flex-1 py-2" autocomplete="off">
+                        <input type="text" id="search-consumption" placeholder="Buscar produto..." class="form-input flex-1 py-2">
                     </div>
                     <div class="table-container">
-                        <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th text-right">Volume Consumido</th></tr></thead><tbody id="consumption-table-body"></tbody></table>
+                        <table class="base-table">
+                            <thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th text-right">Volume Consumido</th></tr></thead>
+                            <tbody id="consumption-table-body"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
-            <!-- REQUISIÇÕES AVULSAS -->
+            <!-- Requisições -->
             <div id="screen-requisitions" class="screen-panel hidden">
                 <h1 class="title-lg">Baixa Avulsa (Requisição)</h1>
                 <div class="card max-w-4xl mx-auto">
                     <form id="requisition-form">
                         <div class="grid grid-cols-2 gap-5 mb-6">
-                            <div><label class="form-label">Destino / Motivo</label><input type="text" id="requisition-reason" required class="form-input" placeholder="Ex: Quebra, Teste"></div>
+                            <div><label class="form-label">Destino / Motivo</label><input type="text" id="requisition-reason" required class="form-input" placeholder="Ex: Quebra, Teste, Refeição"></div>
                             <div><label class="form-label">Solicitante</label><input type="text" id="requisition-responsible" required class="form-input" placeholder="Nome"></div>
                         </div>
                         <div class="border-t border-ios-border pt-4">
@@ -470,33 +510,33 @@
                             <div id="requisition-items-container" class="space-y-3 mb-5"></div>
                             <button type="button" id="add-requisition-item-btn" class="text-ios-blue hover:text-blue-400 font-medium text-sm flex items-center"><i class="fa-solid fa-circle-plus mr-2 text-lg"></i>Adicionar Insumo</button>
                         </div>
-                        <div class="mt-8 flex justify-end"><button type="submit" class="btn-primary">Confirmar Saída</button></div>
+                        <div class="mt-8 flex justify-end"><button type="submit" class="btn-primary">Confirmar Saída Avulsa</button></div>
                     </form>
                 </div>
             </div>
 
-            <!-- AJUSTES MANUAIS -->
+            <!-- Ajustes -->
             <div id="screen-adjustments" class="screen-panel hidden">
                 <h1 class="title-lg">Ajuste Manual de Lote</h1>
                 <div class="card max-w-2xl mx-auto">
                     <form id="adjustment-form" class="space-y-5">
                         <div class="z-50 relative"><label class="form-label">Buscar Produto</label><div id="adjustment-searchable-container" class="searchable-container"></div></div>
-                        <div><label class="form-label">Selecionar Lote Físico</label><select id="adjustment-batch" required class="form-input"><option value="">Aguardar produto...</option></select></div>
+                        <div><label class="form-label">Selecionar Lote Físico</label><select id="adjustment-batch" required class="form-input"><option value="">Aguardando produto...</option></select></div>
                         <div><label class="form-label">Nova Quantidade Real (Física)</label><input type="number" id="adjustment-new-quantity" required min="0" step="0.01" class="form-input text-lg font-bold text-ios-blue"></div>
-                        <div><label class="form-label">Motivo do Ajuste</label><input type="text" id="adjustment-reason" required class="form-input" placeholder="Ex: Quebra" autocomplete="off"></div>
-                        <div><label class="form-label">Responsável</label><input type="text" id="adjustment-responsible" required class="form-input" autocomplete="off"></div>
-                        <div class="mt-8 flex justify-end"><button type="submit" class="btn-primary">Registar Ajuste</button></div>
+                        <div><label class="form-label">Motivo do Ajuste</label><input type="text" id="adjustment-reason" required class="form-input" placeholder="Ex: Recontagem de inventário"></div>
+                        <div><label class="form-label">Responsável</label><input type="text" id="adjustment-responsible" required class="form-input"></div>
+                        <div class="mt-8 flex justify-end"><button type="submit" class="btn-primary">Registrar Ajuste</button></div>
                     </form>
                 </div>
             </div>
 
-            <!-- CONFIGURAÇÕES E BANCO DE DADOS -->
+            <!-- Configurações e Banco de Dados -->
             <div id="screen-settings" class="screen-panel hidden max-w-3xl mx-auto">
                 <h1 class="title-lg">Banco de Dados</h1>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="card border-ios-blue border">
                         <h2 class="title-md text-ios-blue"><i class="fa-solid fa-download mr-2"></i>Backup de Dados</h2>
-                        <p class="text-sm text-ios-textMuted mb-6">Baixe um ficheiro JSON com todas as informações atuais do banco de dados (Nuvem).</p>
+                        <p class="text-sm text-ios-textMuted mb-6">Baixe um arquivo JSON com todas as informações atuais do banco de dados (Nuvem).</p>
                         <button type="button" id="btn-download-db" class="btn-primary w-full"><i class="fa-solid fa-cloud-arrow-down mr-2"></i>Fazer Backup Seguro</button>
                     </div>
                     <div class="card border-ios-red border">
@@ -506,62 +546,147 @@
                     </div>
                 </div>
             </div>
+
         </main>
     </div>
 
-    <!-- MARCA D'ÁGUA -->
-    <div class="fixed bottom-2 right-3 z-[9999] text-[10px] text-ios-textMuted/40 pointer-events-none select-none">
-        &copy; Jan Gabriel todos os direitos reservados
-    </div>
+    <!-- Modais Flutuantes -->
 
-    <!-- ===== MODAIS FLUTUANTES GLOBAIS ===== -->
-    <div id="scanner-modal" class="modal z-[99999]">
-        <div class="modal-content max-w-md w-full flex flex-col p-6 relative">
-            <button type="button" class="absolute -top-4 -right-4 bg-ios-red text-white w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold border-2 border-ios-bg shadow-xl close-scanner cursor-pointer z-50">&times;</button>
-            <div class="flex justify-between items-center mb-4"><h2 class="title-md mb-0 text-white"><i class="fa-solid fa-camera mr-2"></i>Leitor de Código</h2></div>
-            <div class="bg-black rounded-xl overflow-hidden shadow-inner border border-ios-border flex items-center justify-center min-h-[300px] mb-4"><div id="reader" class="w-full h-full"></div></div>
-            <div class="flex gap-2">
-                <input type="text" id="scanner-manual-input" class="form-input flex-1 font-mono text-center text-lg" placeholder="Ou digite o código aqui..." autocomplete="off">
-                <button type="button" id="btn-scanner-manual-confirm" class="btn-primary px-6"><i class="fa-solid fa-check"></i></button>
+    <!-- Modal Nova Ficha/Receita -->
+    <div id="recipe-modal" class="modal z-[6000]">
+        <div class="modal-content max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-6 border-b border-ios-border pb-4">
+                <h2 id="recipe-modal-title" class="title-md mb-0 text-ios-blue flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Nova Receita</h2>
+                <button type="button" class="text-ios-textMuted hover:text-white text-3xl ml-2 close-modal leading-none" data-target="recipe-modal">&times;</button>
             </div>
-        </div>
-    </div>
-
-    <div id="picking-scan-qty-modal" class="modal z-[6000]">
-        <div class="modal-content max-w-sm">
-            <h2 class="title-md mb-2 text-ios-orange">Quantidade Encontrada</h2>
-            <p class="text-sm text-white mb-4" id="picking-scan-qty-name"></p>
-            <form id="picking-scan-qty-form" class="space-y-4">
-                <div><label class="form-label">Quantidade FÍSICA Coletada:</label><input type="number" id="picking-scan-qty" step="0.001" required class="form-input text-ios-blue text-2xl font-bold text-center py-4"></div>
-                <div class="flex justify-end gap-2 pt-2"><button type="button" class="btn-secondary close-modal" data-target="picking-scan-qty-modal">Cancelar</button><button type="submit" class="btn-primary px-6">Confirmar Baixa</button></div>
+            <form id="recipe-form" class="space-y-6">
+                <input type="hidden" id="edit-recipe-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Nome da Ficha / Produto Final</label>
+                        <input type="text" id="recipe-name" required class="form-input" placeholder="Ex: Pão de Queijo">
+                    </div>
+                    <div>
+                        <label class="form-label">Categoria / Linha</label>
+                        <input type="text" id="recipe-category" required class="form-input" placeholder="Ex: Salgados">
+                    </div>
+                </div>
+                <div class="flex flex-col gap-3 bg-ios-cardHover p-4 rounded-xl border border-ios-border">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" id="recipe-is-semi" class="w-5 h-5 accent-ios-orange">
+                        <label for="recipe-is-semi" class="text-white font-medium cursor-pointer">É um Semi-acabado (Gera estoque ao produzir)</label>
+                    </div>
+                    <div id="yield-wrapper" class="hidden pl-8 border-l-2 border-ios-orange mt-2">
+                        <label class="form-label text-ios-orange mb-1">Rendimento Físico Padrão (Quantos KG ou UN são gerados?)</label>
+                        <input type="number" step="0.0001" id="recipe-yield" class="form-input w-1/2" value="1" placeholder="Ex: 50">
+                    </div>
+                </div>
+                
+                <div class="border-t border-ios-border pt-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-semibold text-ios-textMuted uppercase">Ingredientes da Ficha Técnica</h3>
+                        <button type="button" id="add-ingredient-btn" class="text-ios-blue hover:text-white font-medium text-sm flex items-center bg-ios-blue/20 hover:bg-ios-blue px-3 py-1 rounded-lg transition-colors"><i class="fa-solid fa-plus mr-1"></i> Adicionar Insumo</button>
+                    </div>
+                    <div id="ingredients-container" class="space-y-3"></div>
+                </div>
+                <div class="flex justify-end gap-3 pt-4 border-t border-ios-border mt-6">
+                    <button type="button" class="btn-secondary close-modal px-6" data-target="recipe-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary px-8"><i class="fa-solid fa-save mr-2"></i>Salvar Receita</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <div id="modal-add-loc-batch" class="modal z-[6000]">
-        <div class="modal-content max-w-md">
-            <h2 class="title-md mb-4 text-ios-blue">Alocar Lote no Endereço</h2>
-            <form id="add-loc-batch-form" class="space-y-4">
-                <input type="hidden" id="add-loc-target-code">
-                <div class="z-50 relative"><label class="form-label">1. Buscar Produto</label><div id="add-loc-searchable-container" class="searchable-container"></div></div>
-                <div><label class="form-label">2. Selecionar Lote Físico Existente</label><select id="add-loc-batch-select" required class="form-input bg-ios-input"><option value="">Aguardar produto...</option></select></div>
-                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="modal-add-loc-batch">Cancelar</button><button type="submit" class="btn-primary">Confirmar</button></div>
+    <!-- Modal Nova Ordem de Produção -->
+    <div id="production-order-modal" class="modal z-[6000]">
+        <div class="modal-content max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-6 border-b border-ios-border pb-4">
+                <h2 class="title-md mb-0 text-white flex items-center"><i class="fa-solid fa-hammer mr-3 text-ios-orange"></i>Nova Ordem de Produção</h2>
+                <button type="button" class="text-ios-textMuted hover:text-white text-3xl ml-2 close-modal leading-none" data-target="production-order-modal">&times;</button>
+            </div>
+            <form id="production-order-form" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5 relative">
+                    <div class="z-50 md:col-span-2">
+                        <label class="form-label">Qual ficha será produzida?</label>
+                        <div id="po-recipe-searchable-container" class="searchable-container"></div>
+                    </div>
+                    <div>
+                        <label class="form-label">Data de Produção Programada</label>
+                        <input type="date" id="po-date" required class="form-input">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-5 items-end">
+                    <div>
+                        <label class="form-label">Qtd de Receitas (Multiplicador)</label>
+                        <input type="number" step="0.01" id="po-quantity" required class="form-input font-bold text-xl text-center text-ios-blue py-4" value="1" min="0.01">
+                    </div>
+                    <div class="md:col-span-3 flex items-center gap-3 bg-ios-cardHover hover:bg-ios-red/10 transition-colors p-4 rounded-xl border border-ios-border h-full cursor-pointer">
+                        <input type="checkbox" id="po-is-extra" class="w-6 h-6 accent-ios-red">
+                        <label for="po-is-extra" class="text-white font-medium text-sm cursor-pointer w-full">Marcar como OP EXTRA / URGENTE (Fura a fila de separação)</label>
+                    </div>
+                </div>
+
+                <div id="po-output-fields" class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-ios-orange/10 p-5 rounded-xl border border-ios-orange/30 hidden">
+                    <div>
+                        <label class="form-label text-ios-orange">Lote de Saída (Gerado Automaticamente)</label>
+                        <input type="text" id="po-output-batch" class="form-input bg-ios-bg border-ios-orange/50 font-mono text-white">
+                    </div>
+                    <div>
+                        <label class="form-label text-ios-orange">Rendimento Físico Total Previsto (Apenas informativo)</label>
+                        <input type="text" id="po-total-output" readonly class="form-input bg-ios-bg border-ios-orange/50 font-bold text-white text-lg">
+                    </div>
+                </div>
+                
+                <div class="border-t border-ios-border pt-4">
+                    <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3 flex items-center"><i class="fa-solid fa-calculator mr-2"></i>Previsão de Consumo Físico</h3>
+                    <div class="table-container max-h-64 overflow-y-auto">
+                        <table class="base-table w-full">
+                            <thead class="base-thead">
+                                <tr>
+                                    <th class="base-th">Insumo</th>
+                                    <th class="base-th w-24">Saldo Físico</th>
+                                    <th class="base-th w-32">Necessário na OP</th>
+                                    <th class="base-th">Lotes Reservados (Plano PEPS)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="po-ingredients-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-ios-border mt-6">
+                    <button type="button" class="btn-secondary close-modal px-6" data-target="production-order-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary px-8 shadow-lg shadow-ios-blue/20"><i class="fa-solid fa-plus-circle mr-2"></i>Adicionar OP na Fila</button>
+                </div>
             </form>
         </div>
     </div>
 
+
+    <!-- Modal Editar Endereço -->
     <div id="edit-location-modal" class="modal z-[6000]">
         <div class="modal-content max-w-sm">
             <h2 class="title-md mb-4 text-ios-blue">Editar Endereço</h2>
             <form id="edit-location-form" class="space-y-4">
                 <input type="hidden" id="edit-loc-old-code">
-                <div><label class="form-label">Código (Rua/Posição)</label><input type="text" id="edit-loc-new-code" required class="form-input font-mono text-ios-blue" autocomplete="off"></div>
-                <div><label class="form-label">Nome Visível</label><input type="text" id="edit-loc-new-name" required class="form-input" autocomplete="off"></div>
-                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="edit-location-modal">Cancelar</button><button type="submit" class="btn-primary">Salvar e Atualizar</button></div>
+                <div>
+                    <label class="form-label">Código (Rua/Posição)</label>
+                    <input type="text" id="edit-loc-new-code" required class="form-input font-mono text-ios-blue">
+                </div>
+                <div>
+                    <label class="form-label">Nome Visível</label>
+                    <input type="text" id="edit-loc-new-name" required class="form-input">
+                </div>
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" class="btn-secondary close-modal" data-target="edit-location-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar e Atualizar Lotes</button>
+                </div>
             </form>
         </div>
     </div>
 
+    <!-- Modal Editar Prazo Fornecedor -->
     <div id="edit-supplier-modal" class="modal z-[6000]">
         <div class="modal-content max-w-sm">
             <h2 class="title-md mb-2 text-ios-blue">Editar Fornecedor</h2>
@@ -569,54 +694,135 @@
             <form id="edit-supplier-form" class="space-y-4">
                 <input type="hidden" id="edit-supplier-old-name">
                 <div><label class="form-label">Prazo Padrão de Entrega (Dias Úteis)</label><input type="number" id="edit-supplier-lead" min="0" required class="form-input"></div>
-                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="edit-supplier-modal">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" class="btn-secondary close-modal" data-target="edit-supplier-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar p/ Todos Itens</button>
+                </div>
             </form>
         </div>
     </div>
 
+    <!-- Modal Fazer Pedido (Compras) -->
     <div id="place-order-modal" class="modal z-[6000]">
         <div class="modal-content max-w-sm">
-            <h2 class="title-md mb-2 text-ios-blue">Registar Encomenda</h2>
+            <h2 class="title-md mb-2 text-ios-blue">Registrar Pedido</h2>
             <p class="text-sm text-white mb-4" id="order-product-name"></p>
             <form id="place-order-form" class="space-y-4">
                 <input type="hidden" id="order-product-id">
-                <div><label class="form-label">Quantidade Solicitada</label><input type="number" id="order-qty" step="0.01" required class="form-input text-ios-blue font-bold"></div>
+                <div><label class="form-label">Quantidade Solicitada ao Fornecedor</label><input type="number" id="order-qty" step="0.01" required class="form-input text-ios-blue font-bold"></div>
                 <div><label class="form-label">Previsão de Entrega</label><input type="date" id="order-date" required class="form-input"></div>
-                <div class="flex justify-end gap-2 pt-4"><button type="button" class="btn-secondary close-modal" data-target="place-order-modal">Cancelar</button><button type="submit" class="btn-primary">Confirmar</button></div>
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" class="btn-secondary close-modal" data-target="place-order-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary">Confirmar Pedido</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <div id="picking-modal" class="modal z-[60]">
+    <!-- Scanner Câmera Modal Global Atualizado (Formato Retangular Maior) -->
+    <div id="scanner-modal" class="modal z-[99999]">
+        <div class="modal-content max-w-2xl w-full flex flex-col p-6 relative">
+            <button type="button" class="absolute -top-4 -right-4 bg-ios-red text-white w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold border-2 border-ios-bg shadow-xl close-scanner cursor-pointer z-50">&times;</button>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="title-md mb-0 text-white"><i class="fa-solid fa-camera mr-2"></i>Leitor de Código (Alinhe com a barra horizontal)</h2>
+            </div>
+            <div class="bg-black rounded-xl overflow-hidden shadow-inner border border-ios-border flex items-center justify-center min-h-[400px] sm:min-h-[500px] mb-4 relative">
+                <div id="reader" class="w-full h-full absolute inset-0"></div>
+            </div>
+            <div class="flex gap-2">
+                <input type="text" id="scanner-manual-input" class="form-input flex-1 font-mono text-center text-lg" placeholder="Ou digite o código de barras manualmente aqui..." autocomplete="off">
+                <button type="button" id="btn-scanner-manual-confirm" class="btn-primary px-8"><i class="fa-solid fa-check"></i> OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Entrada Qtde Separação (Picking via Câmera) -->
+    <div id="picking-scan-qty-modal" class="modal z-[6000]">
+        <div class="modal-content max-w-sm">
+            <h2 class="title-md mb-2 text-ios-orange">Quantidade Encontrada</h2>
+            <p class="text-sm text-white mb-4" id="picking-scan-qty-name"></p>
+            <form id="picking-scan-qty-form" class="space-y-4">
+                <div>
+                    <label class="form-label">Quantidade FÍSICA Coletada:</label>
+                    <input type="number" id="picking-scan-qty" step="0.001" required class="form-input text-ios-blue text-2xl font-bold text-center py-4">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" class="btn-secondary close-modal" data-target="picking-scan-qty-modal">Cancelar</button>
+                    <button type="submit" class="btn-primary px-6">Confirmar Baixa Real</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Lote a Endereço -->
+    <div id="modal-add-loc-batch" class="modal z-[6000]">
+        <div class="modal-content max-w-md">
+            <h2 class="title-md mb-4 text-ios-blue">Alocar Lote no Endereço</h2>
+            <form id="add-loc-batch-form" class="space-y-4">
+                <input type="hidden" id="add-loc-target-code">
+                
+                <div class="z-50 relative">
+                    <label class="form-label">1. Buscar Produto</label>
+                    <div id="add-loc-searchable-container" class="searchable-container"></div>
+                </div>
+                <div>
+                    <label class="form-label">2. Selecionar Lote Físico Existente</label>
+                    <select id="add-loc-batch-select" required class="form-input bg-ios-input">
+                        <option value="">Aguardando produto...</option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" class="btn-secondary close-modal" data-target="modal-add-loc-batch">Cancelar</button>
+                    <button type="submit" class="btn-primary">Confirmar Movimentação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Picking (Separação Agrupada - Sem Cronômetro) -->
+    <div id="picking-modal" class="modal z-[6000]">
         <div class="modal-content max-w-5xl max-h-[95vh] overflow-hidden flex flex-col p-0 bg-ios-bg border border-ios-border">
             <div class="flex justify-between items-start shrink-0 p-6 border-b border-ios-border bg-ios-cardHover">
-                <div><h2 id="picking-modal-title" class="title-md mb-1 text-ios-orange flex items-center"><i class="fa-solid fa-dolly mr-3 text-2xl"></i><span>Check-list de Separação</span></h2><p id="picking-modal-subtitle" class="text-sm text-ios-textMuted font-medium"></p></div>
+                <div>
+                    <h2 id="picking-modal-title" class="title-md mb-1 text-ios-orange flex items-center"><i class="fa-solid fa-dolly mr-3 text-2xl"></i><span>Check-list de Separação</span></h2>
+                    <p id="picking-modal-subtitle" class="text-sm text-ios-textMuted font-medium"></p>
+                </div>
                 <button type="button" class="text-ios-textMuted hover:text-white text-4xl ml-4 close-modal leading-none" data-target="picking-modal">&times;</button>
             </div>
+            
             <div id="picking-setup-view" class="p-10 flex flex-col items-center justify-center bg-ios-card h-[50vh]">
                 <i class="fa-solid fa-clipboard-user text-6xl text-ios-orange mb-6"></i>
-                <h3 class="text-2xl font-bold text-white mb-2">Quem vai separar esta equipa?</h3>
-                <p class="text-ios-textMuted text-sm mb-8 text-center max-w-md">Insira o seu nome para iniciar o cronómetro independente.</p>
+                <h3 class="text-2xl font-bold text-white mb-2">Quem vai separar esta linha?</h3>
+                <p class="text-ios-textMuted text-sm mb-8 text-center max-w-md">Insira o seu nome abaixo para registrar a responsabilidade por esta separação.</p>
                 <input type="text" id="picking-responsible" class="form-input max-w-xs text-center text-xl py-4 mb-6 shadow-inner border border-ios-border" placeholder="O seu nome aqui" autocomplete="off">
-                <button type="button" id="btn-start-picking" class="btn-success py-4 px-10 text-lg rounded-full shadow-lg shadow-ios-green/20 hover:-translate-y-1 transform transition"><i class="fa-solid fa-play mr-2"></i> Iniciar Cronómetro</button>
+                <button type="button" id="btn-start-picking" class="btn-success py-4 px-10 text-lg rounded-full shadow-lg shadow-ios-green/20 hover:-translate-y-1 transform transition"><i class="fa-solid fa-dolly mr-2"></i> Iniciar Check-list de Separação</button>
             </div>
+
             <div id="picking-active-view" class="hidden flex-col flex-1 overflow-hidden h-[70vh]">
-                <div class="bg-ios-bg px-6 py-4 flex flex-wrap justify-between items-center shrink-0 border-b border-ios-border shadow-inner gap-4">
+                <div class="bg-ios-bg px-6 py-4 flex justify-between items-center shrink-0 border-b border-ios-border shadow-inner gap-4">
                     <div class="flex gap-4 items-center">
-                        <div><p class="text-[10px] text-ios-textMuted uppercase font-bold tracking-widest mb-1">Responsável</p><p class="font-bold text-white text-lg flex items-center"><i class="fa-solid fa-user-check text-ios-blue mr-2"></i><span id="picking-active-resp">---</span></p></div>
+                        <div>
+                            <p class="text-[10px] text-ios-textMuted uppercase font-bold tracking-widest mb-1">Responsável</p>
+                            <p class="font-bold text-white text-lg flex items-center"><i class="fa-solid fa-user-check text-ios-blue mr-2"></i><span id="picking-active-resp">---</span></p>
+                        </div>
                         <div class="h-10 border-l border-ios-border mx-2"></div>
                         <button type="button" id="btn-picking-scan" class="bg-ios-cardHover border border-ios-blue text-ios-blue hover:bg-ios-blue hover:text-white py-2 px-4 rounded-xl transition font-bold flex items-center shadow-lg"><i class="fa-solid fa-camera mr-2"></i>Bipar Item Coletado</button>
                     </div>
-                    <div class="text-center bg-ios-card px-8 py-2 rounded-2xl border border-ios-border shadow-md">
-                        <div class="text-4xl font-mono font-bold text-ios-orange tracking-widest live-timer timer-active" id="picking-timer-display" data-start="">00:00</div>
-                        <p class="text-[10px] text-ios-textMuted uppercase mt-1">Tempo Corrido</p>
-                    </div>
                     <button type="button" id="btn-finish-picking" class="btn-primary py-3 px-6 shadow-lg shadow-ios-blue/20 rounded-xl"><i class="fa-solid fa-flag-checkered mr-2"></i>Finalizar OPs da Linha</button>
                 </div>
+
                 <div class="overflow-y-auto flex-1 bg-ios-bg p-6">
                     <div class="table-container shadow-xl">
                         <table class="base-table w-full text-left">
-                            <thead class="base-thead sticky top-0 z-10 shadow-sm"><tr><th class="base-th rounded-tl-lg text-sm">Item a Separar (Consolidado)</th><th class="base-th text-right text-sm">Necessário OP</th><th class="base-th text-center w-56 text-sm">Qtd Real no Carrinho</th><th class="base-th text-center rounded-tr-lg text-sm">Pronto</th></tr></thead>
+                            <thead class="base-thead sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th class="base-th rounded-tl-lg text-sm">Item a Separar (Consolidado)</th>
+                                    <th class="base-th text-right text-sm">Necessário OP</th>
+                                    <th class="base-th text-center w-56 text-sm">Qtd Real no Carrinho</th>
+                                    <th class="base-th text-center rounded-tr-lg text-sm">Pronto</th>
+                                </tr>
+                            </thead>
                             <tbody id="picking-checklist-body" class="divide-y divide-ios-border"></tbody>
                         </table>
                     </div>
@@ -625,8 +831,9 @@
         </div>
     </div>
 
-    <div id="item-details-modal" class="modal z-[50]">
-        <div class="modal-content max-w-6xl max-h-[90vh] overflow-y-auto">
+    <!-- Modal Detalhes Item (Estoque) -->
+    <div id="item-details-modal" class="modal z-[6000]">
+        <div class="modal-content max-w-5xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-start mb-6">
                 <div>
                     <h2 class="title-md flex items-center mb-1 text-2xl tracking-tight"><span id="details-product-name"></span></h2>
@@ -645,33 +852,47 @@
                 <div><span class="text-ios-textMuted block mb-1">Estoque Mín.</span><span id="details-min-stock" class="text-ios-orange font-medium"></span></div>
                 <div><span class="text-ios-textMuted block mb-1">Saldo Físico</span><span id="details-total-quantity" class="text-ios-green font-bold text-xl"></span></div>
             </div>
+            
             <div id="item-details-edit" class="hidden mb-6 bg-ios-bg p-5 rounded-2xl border border-ios-border shadow-inner">
                 <form id="edit-item-form" class="grid grid-cols-1 md:grid-cols-6 gap-5">
                     <input type="hidden" id="edit-item-id">
                     <div class="md:col-span-6"><label class="form-label">Classificação</label><select id="edit-product-type" required class="form-input"><option value="insumo">Insumo</option><option value="semi_acabado">Semi-acabado</option></select></div>
-                    <div class="md:col-span-6"><label class="form-label">Nome</label><input type="text" id="edit-product-name" required class="form-input" autocomplete="off"></div>
-                    <div class="md:col-span-2"><label class="form-label">Cód Interno</label><input type="text" id="edit-product-code" class="form-input" autocomplete="off"></div>
-                    <div class="md:col-span-3"><label class="form-label">Fornecedor</label><input type="text" id="edit-supplier" class="form-input" autocomplete="off"></div>
+                    <div class="md:col-span-6"><label class="form-label">Nome</label><input type="text" id="edit-product-name" required class="form-input"></div>
+                    <div class="md:col-span-2"><label class="form-label">Cód Interno</label><input type="text" id="edit-product-code" class="form-input"></div>
+                    <div class="md:col-span-3"><label class="form-label">Fornecedor</label><input type="text" id="edit-supplier" class="form-input"></div>
                     <div class="md:col-span-1"><label class="form-label">Estoque Mín.</label><input type="number" step="0.01" id="edit-min-stock" class="form-input text-ios-orange font-bold"></div>
-                    <div class="md:col-span-6"><label class="form-label">EANs (Separe por vírgula para múltiplos)</label><input type="text" id="edit-product-barcode" class="form-input font-mono" autocomplete="off"></div>
+                    <div class="md:col-span-6"><label class="form-label">EANs (Separe por vírgula para múltiplos)</label><input type="text" id="edit-product-barcode" class="form-input font-mono"></div>
                     <div class="md:col-span-6 flex justify-end gap-3 mt-2"><button type="button" id="btn-cancel-edit" class="btn-secondary">Cancelar</button><button type="submit" class="btn-primary">Salvar Edição</button></div>
                 </form>
             </div>
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div>
                     <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3">Lotes Físicos na Prateleira</h3>
                     <div class="table-container mb-8 max-h-96 overflow-y-auto">
-                        <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Lote</th><th class="base-th">Status</th><th class="base-th">Local</th><th class="base-th">Validade</th><th class="base-th">Volume</th><th class="base-th text-center">Gestão</th></tr></thead><tbody id="details-batches-table"></tbody></table>
+                        <table class="base-table">
+                            <thead class="base-thead"><tr><th class="base-th">Lote</th><th class="base-th">Status</th><th class="base-th">Local</th><th class="base-th">Validade</th><th class="base-th">Volume</th><th class="base-th text-center">Gestão</th></tr></thead>
+                            <tbody id="details-batches-table"></tbody>
+                        </table>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3 flex justify-between items-center">Extrato de Movimentação<button type="button" id="btn-clear-hist-filters" class="text-xs text-ios-blue hover:text-blue-300 font-normal underline hidden">Limpar Filtros</button></h3>
+                    <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3 flex justify-between items-center">
+                        Extrato de Movimentação
+                        <button type="button" id="btn-clear-hist-filters" class="text-xs text-ios-blue hover:text-blue-300 font-normal underline hidden">Limpar Filtros</button>
+                    </h3>
                     <div class="flex flex-wrap gap-2 mb-3 bg-ios-bg p-3 rounded-xl border border-ios-border shadow-inner">
                         <div class="w-full text-xs text-ios-textMuted font-medium mb-1">Filtrar por Período e Tipo:</div>
                         <input type="date" id="hist-filter-start" class="form-input py-1 px-2 text-xs w-auto border-ios-border">
                         <span class="text-ios-textMuted flex items-center text-xs">até</span>
                         <input type="date" id="hist-filter-end" class="form-input py-1 px-2 text-xs w-auto border-ios-border">
-                        <select id="hist-filter-type" class="form-input py-1 px-2 text-xs w-auto border-ios-border ml-auto"><option value="">Todas Movimentações</option><option value="entrada">Entradas</option><option value="saída">Saídas (Consumo OP)</option><option value="requisição">Baixa Avulsa (Requisição)</option><option value="ajuste">Ajustes Manuais</option></select>
+                        <select id="hist-filter-type" class="form-input py-1 px-2 text-xs w-auto border-ios-border ml-auto">
+                            <option value="">Todas Movimentações</option>
+                            <option value="entrada">Entradas</option>
+                            <option value="saída">Saídas (Consumo OP)</option>
+                            <option value="requisição">Baixa Avulsa (Requisição)</option>
+                            <option value="ajuste">Ajustes Manuais</option>
+                        </select>
                     </div>
                     <div class="table-container max-h-72 overflow-y-auto bg-ios-bg p-2" id="details-history-container"></div>
                 </div>
@@ -679,13 +900,14 @@
         </div>
     </div>
 
-    <div id="edit-batch-modal" class="modal z-[70]">
+    <!-- Modal Editar Lote -->
+    <div id="edit-batch-modal" class="modal z-[7000]">
         <div class="modal-content max-w-sm">
             <h2 class="title-md mb-4">Editar Lote</h2>
             <form id="edit-batch-form" class="space-y-4">
                 <input type="hidden" id="edit-batch-id">
                 <input type="hidden" id="edit-batch-product-id">
-                <div><label class="form-label">Código do Lote</label><input type="text" id="edit-batch-code" required class="form-input bg-ios-bg border-ios-border" autocomplete="off"></div>
+                <div><label class="form-label">Código do Lote</label><input type="text" id="edit-batch-code" required class="form-input bg-ios-bg border-ios-border"></div>
                 <div><label class="form-label">Quantidade</label><input type="number" step="0.001" id="edit-batch-qty" required class="form-input text-ios-blue font-bold bg-ios-bg border-ios-border"></div>
                 <div><label class="form-label">Validade</label><input type="date" id="edit-batch-expiry" class="form-input bg-ios-bg border-ios-border"></div>
                 <div class="flex justify-end gap-2 mt-2"><button type="button" class="btn-secondary close-modal" data-target="edit-batch-modal">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
@@ -693,7 +915,8 @@
         </div>
     </div>
 
-    <div id="batch-selector-modal" class="modal z-[60]">
+    <!-- Seletor Manual de Lotes -->
+    <div id="batch-selector-modal" class="modal z-[7000]">
         <div class="modal-content max-w-xl">
             <h2 id="batch-selector-title" class="title-md mb-4">Descontar de quais lotes?</h2>
             <div class="bg-ios-bg border border-ios-border p-4 rounded-xl flex justify-between mb-5 items-center">
@@ -705,85 +928,39 @@
         </div>
     </div>
 
-    <div id="low-stock-modal" class="modal z-[60]">
+    <!-- Modal Alertas Complexos (Sininho) -->
+    <div id="low-stock-modal" class="modal z-[6000]">
         <div class="modal-content max-w-4xl max-h-[85vh] flex flex-col p-0 overflow-hidden bg-ios-bg">
             <div class="flex justify-between items-start shrink-0 p-6 border-b border-ios-border bg-ios-cardHover">
-                <div><h2 class="title-md mb-1 text-white flex items-center"><i class="fa-solid fa-bell mr-3 text-2xl text-ios-red"></i><span>Central de Alertas</span></h2><p class="text-sm text-ios-textMuted font-medium">Acompanhamento automático de mínimos e validades.</p></div>
+                <div>
+                    <h2 class="title-md mb-1 text-white flex items-center"><i class="fa-solid fa-bell mr-3 text-2xl text-ios-red"></i><span>Central de Alertas</span></h2>
+                    <p class="text-sm text-ios-textMuted font-medium">Acompanhamento automático de mínimos e validades.</p>
+                </div>
                 <button type="button" class="text-ios-textMuted hover:text-white text-4xl ml-4 close-modal leading-none" data-target="low-stock-modal">&times;</button>
             </div>
             <div class="flex-1 overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div><h3 class="text-ios-orange font-bold mb-4 uppercase text-sm tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Abaixo do Mínimo</h3><ul id="low-stock-list" class="space-y-3"></ul></div>
-                <div><h3 class="text-ios-red font-bold mb-4 uppercase text-sm tracking-wider"><i class="fa-solid fa-clock mr-2"></i>Validades (Próx. 45 dias)</h3><ul id="expiring-list" class="space-y-3"></ul></div>
+                <div>
+                    <h3 class="text-ios-orange font-bold mb-4 uppercase text-sm tracking-wider"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Abaixo do Mínimo</h3>
+                    <ul id="low-stock-list" class="space-y-3"></ul>
+                </div>
+                <div>
+                    <h3 class="text-ios-red font-bold mb-4 uppercase text-sm tracking-wider"><i class="fa-solid fa-clock mr-2"></i>Validades (Próx. 45 dias)</h3>
+                    <ul id="expiring-list" class="space-y-3"></ul>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal Confirmação Base -->
     <div id="confirm-action-modal" class="modal z-[9999]">
         <div class="modal-content max-w-md text-center flex flex-col items-center">
             <div class="w-16 h-16 rounded-full bg-ios-cardHover border border-ios-border flex items-center justify-center mb-5"><i class="fa-solid fa-circle-question text-3xl text-ios-blue"></i></div>
             <h3 id="confirm-title" class="title-md mb-2"></h3>
             <p id="confirm-message" class="text-ios-textMuted text-sm mb-8 leading-relaxed"></p>
-            <div class="flex gap-3 w-full justify-center"><button type="button" id="cancel-action-btn" class="btn-secondary flex-1">Cancelar</button><button type="button" id="confirm-action-btn" class="btn-primary flex-1">Sim, Continuar</button></div>
-        </div>
-    </div>
-
-    <div id="production-order-modal" class="modal z-[60]">
-        <div class="modal-content max-w-5xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6"><h2 id="production-order-modal-title" class="title-md mb-0">Gerar OP</h2><button type="button" class="text-ios-textMuted hover:text-white text-2xl close-modal" data-target="production-order-modal">&times;</button></div>
-            <form id="production-order-form">
-                <input type="hidden" id="edit-po-id">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-ios-bg border border-ios-border p-5 rounded-2xl mb-6 shadow-inner items-start relative z-50">
-                    <div class="md:col-span-2 relative"><label class="form-label">Receita / Produto a Fabricar</label><div id="po-recipe-searchable-container" class="searchable-container"></div></div>
-                    <div><label class="form-label">Multiplicador (Qtd Receitas)</label><input type="number" id="po-quantity" value="1" min="0.01" step="0.01" required class="form-input text-ios-blue font-bold text-lg"></div>
-                    <div class="md:col-span-1 mt-2"><label class="form-label">Data Agendada</label><input type="date" id="po-date" required class="form-input"></div>
-                    <div class="md:col-span-4 mt-2">
-                        <label class="flex items-center gap-3 cursor-pointer bg-ios-orange/10 p-3 rounded-xl border border-ios-orange/30 w-max hover:bg-ios-orange/20 transition-colors">
-                            <input type="checkbox" id="po-is-extra" class="check-nativo">
-                            <span class="text-sm font-bold text-ios-orange ml-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> OP Extra / Urgente (Menos de 48h)</span>
-                        </label>
-                    </div>
-                    <div id="po-output-fields" class="col-span-1 md:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-4 mt-2 pt-4 border-t border-ios-border hidden">
-                        <div><label class="form-label">Total Gerado (Entrada Físico)</label><input type="text" id="po-total-output" readonly class="form-input bg-gray-800 text-ios-green font-bold text-lg border-none" value="0.0000"></div>
-                        <div><label class="form-label">Lote Sugerido (Saída)</label><input type="text" id="po-output-batch" class="form-input" autocomplete="off"></div>
-                        <div><label class="form-label">Validade Lote Gerado</label><input type="date" id="po-output-expiry" class="form-input"></div>
-                    </div>
-                </div>
-                <h3 class="title-md text-sm uppercase text-ios-textMuted mb-3">Previsão de Consumo</h3>
-                <div class="table-container mb-6"><table class="base-table"><thead class="base-thead"><tr><th class="base-th">Insumo</th><th class="base-th">Estoque Atual</th><th class="base-th">Qtd a Descontar</th><th class="base-th">Lotes Reservados</th></tr></thead><tbody id="po-ingredients-body"></tbody></table></div>
-                <div class="flex justify-end"><button type="submit" class="btn-primary">Salvar OP na Fila</button></div>
-            </form>
-        </div>
-    </div>
-
-    <div id="recipe-modal" class="modal z-[60]">
-        <div class="modal-content max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6"><h2 id="recipe-modal-title" class="title-md mb-0">Nova Receita</h2><button type="button" class="text-ios-textMuted hover:text-white text-2xl close-modal" data-target="recipe-modal">&times;</button></div>
-            <form id="recipe-form" class="space-y-5">
-                <input type="hidden" id="edit-recipe-id">
-                <div><label class="form-label">Nome da Ficha Técnica / Receita</label><input type="text" id="recipe-name" required class="form-input font-semibold text-lg" placeholder="Ex: Massa de Coxinha ou Bolo de Cenoura" autocomplete="off"></div>
-                <div>
-                    <label class="form-label">Linha Produtiva</label>
-                    <input type="text" id="recipe-category" list="category-options" required class="form-input" placeholder="Selecione ou digite uma nova linha (ex: Salgados, Pães...)" autocomplete="off">
-                    <datalist id="category-options"><option value="Salgados"></option><option value="Pães"></option><option value="Confeitaria"></option><option value="Bases"></option></datalist>
-                </div>
-                <div class="p-5 bg-ios-blue/10 border border-ios-blue/30 rounded-xl">
-                    <label class="flex items-center space-x-3 cursor-pointer mb-2">
-                        <input type="checkbox" id="recipe-is-semi" class="check-nativo">
-                        <span class="text-sm font-semibold text-white ml-1">Esta receita gera um produto Semi-Acabado</span>
-                    </label>
-                    <p class="text-xs text-ios-textMuted mb-4 mt-2">Se marcado, a receita entra no estoque como Insumo (Massa, Base, etc).</p>
-                    <div id="yield-wrapper" class="hidden pt-4 border-t border-ios-blue/20">
-                        <label class="form-label text-ios-blue font-bold">Rendimento FÍSICO (Ex: 2.5 kg)</label>
-                        <input type="number" id="recipe-yield" min="0.001" step="0.001" value="1" class="form-input text-ios-blue font-bold text-lg">
-                    </div>
-                </div>
-                <div class="pt-2">
-                    <h3 class="text-sm font-semibold text-ios-textMuted uppercase mb-3">Composição (Ingredientes)</h3>
-                    <div id="ingredients-container" class="space-y-3 mb-4"></div>
-                    <button type="button" id="add-ingredient-btn" class="text-ios-blue font-medium text-sm flex items-center"><i class="fa-solid fa-circle-plus mr-1"></i>Adicionar Ingrediente</button>
-                </div>
-                <div class="mt-6 flex justify-end"><button type="submit" class="btn-primary" id="save-recipe-btn">Salvar Ficha Técnica</button></div>
-            </form>
+            <div class="flex gap-3 w-full justify-center">
+                <button type="button" id="cancel-action-btn" class="btn-secondary flex-1">Cancelar</button>
+                <button type="button" id="confirm-action-btn" class="btn-primary flex-1">Sim, Continuar</button>
+            </div>
         </div>
     </div>
     
@@ -806,6 +983,7 @@
         setTimeout(() => hide(el), 4000);
     };
 
+    // Helper: Add Business Days
     function addBusinessDays(startDate, daysToAdd) {
         let date = new Date(startDate);
         let added = 0;
@@ -816,10 +994,12 @@
         return date;
     }
 
+    // --- FIREBASE IMPORTS ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
     import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
     import { getFirestore, collection, doc, addDoc, setDoc, getDoc, getDocs, deleteDoc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyDev8spgKoKZi2pOohmk0r9SFLtLMcePa8",
         authDomain: "estoque-b50df.firebaseapp.com",
@@ -835,6 +1015,7 @@
     const provider = new GoogleAuthProvider();
     const db = getFirestore(app);
 
+    // --- DB WRAPPER ---
     const DB = (() => {
         return {
             add: async (coll, data) => {
@@ -873,6 +1054,7 @@
         };
     })();
 
+    // --- CÂMERA SCANNER APRIMORADA ---
     let html5QrCode;
     let scannerCallback = null;
     
@@ -883,24 +1065,39 @@
         show(id('scanner-modal'));
         if(inputFallback) inputFallback.focus();
         
-        html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            (decodedText) => {
-                closeScanner();
-                if(scannerCallback) scannerCallback(decodedText);
-            },
-            (err) => { }
-        ).catch(err => {
-            window.showNotif("Câmara indisponível. Digite o código.", true);
-        });
+        // Timeout garante que o modal foi renderizado e tem dimensões antes de instanciar a câmera
+        setTimeout(() => {
+            if(html5QrCode && html5QrCode.isScanning) return;
+            
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start(
+                { facingMode: "environment" }, // Removida restrição pesada de resolução para compatibilidade
+                { 
+                    fps: 10,
+                    qrbox: function(viewfinderWidth, viewfinderHeight) {
+                        return {
+                            width: Math.min(viewfinderWidth * 0.9, 600),
+                            height: Math.min(viewfinderHeight * 0.5, 250)
+                        };
+                    }
+                },
+                (decodedText) => {
+                    const tempCb = scannerCallback;
+                    closeScanner();
+                    if(tempCb) tempCb(decodedText);
+                },
+                (err) => { }
+            ).catch(err => {
+                console.error("Erro câmera:", err);
+                window.showNotif("Câmera indisponível. Verifique as permissões ou se está usando HTTPS.", true);
+            });
+        }, 150);
     }
 
     function closeScanner() {
         hide(id('scanner-modal'));
         if (html5QrCode && html5QrCode.isScanning) {
-            try { html5QrCode.stop().then(() => { html5QrCode.clear(); }).catch(()=>{}); } catch(e){}
+            html5QrCode.stop().then(() => { html5QrCode.clear(); html5QrCode = null; }).catch(()=>{});
         }
         scannerCallback = null;
     }
@@ -925,105 +1122,10 @@
         }
     });
 
-    window.purchCalendarDate = new Date();
-    window.prodCalendarDate = new Date();
-
-    function generateCalendarHTML(currentDate, eventsMap, idPrefix) {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-        const firstDay = new Date(year, month, 1).getDay();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        
-        let html = `
-        <div class="bg-ios-card rounded-2xl border border-ios-border overflow-hidden shadow-sm">
-            <div class="flex justify-between items-center p-4 bg-ios-cardHover border-b border-ios-border">
-                <button type="button" class="px-3 py-1 bg-ios-bg rounded-lg hover:bg-gray-700 text-white transition-colors" onclick="window.changeMonth('${idPrefix}', -1)"><i class="fa-solid fa-chevron-left"></i></button>
-                <h3 class="font-bold text-lg text-white">${monthNames[month]} ${year}</h3>
-                <button type="button" class="px-3 py-1 bg-ios-bg rounded-lg hover:bg-gray-700 text-white transition-colors" onclick="window.changeMonth('${idPrefix}', 1)"><i class="fa-solid fa-chevron-right"></i></button>
-            </div>
-            <div class="grid grid-cols-7 text-center text-[10px] uppercase tracking-wider font-bold text-ios-textMuted bg-ios-bg border-b border-ios-border">
-                <div class="py-2">Dom</div><div class="py-2">Seg</div><div class="py-2">Ter</div><div class="py-2">Qua</div><div class="py-2">Qui</div><div class="py-2">Sex</div><div class="py-2">Sáb</div>
-            </div>
-            <div class="grid grid-cols-7 auto-rows-fr bg-ios-border gap-px border border-ios-border">
-        `;
-        
-        for(let i=0; i<firstDay; i++) {
-            html += `<div class="bg-ios-card min-h-[80px] opacity-50"></div>`;
-        }
-        
-        const tDate = new Date();
-        const todayStr = tDate.getFullYear() + '-' + String(tDate.getMonth()+1).padStart(2,'0') + '-' + String(tDate.getDate()).padStart(2,'0');
-
-        for(let d=1; d<=daysInMonth; d++) {
-            const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-            const isToday = dateStr === todayStr;
-            const dayEvents = eventsMap[dateStr] || [];
-            
-            let eventsHtml = '';
-            if(dayEvents.length > 0) {
-                if(idPrefix === 'production') {
-                    eventsHtml = `<div class="flex justify-center gap-1 mt-1 flex-wrap">${dayEvents.map(e=>`<span class="w-2 h-2 rounded-full ${e.classes.split(' ')[0]}"></span>`).join('')}</div>`;
-                } else {
-                    eventsHtml = dayEvents.map(ev => 
-                        `<div class="text-[9px] mb-1 p-1 rounded font-semibold truncate ${ev.classes}" title="${ev.tooltip||ev.title}">${ev.title}</div>`
-                    ).join('');
-                }
-            }
-            
-            html += `
-            <div class="bg-ios-card min-h-[90px] p-1 md:p-2 cursor-pointer hover:bg-ios-cardHover transition-colors relative group" onclick="window.selectDate('${idPrefix}', '${dateStr}')">
-                <div class="text-right text-xs mb-1 ${isToday ? 'text-white bg-ios-blue w-5 h-5 rounded-full flex items-center justify-center ml-auto' : 'text-ios-textMuted'}">${d}</div>
-                <div class="flex flex-col gap-px overflow-y-auto max-h-[60px] custom-scroll">
-                    ${eventsHtml}
-                </div>
-            </div>
-            `;
-        }
-        
-        const totalCells = firstDay + daysInMonth;
-        const remainder = totalCells % 7;
-        if(remainder > 0) {
-            for(let i=0; i < (7 - remainder); i++) {
-                html += `<div class="bg-ios-card min-h-[80px] opacity-50"></div>`;
-            }
-        }
-        
-        html += `</div></div>`;
-        return html;
-    }
-
-    window.changeMonth = function(prefix, delta) {
-        if(prefix === 'purchasing') {
-            window.purchCalendarDate.setMonth(window.purchCalendarDate.getMonth() + delta);
-            renderPurchasing();
-        } else if(prefix === 'production') {
-            window.prodCalendarDate.setMonth(window.prodCalendarDate.getMonth() + delta);
-            renderPO();
-        }
-    };
-
-    window.selectDate = function(prefix, dateStr) {
-        if(prefix === 'production') {
-            const dateInput = id('search-po-by-date');
-            if(dateInput) {
-                dateInput.value = dateStr;
-                renderPO();
-                id('production-orders-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        } else if(prefix === 'purchasing') {
-            const incoming = localInventory.filter(i => i.pendingOrder?.active && i.pendingOrder.expectedDate === dateStr);
-            if(incoming.length > 0) {
-                const names = incoming.map(i => i.name).join(', ');
-                window.showNotif(`${incoming.length} encomenda(s) prevista(s) para este dia: ${names}`);
-            }
-        }
-    };
-
+    // --- LOGIN ---
     addEvt('btn-login-google', 'click', () => {
         const msg = id('mensagem-erro');
-        if(msg) { msg.innerText = "A abrir pop-up do Google..."; show(msg); }
+        if(msg) { msg.innerText = "Abrindo pop-up do Google..."; show(msg); }
         signInWithPopup(auth, provider).catch((error) => {
             if(msg) { msg.innerHTML = "Erro ao fazer login. Tente 'Testar sem Login'."; show(msg); }
         });
@@ -1045,7 +1147,7 @@
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             hide(id('login-wrapper')); show(id('app-wrapper'));
-            const nu = id('nome-usuario'); if(nu) nu.innerText = user.displayName || 'Equipa';
+            const nu = id('nome-usuario'); if(nu) nu.innerText = user.displayName || 'Estoquista';
             
             show(id('loading-overlay'));
             window.navTo('home');
@@ -1056,6 +1158,7 @@
         }
     });
 
+    // --- ESTADO GLOBAL ---
     let localInventory=[], localBatches=[], localHistory=[], localRecipes=[], localProductionOrders=[], localMonthlyConsumption=[], localLocations=[];
     let currentRecipeCategory='Todos';
     let currentBatchTarget=null;
@@ -1065,15 +1168,17 @@
     let activePickingOpIds = [];
     let pickingScanProductId = null;
     
+    // Lista de entrada em massa
     let bulkEntryItems = [];
 
     const typeLabels = { insumo: 'Insumo', semi_acabado: 'Semi-acabado' };
 
+    // --- NAVEGAÇÃO E MODAIS ---
     document.querySelectorAll('.close-modal').forEach(btn => {
         btn.addEventListener('click', () => { hide(id(btn.dataset.target)); });
     });
 
-    const screens = ['home','consulta','entry','inventory','recipes','production','requisitions','adjustments','consumption','locations','barcodes','picking','purchasing','settings','traceability'];
+    const screens = ['home','consulta','entry','inventory','recipes','production','requisitions','adjustments','consumption','locations','barcodes','picking','purchasing','settings'];
     window.navTo = function(target) {
         screens.forEach(s => { id('screen-'+s)?.classList.add('hidden'); });
         document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('bg-ios-card', 'text-white'); n.classList.add('text-ios-textMuted'); });
@@ -1082,18 +1187,17 @@
         const activeLink = document.querySelector(`.nav-item[data-target="${target}"]`);
         if(activeLink) { activeLink.classList.remove('text-ios-textMuted'); activeLink.classList.add('bg-ios-card', 'text-white'); }
         
-        if(target==='adjustments') { createSearchableSelect(id('adjustment-searchable-container'), localInventory, 'Procurar produto...', p => { const batchEl = id('adjustment-batch'); if(batchEl) batchEl.innerHTML = '<option value="">Selecione Lote...</option>' + localBatches.filter(b=>b.productId===p.id && b.quantity>0).map(b=>`<option value="${b.id}">${b.code}</option>`).join(''); }); }
+        if(target==='adjustments') { createSearchableSelect(id('adjustment-searchable-container'), localInventory, 'Buscar produto inteligente...', p => { const batchEl = id('adjustment-batch'); if(batchEl) batchEl.innerHTML = '<option value="">Selecione Lote...</option>' + localBatches.filter(b=>b.productId===p.id && b.quantity>0).map(b=>`<option value="${b.id}">${b.code}</option>`).join(''); }); }
         if(target==='requisitions') { const reqCont = id('requisition-items-container'); if (reqCont) { reqCont.innerHTML=''; addIngRowReq(reqCont); } }
         if(target==='picking') { renderPickingScreen(); }
         if(target==='purchasing') { renderPurchasing(); }
-        if(target==='traceability') { updateTraceabilityFilters(); renderTraceability(); createSearchableSelect(id('trace-searchable-container'), localInventory, 'Selecione um insumo...'); }
         if(target==='barcodes') { renderBarcodesList(); createSearchableSelect(id('barcode-searchable-container'), localInventory, 'Selecione o produto do sistema...'); }
-        if(target==='consulta') { id('consulta-input').value = ''; id('consulta-results').innerHTML = '<div class="card flex flex-col items-center justify-center py-20 text-center border-dashed"><i class="fa-solid fa-magnifying-glass text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">A aguardar leitura...</p></div>'; id('consulta-input').focus(); }
+        if(target==='consulta') { id('consulta-input').value = ''; id('consulta-results').innerHTML = '<div class="card flex flex-col items-center justify-center py-20 text-center border-dashed"><i class="fa-solid fa-magnifying-glass text-6xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Aguardando leitura...</p></div>'; id('consulta-input').focus(); }
         if(target==='entry') { 
-            id('entry-form').reset();
-            id('entry-new-fields').classList.add('hidden');
-            id('entry-status-msg').innerHTML = 'A aguardar código...';
-            id('entry-dynamic-code').focus();
+            createSearchableSelect(id('entry-searchable-container'), localInventory, 'Pesquisar insumo...', p => {
+                // Ao escolher, focar na quantidade
+                document.querySelector('#entry-form input[name="quantity"]').focus();
+            }); 
             renderBulkEntry(); 
         }
     }
@@ -1114,6 +1218,7 @@
         }
     }
 
+    // Busca inteligente
     function createSearchableSelect(container, items, placeholder, onSelect) {
         if(!container) return;
         container.innerHTML = `<div class="searchable-container"><input type="text" class="form-input bg-ios-input text-white border-ios-border w-full" placeholder="${placeholder}" autocomplete="off"><div class="searchable-dropdown hidden"></div></div>`;
@@ -1145,6 +1250,7 @@
         return { plan, isSufficient: remaining <= 0.0001 };
     }
 
+    // --- REFRESH DATA ---
     async function refreshData() {
         try {
             [localInventory, localBatches, localHistory, localRecipes, localProductionOrders, localMonthlyConsumption, localLocations] = await Promise.all([
@@ -1153,6 +1259,7 @@
             
             let changed = false;
             for(let i of localInventory) {
+                // Migrate array barcodes if needed
                 if(i.barcode && !i.barcodes) { i.barcodes = [i.barcode]; delete i.barcode; changed = true; }
                 else if(!i.barcodes) { i.barcodes = []; changed = true; }
 
@@ -1185,7 +1292,6 @@
                 if(target === 'picking') renderPickingScreen();
                 if(target === 'barcodes') renderBarcodesList();
                 if(target === 'purchasing') renderPurchasing();
-                if(target === 'traceability') { updateTraceabilityFilters(); renderTraceability(); }
             }
             if(currentHistoryProductId) renderItemDetailsHistory();
             
@@ -1204,6 +1310,7 @@
         const mf = id('consumption-month-filter'); if(mf) { mf.innerHTML = months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join(''); mf.value = cm; }
     }
 
+    // --- HOME SCREEN (ENTREGAS) ---
     function renderHome() {
         const todayStr = new Date().toISOString().split('T')[0];
         const incoming = localInventory.filter(i => i.pendingOrder && i.pendingOrder.active && i.pendingOrder.expectedDate <= todayStr);
@@ -1231,7 +1338,7 @@
             <div class="bg-ios-cardHover p-4 rounded-xl border border-ios-blue shadow-lg shadow-ios-blue/10 cursor-pointer hover:bg-ios-blue/10 transition flex justify-between items-center btn-receive-incoming" data-ids='${itemIds}'>
                 <div>
                     <h3 class="font-bold text-white text-lg"><i class="fa-solid fa-truck-fast text-ios-blue mr-2"></i>${sup}</h3>
-                    <p class="text-xs text-ios-textMuted mt-1">${items.length} item(ns) a aguardar entrada.</p>
+                    <p class="text-xs text-ios-textMuted mt-1">${items.length} item(ns) aguardando entrada.</p>
                 </div>
                 <i class="fa-solid fa-chevron-right text-ios-textMuted"></i>
             </div>`;
@@ -1250,10 +1357,9 @@
                 
                 if(!bulkEntryItems.some(b => b.productId === item.id)) {
                     bulkEntryItems.push({
-                        isNew: false,
                         productId: item.id,
                         qty: item.pendingOrder.qty || 0,
-                        batchCode: 'LT-' + new Date().getTime().toString(36).toUpperCase().substring(4) + Math.floor(Math.random()*100),
+                        batchCode: 'LT-' + new Date().getTime().toString(36).toUpperCase() + Math.floor(Math.random()*1000), 
                         expiryDate: '',
                         locationCode: ''
                     });
@@ -1263,6 +1369,7 @@
         }
     });
 
+    // --- SIDEBAR BADGES & ALERTS ---
     function updateSidebarBadges() {
         const isPickingActive = localProductionOrders.some(op => op.picking?.status === 'em_andamento');
         const badgeProd = id('badge-nav-prod'); const badgePicking = id('badge-nav-picking');
@@ -1291,7 +1398,7 @@
                     </li>
                 `).join('');
             } else {
-                listAlerts.innerHTML = '<li class="text-center text-ios-textMuted py-8"><i class="fa-solid fa-check-circle text-4xl text-ios-green mb-3 block"></i>Todos os itens estão acima do stock mínimo.</li>';
+                listAlerts.innerHTML = '<li class="text-center text-ios-textMuted py-8"><i class="fa-solid fa-check-circle text-4xl text-ios-green mb-3 block"></i>Todos os itens estão acima do estoque mínimo.</li>';
             }
         }
 
@@ -1316,7 +1423,7 @@
                     </li>`;
                 }).join('');
             } else {
-                expList.innerHTML = '<li class="text-center text-ios-textMuted py-8">Nenhum lote a vencer nos próximos 45 dias.</li>';
+                expList.innerHTML = '<li class="text-center text-ios-textMuted py-8">Nenhum lote vencendo nos próximos 45 dias.</li>';
             }
         }
     }
@@ -1325,6 +1432,7 @@
     addEvt('low-stock-list', 'click', e => { const item = e.target.closest('.alert-item'); if (item) { hide(id('low-stock-modal')); window.navTo('inventory'); openDetails(item.dataset.id); } });
     addEvt('expiring-list', 'click', e => { const item = e.target.closest('.alert-item'); if (item) { hide(id('low-stock-modal')); window.navTo('inventory'); openDetails(item.dataset.id); } });
 
+    // --- CONSULTA UNIVERSAL (RÁPIDA) MÚLTIPLA ---
     function searchUniversal(q) {
         if(!q) return window.showNotif("Digite ou leia um código válido", true);
         q = q.trim().toLowerCase();
@@ -1332,6 +1440,7 @@
         resEl.innerHTML = '';
         let foundAny = false;
         
+        // Products Logic
         const pMatches = localInventory.filter(i => (i.code && i.code.toLowerCase() === q) || (i.barcodes && i.barcodes.some(b => b.toLowerCase() === q)));
         if(pMatches.length > 0) {
             foundAny = true;
@@ -1342,11 +1451,11 @@
                     <div class="flex flex-wrap gap-4 text-sm text-ios-textMuted mb-6 bg-ios-bg p-3 rounded-xl border border-ios-border">
                         <div><strong class="block text-[10px] uppercase">Cód Interno</strong><span class="text-white">${p.code||'-'}</span></div>
                         <div><strong class="block text-[10px] uppercase">Códigos (EAN)</strong><span class="text-white break-all">${p.barcodes?.join(', ')||'-'}</span></div>
-                        <div><strong class="block text-[10px] uppercase">Stock Mín</strong><span class="text-ios-orange">${p.minStock||0}</span></div>
+                        <div><strong class="block text-[10px] uppercase">Estoque Mín</strong><span class="text-ios-orange">${p.minStock||0}</span></div>
                         <div class="ml-auto text-right"><strong class="block text-[10px] uppercase">Saldo Físico Total</strong><span class="text-ios-blue font-bold text-xl">${(p.totalQuantity||0).toFixed(2)}</span></div>
                     </div>
-                    <h3 class="text-sm font-bold text-ios-textMuted uppercase mb-3">Stock por Lote e Local</h3>
-                    <div class="table-container max-h-64 overflow-y-auto custom-scroll">
+                    <h3 class="text-sm font-bold text-ios-textMuted uppercase mb-3">Estoque por Lote e Local</h3>
+                    <div class="table-container max-h-64 overflow-y-auto">
                         <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Lote</th><th class="base-th">Local / Endereço</th><th class="base-th">Validade</th><th class="base-th text-right">Qtd</th></tr></thead><tbody>`;
                 batches.forEach(b => {
                     const locName = b.locationCode ? (localLocations.find(l=>l.code === b.locationCode)?.name || b.locationCode) : '-';
@@ -1359,6 +1468,7 @@
             });
         }
 
+        // Location Logic
         const lMatches = localLocations.filter(l => l.code.toLowerCase() === q);
         if(lMatches.length > 0) {
             foundAny = true;
@@ -1368,7 +1478,7 @@
                     <p class="text-white font-bold text-2xl mb-1">${loc.name}</p>
                     <p class="text-sm text-ios-textMuted mb-6 bg-ios-bg inline-block px-3 py-1 rounded border border-ios-border font-mono">CÓDIGO: ${loc.code}</p>
                     <h3 class="text-sm font-bold text-ios-textMuted uppercase mb-3">Itens Guardados Neste Local</h3>
-                    <div class="table-container max-h-64 overflow-y-auto custom-scroll">
+                    <div class="table-container max-h-64 overflow-y-auto">
                         <table class="base-table"><thead class="base-thead"><tr><th class="base-th">Produto</th><th class="base-th">Lote</th><th class="base-th">Validade</th><th class="base-th text-right">Qtd Físico</th></tr></thead><tbody>`;
                 locBatches.forEach(b => {
                     const prod = localInventory.find(i=>i.id === b.productId);
@@ -1382,7 +1492,7 @@
         }
 
         if(!foundAny) {
-            resEl.innerHTML = `<div class="card border border-ios-red/50 text-center py-10 bg-ios-red/5"><i class="fa-solid fa-circle-xmark text-5xl text-ios-red mb-4"></i><h2 class="title-md text-ios-red mb-1">Código não identificado!</h2><p class="text-sm text-ios-textMuted max-w-md mx-auto">O código <strong>"${q}"</strong> não corresponde a nenhum produto, EAN ou endereço no sistema.</p></div>`;
+            resEl.innerHTML = `<div class="card border border-ios-red/50 text-center py-10 bg-ios-red/5"><i class="fa-solid fa-circle-xmark text-5xl text-ios-red mb-4"></i><h2 class="title-md text-ios-red mb-1">Código não identificado!</h2><p class="text-sm text-ios-textMuted max-w-md mx-auto">O código <strong>"${q}"</strong> não corresponde a nenhum produto, EAN ou endereço cadastrado no sistema.</p></div>`;
         }
     }
 
@@ -1391,175 +1501,7 @@
     addEvt('consulta-input', 'keydown', e => { if(e.key==='Enter'){ e.preventDefault(); searchUniversal(e.target.value); } });
 
 
-    function updateTraceabilityFilters() {
-        const lineSelect = id('trace-line-filter');
-        if(lineSelect) {
-            const lines = [...new Set(localRecipes.map(r=>r.category))].filter(Boolean).sort();
-            const currentVal = lineSelect.value;
-            lineSelect.innerHTML = '<option value="">Todas as Linhas</option>' + lines.map(l => `<option value="${l}">${l}</option>`).join('');
-            lineSelect.value = currentVal;
-        }
-    }
-
-    addEvt('btn-trace-search', 'click', renderTraceability);
-
-    function renderTraceability() {
-        const cont = id('traceability-results');
-        if(!cont) return;
-
-        const dateStart = id('trace-date-start').value;
-        const dateEnd = id('trace-date-end').value;
-        const lineFilter = id('trace-line-filter').value;
-        
-        const searchInput = id('trace-searchable-container').querySelector('input');
-        const pId = searchInput ? searchInput.dataset.selectedId : null;
-
-        let ops = localProductionOrders.filter(o => o.status === 'concluído');
-
-        if(dateStart) ops = ops.filter(o => o.date >= dateStart);
-        if(dateEnd) ops = ops.filter(o => o.date <= dateEnd);
-        if(lineFilter) ops = ops.filter(o => o.recipeCategory === lineFilter);
-        
-        if(pId) {
-            ops = ops.filter(o => o.ingredients && o.ingredients.some(ing => ing.productId === pId));
-        }
-
-        ops.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-        if(ops.length === 0) {
-            cont.innerHTML = '<div class="card text-center py-10 border-dashed text-ios-textMuted"><i class="fa-solid fa-box-open text-4xl mb-3"></i><p>Nenhuma OP concluída encontrada com os filtros selecionados.</p></div>';
-            return;
-        }
-
-        let html = '';
-        ops.forEach(op => {
-            html += `<div class="card p-0 overflow-hidden mb-4 border border-ios-border">
-                <div class="bg-ios-cardHover p-4 border-b border-ios-border flex flex-wrap justify-between items-center gap-2">
-                    <div>
-                        <h3 class="font-bold text-white text-lg">${op.recipeName} <span class="text-ios-blue text-sm">(${op.multiplier}x)</span></h3>
-                        <p class="text-xs text-ios-textMuted">OP ID: ${op.id.substring(0,8).toUpperCase()} | Registo: <strong class="text-gray-300">${new Date(op.date+'T00:00:00').toLocaleDateString('pt-BR')}</strong></p>
-                    </div>
-                    <span class="badge bg-ios-blue/20 text-ios-blue border border-ios-blue/30">${op.recipeCategory || 'Diversos'}</span>
-                </div>
-                <div class="p-0 overflow-x-auto custom-scroll">
-                    <table class="base-table w-full text-xs">
-                        <thead class="base-thead bg-black/40">
-                            <tr>
-                                <th class="base-th py-3">Insumo Utilizado</th>
-                                <th class="base-th py-3 text-center">Lote Vinculado</th>
-                                <th class="base-th py-3 text-center">Validade do Lote</th>
-                                <th class="base-th py-3 text-right">Qtd Entregue</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-ios-border">`;
-            
-            if(op.ingredients && op.ingredients.length > 0) {
-                op.ingredients.forEach(ing => {
-                    const prodName = localInventory.find(p => p.id === ing.productId)?.name || 'Insumo Excluído';
-                    
-                    if(ing.consumptionPlan && ing.consumptionPlan.length > 0) {
-                        ing.consumptionPlan.forEach(plan => {
-                            const b = localBatches.find(x => x.id === plan.batchId);
-                            const valStr = b && b.expiryDate ? new Date(b.expiryDate+'T00:00:00').toLocaleDateString('pt-BR') : 'Indisponível';
-                            
-                            html += `<tr class="hover:bg-ios-cardHover/50 transition-colors">
-                                <td class="px-5 py-3 font-medium text-white">${prodName}</td>
-                                <td class="px-5 py-3 text-center font-mono text-ios-textMuted">${plan.batchCode}</td>
-                                <td class="px-5 py-3 text-center text-ios-textMuted">${valStr}</td>
-                                <td class="px-5 py-3 text-right font-bold text-ios-green">${plan.quantity.toFixed(4)}</td>
-                            </tr>`;
-                        });
-                    } else {
-                        let actualQty = ing.adjustedQuantity;
-                        if(op.picking?.pickedItems && op.picking.pickedItems[ing.productId]) {
-                            actualQty = op.picking.pickedItems[ing.productId];
-                        }
-                        html += `<tr class="hover:bg-ios-cardHover/50 transition-colors">
-                            <td class="px-5 py-3 font-medium text-white">${prodName}</td>
-                            <td class="px-5 py-3 text-center text-ios-textMuted">-</td>
-                            <td class="px-5 py-3 text-center text-ios-textMuted">-</td>
-                            <td class="px-5 py-3 text-right font-bold text-ios-green">${actualQty.toFixed(4)}</td>
-                        </tr>`;
-                    }
-                });
-            } else {
-                html += `<tr><td colspan="4" class="text-center text-ios-textMuted py-4">Sem insumos registados para esta OP.</td></tr>`;
-            }
-
-            html += `</tbody></table></div></div>`;
-        });
-        
-        cont.innerHTML = html;
-    }
-
-
-    addEvt('barcode-form', 'submit', async (e) => {
-        e.preventDefault();
-        const searchInput = id('barcode-searchable-container')?.querySelector('input');
-        const pId = searchInput?.dataset?.selectedId;
-        const bcode = id('barcode-input').value.trim();
-        if(!pId || !bcode) return window.showNotif("Selecione o produto e informe o código", true);
-        
-        show(id('loading-overlay'));
-        try {
-            const p = await DB.get('inventory', pId);
-            if(p) {
-                if(!p.barcodes) p.barcodes = [];
-                if(!p.barcodes.includes(bcode)) {
-                    p.barcodes.push(bcode);
-                    await DB.update('inventory', p);
-                    window.showNotif(p.barcodes.length > 1 ? 'Código Adicional Similar Vinculado!' : 'Código vinculado ao produto!');
-                } else {
-                    window.showNotif('Este código já está mapeado para este produto.', true);
-                }
-                e.target.reset(); searchInput.value=''; delete searchInput.dataset.selectedId;
-                await refreshData();
-            }
-        } finally { hide(id('loading-overlay')); }
-    });
-
-    addEvt('barcodes-table-body', 'click', async (e) => {
-        const btn = e.target.closest('.btn-unlink-barcode');
-        if(btn) {
-            const pId = btn.dataset.pid;
-            const bcodeToRemove = btn.dataset.bcode;
-            const p = await DB.get('inventory', pId);
-            if(p && p.barcodes) {
-                p.barcodes = p.barcodes.filter(b => b !== bcodeToRemove);
-                await DB.update('inventory', p);
-                window.showNotif('Vínculo removido'); refreshData();
-            }
-        }
-    });
-
-    function renderBarcodesList() {
-        const tb = id('barcodes-table-body');
-        if(!tb) return;
-        const list = localInventory.filter(i => i.barcodes && i.barcodes.length > 0);
-        if(!list.length) {
-            tb.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-ios-textMuted">Nenhum código de barras vinculado.</td></tr>';
-            return;
-        }
-        let html = '';
-        list.forEach(i => {
-            i.barcodes.forEach(b => {
-                html += `<tr class="base-tr">
-                    <td class="base-td font-medium text-white">${i.name}</td>
-                    <td class="base-td">${i.code || '-'}</td>
-                    <td class="base-td font-mono text-ios-blue break-all">${b}</td>
-                    <td class="base-td text-center"><button type="button" class="btn-unlink-barcode text-ios-red bg-ios-red/10 px-3 py-1 rounded hover:bg-ios-red/20" data-pid="${i.id}" data-bcode="${b}"><i class="fa-solid fa-unlink"></i></button></td>
-                </tr>`;
-            });
-        });
-        tb.innerHTML = html;
-    }
-
-    addEvt('btn-scan-barcode', 'click', () => {
-        openScanner(code => { id('barcode-input').value = code; window.showNotif("Código lido com sucesso!"); });
-    });
-
-
-    // --- ESTOQUE GERAL ---
+    // --- ESTOQUE GERAL E EXTRATO COM FILTROS ---
     addEvt('search-inventory', 'input', renderInv); addEvt('supplier-filter', 'input', renderInv); addEvt('type-filter', 'input', renderInv);
     document.querySelectorAll('#screen-inventory .table-header-sortable').forEach(th => { th.addEventListener('click', () => { if (invSort.col === th.dataset.sort) invSort.asc = !invSort.asc; else { invSort.col = th.dataset.sort; invSort.asc = true; } renderInv(); }); });
     
@@ -1570,7 +1512,7 @@
         let list = localInventory.filter(i => (i.name.toLowerCase().includes(term) || (i.barcodes && i.barcodes.some(b=>b.toLowerCase().includes(term)))) && (!sup || i.supplier === sup) && (!typ || i.type === typ));
         const getExp = item => localBatches.filter(bt=>bt.productId===item.id && bt.quantity>0 && bt.expiryDate).sort((x,y)=>new Date(x.expiryDate)-new Date(y.expiryDate))[0]?.expiryDate || '9999-12-31';
         list.sort((a,b) => { let valA, valB; if(invSort.col === 'name') { valA = a.name.toLowerCase(); valB = b.name.toLowerCase(); } else if(invSort.col === 'supplier') { valA = (a.supplier||'').toLowerCase(); valB = (b.supplier||'').toLowerCase(); } else if(invSort.col === 'totalQuantity') { valA = a.totalQuantity||0; valB = b.totalQuantity||0; } else if(invSort.col === 'expiry') { valA = getExp(a); valB = getExp(b); } if(valA < valB) return invSort.asc ? -1 : 1; if(valA > valB) return invSort.asc ? 1 : -1; return 0; });
-        if(!list.length) { tbody.innerHTML = `<tr><td colspan="5" class="base-td text-center text-ios-textMuted py-8">Nenhum item no stock.</td></tr>`; return; }
+        if(!list.length) { tbody.innerHTML = `<tr><td colspan="5" class="base-td text-center text-ios-textMuted py-8">Nenhum item em estoque.</td></tr>`; return; }
         tbody.innerHTML = list.map(item => {
             const exp = getExp(item); const expFormat = exp !== '9999-12-31' ? new Date(exp+'T00:00:00').toLocaleDateString('pt-BR') : '-';
             const typeClass = item.type==='semi_acabado' ? 'bg-ios-orange/20 text-ios-orange border-ios-orange/30' : 'bg-gray-800 text-gray-300 border-gray-600';
@@ -1579,40 +1521,6 @@
     }
     
     addEvt('inventory-table-body', 'click', e => { const row = e.target.closest('tr'); if(row && row.dataset.id) openDetails(row.dataset.id); });
-
-    addEvt('btn-export-excel', 'click', () => {
-        if(!localInventory || !localInventory.length) return window.showNotif('Stock vazio!', true);
-        
-        const term = id('search-inventory')?.value.toLowerCase() || ''; const sup = id('supplier-filter')?.value || ''; const typ = id('type-filter')?.value || '';
-        let list = localInventory.filter(i => (i.name.toLowerCase().includes(term) || (i.barcodes && i.barcodes.some(b=>b.toLowerCase().includes(term)))) && (!sup || i.supplier === sup) && (!typ || i.type === typ));
-
-        const dataToExport = list.map(item => {
-            const batches = localBatches.filter(b => b.productId === item.id && b.quantity > 0);
-            const expDateRaw = batches.sort((x,y)=>new Date(x.expiryDate)-new Date(y.expiryDate))[0]?.expiryDate;
-            const expStr = expDateRaw ? new Date(expDateRaw+'T00:00:00').toLocaleDateString('pt-BR') : 'N/A';
-            
-            return {
-                'Código': item.code || '-',
-                'Produto': item.name,
-                'Tipo': typeLabels[item.type] || 'Insumo',
-                'Fornecedor': item.supplier || '-',
-                'Stock Mínimo': item.minStock || 0,
-                'Saldo Total Físico': item.totalQuantity || 0,
-                'Validade Mais Próxima': expStr,
-                'Cód. Barras (EANs)': item.barcodes ? item.barcodes.join(', ') : '-'
-            };
-        });
-
-        try {
-            const ws = XLSX.utils.json_to_sheet(dataToExport);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Estoque");
-            XLSX.writeFile(wb, `Estoque_Geral_${new Date().toISOString().split('T')[0]}.xlsx`);
-            window.showNotif('Ficheiro exportado com sucesso!');
-        } catch(e) {
-            window.showNotif('Erro ao gerar Excel.', true);
-        }
-    });
 
     addEvt('hist-filter-start', 'change', renderItemDetailsHistory); 
     addEvt('hist-filter-end', 'change', renderItemDetailsHistory); 
@@ -1629,7 +1537,7 @@
         if(start) hist = hist.filter(h => h.date >= start); if(end) hist = hist.filter(h => h.date <= end);
         if(type) { if(type === 'entrada') hist = hist.filter(h => h.type.includes('entrada')); else if(type === 'saída') hist = hist.filter(h => h.type === 'saída'); else hist = hist.filter(h => h.type === type); }
         
-        if(!hist.length) { cont.innerHTML = '<div class="py-5 text-center text-ios-textMuted text-xs">Sem movimentações no período.</div>'; return; }
+        if(!hist.length) { cont.innerHTML = '<div class="py-5 text-center text-ios-textMuted text-xs">Nenhuma movimentação no período/filtro.</div>'; return; }
         cont.innerHTML = hist.map(h=>`<div class="py-3 border-b border-ios-border text-sm flex justify-between items-center hover:bg-ios-card transition-colors px-2 rounded"><div><span class="font-bold text-xs uppercase ${h.type.includes('entrada')?'text-ios-green':h.type==='saída'||h.type==='requisição'?'text-ios-red':'text-ios-blue'}">${h.type}</span><p class="text-xs text-ios-textMuted mt-1 w-48 truncate" title="${h.reason||'Movimentação'}">${h.reason||'Movimentação'}</p></div><div class="text-right"><span class="font-bold text-white ${h.type.includes('entrada')?'':'text-ios-red'}">${h.type.includes('entrada')?'+':'-'} ${h.quantity.toFixed(2)}</span><br><span class="text-xs text-ios-textMuted"><i class="fa-regular fa-calendar mr-1"></i>${new Date(h.date+'T00:00:00').toLocaleDateString('pt-BR')}</span></div></div>`).join('');
     }
 
@@ -1677,7 +1585,7 @@
 
     addEvt('details-batches-table', 'click', e => {
         const delBtn = e.target.closest('.del-batch-btn');
-        if(delBtn) showConfirmationModal('Excluir Lote?', 'Atenção: Apagar o lote remove a quantidade sem registar saída.', async () => { await DB.remove('batches', delBtn.dataset.id); await refreshData(); openDetails(id('edit-item-id').value); window.showNotif('Lote apagado'); });
+        if(delBtn) showConfirmationModal('Excluir Lote?', 'Atenção: Apagar o lote remove a quantidade sem registrar saída.', async () => { await DB.remove('batches', delBtn.dataset.id); await refreshData(); openDetails(id('edit-item-id').value); window.showNotif('Lote apagado'); });
         const editBtn = e.target.closest('.edit-batch-btn');
         if(editBtn) { const b = localBatches.find(x => x.id === editBtn.dataset.id); if(b) { if(id('edit-batch-id')) id('edit-batch-id').value = b.id; if(id('edit-batch-product-id')) id('edit-batch-product-id').value = b.productId; if(id('edit-batch-code')) id('edit-batch-code').value = b.code; if(id('edit-batch-qty')) id('edit-batch-qty').value = b.quantity; if(id('edit-batch-expiry')) id('edit-batch-expiry').value = b.expiryDate || ''; show(id('edit-batch-modal')); } }
     });
@@ -1712,6 +1620,212 @@
     
     addEvt('btn-delete-item', 'click', () => { const pId = id('edit-item-id').value; showConfirmationModal('Excluir?', 'Histórico e lotes serão perdidos.', async () => { await DB.remove('inventory', pId); refreshData(); hide(id('item-details-modal')); window.showNotif('Excluído'); }); });
 
+    // --- NOVA ENTRADA EM MASSA ---
+    
+    addEvt('btn-scan-entry-code', 'click', () => { 
+        openScanner(c => { 
+            const inp = document.querySelector('#entry-searchable-container input'); 
+            if(inp){ inp.value=c; inp.dispatchEvent(new Event('input')); } 
+        }); 
+    });
+
+    addEvt('entry-form', 'submit', e => {
+        e.preventDefault();
+        const searchInput = document.querySelector('#entry-searchable-container input');
+        const pId = searchInput ? searchInput.dataset.selectedId : null;
+        if(!pId) return window.showNotif('Selecione um produto primeiro.', true);
+        
+        const qty = parseFloat(document.querySelector('#entry-form input[name="quantity"]').value);
+        if(!qty || qty <= 0) return window.showNotif('Quantidade inválida.', true);
+
+        const item = localInventory.find(i=>i.id===pId);
+        if(item) {
+            bulkEntryItems.push({
+                productId: item.id,
+                qty: qty,
+                batchCode: 'LT-' + new Date().getTime().toString(36).toUpperCase().substring(4) + Math.floor(Math.random()*100),
+                expiryDate: '',
+                locationCode: ''
+            });
+            e.target.reset();
+            searchInput.value = '';
+            delete searchInput.dataset.selectedId;
+            renderBulkEntry();
+        }
+    });
+
+    function renderBulkEntry() {
+        const tbody = id('bulk-entry-list');
+        if(!tbody) return;
+        
+        if(!bulkEntryItems.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="base-td text-center text-ios-textMuted py-8">Nenhum item na lista. Busque e adicione acima.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = bulkEntryItems.map((bItem, idx) => {
+            const prod = localInventory.find(i=>i.id===bItem.productId);
+            
+            return `
+            <tr class="base-tr" data-idx="${idx}">
+                <td class="base-td font-medium text-white">
+                    ${prod?.name || '?'}
+                    ${prod?.pendingOrder?.active ? '<span class="ml-2 badge bg-ios-blue text-white shadow shadow-ios-blue text-[9px]"><i class="fa-solid fa-truck-fast"></i> Pedido em Trânsito</span>' : ''}
+                </td>
+                <td class="base-td"><input type="number" step="0.01" class="form-input py-1 px-2 w-full bulk-qty" value="${bItem.qty}"></td>
+                <td class="base-td"><input type="text" class="form-input py-1 px-2 w-full bulk-batch font-mono text-xs" value="${bItem.batchCode}"></td>
+                <td class="base-td"><input type="date" class="form-input py-1 px-2 w-full bulk-exp" value="${bItem.expiryDate}"></td>
+                <td class="base-td">
+                    <div class="flex gap-1">
+                        <input type="text" class="form-input py-1 px-2 w-full bulk-loc font-mono text-xs" placeholder="RUA..." value="${bItem.locationCode}">
+                        <button type="button" class="bg-ios-cardHover text-ios-blue px-2 rounded border border-ios-border btn-scan-bulk-loc"><i class="fa-solid fa-camera"></i></button>
+                    </div>
+                </td>
+                <td class="base-td text-center"><button type="button" class="text-ios-red hover:text-red-400 btn-remove-bulk"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>
+            `;
+        }).join('');
+    }
+
+    addEvt('bulk-entry-list', 'input', e => {
+        const tr = e.target.closest('tr');
+        if(!tr) return;
+        const idx = parseInt(tr.dataset.idx);
+        if(e.target.classList.contains('bulk-qty')) bulkEntryItems[idx].qty = parseFloat(e.target.value) || 0;
+        if(e.target.classList.contains('bulk-batch')) bulkEntryItems[idx].batchCode = e.target.value;
+        if(e.target.classList.contains('bulk-exp')) bulkEntryItems[idx].expiryDate = e.target.value;
+        if(e.target.classList.contains('bulk-loc')) bulkEntryItems[idx].locationCode = e.target.value;
+    });
+
+    addEvt('bulk-entry-list', 'click', e => {
+        const tr = e.target.closest('tr');
+        if(!tr) return;
+        const idx = parseInt(tr.dataset.idx);
+        
+        const btnRemove = e.target.closest('.btn-remove-bulk');
+        if(btnRemove) {
+            bulkEntryItems.splice(idx, 1);
+            renderBulkEntry();
+        }
+
+        const btnScanLoc = e.target.closest('.btn-scan-bulk-loc');
+        if(btnScanLoc) {
+            openScanner(c => {
+                bulkEntryItems[idx].locationCode = c;
+                renderBulkEntry();
+            });
+        }
+    });
+
+    addEvt('btn-save-bulk-entry', 'click', async () => {
+        if(!bulkEntryItems.length) return window.showNotif('A lista está vazia.', true);
+        
+        // Validation
+        for(let item of bulkEntryItems) {
+            if(!item.qty || item.qty <= 0) return window.showNotif('Todas as quantidades devem ser maiores que 0.', true);
+            if(!item.batchCode) return window.showNotif('Todos os itens precisam de um código de lote.', true);
+        }
+
+        show(id('loading-overlay'));
+        try {
+            const todayStr = new Date().toISOString().split('T')[0];
+            
+            for(let bItem of bulkEntryItems) {
+                let p = await DB.get('inventory', bItem.productId);
+                if(!p) continue;
+                
+                // Clear pending order flag if present
+                if(p.pendingOrder && p.pendingOrder.active) {
+                    p.pendingOrder.active = false;
+                }
+                
+                p.totalQuantity += bItem.qty; 
+                await DB.update('inventory', p);
+
+                // Auto-create location if it doesn't exist
+                if(bItem.locationCode) { 
+                    const l = localLocations.find(loc => loc.code === bItem.locationCode); 
+                    if(!l) await DB.add('locations', {code: bItem.locationCode, name: `Gerado Auto: ${bItem.locationCode}`}); 
+                }
+                
+                const isReleased = (p.code !== '8110');
+                
+                await DB.add('batches', {productId: p.id, code: bItem.batchCode, quantity: bItem.qty, expiryDate: bItem.expiryDate, isReleased: isReleased, locationCode: bItem.locationCode});
+                await DB.add('history', {productId: p.id, batchCode: bItem.batchCode, type:'entrada', quantity: bItem.qty, date: todayStr, reason: `Entrada Massa (Forn: ${p.supplier||'?'})`});
+            }
+            
+            window.showNotif('Todas as entradas foram registradas com sucesso!');
+            bulkEntryItems = [];
+            renderBulkEntry();
+            await refreshData();
+        } catch(e) { window.showNotif('Erro crítico ao salvar entradas.', true); }
+        finally { hide(id('loading-overlay')); }
+    });
+
+
+    // --- CADASTRO CÓDIGO BARRAS ---
+    function renderBarcodesList() {
+        const tb = id('barcodes-table-body');
+        if(!tb) return;
+        const list = localInventory.filter(i => i.barcodes && i.barcodes.length > 0);
+        if(!list.length) {
+            tb.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-ios-textMuted">Nenhum código de barras vinculado.</td></tr>';
+            return;
+        }
+        let html = '';
+        list.forEach(i => {
+            i.barcodes.forEach(b => {
+                html += `<tr class="base-tr">
+                    <td class="base-td font-medium text-white">${i.name}</td>
+                    <td class="base-td">${i.code || '-'}</td>
+                    <td class="base-td font-mono text-ios-blue break-all">${b}</td>
+                    <td class="base-td text-center"><button type="button" class="btn-unlink-barcode text-ios-red bg-ios-red/10 px-3 py-1 rounded hover:bg-ios-red/20" data-pid="${i.id}" data-bcode="${b}"><i class="fa-solid fa-unlink"></i></button></td>
+                </tr>`;
+            });
+        });
+        tb.innerHTML = html;
+    }
+
+    addEvt('btn-scan-barcode', 'click', () => {
+        openScanner(code => { id('barcode-input').value = code; window.showNotif("Código lido com sucesso!"); });
+    });
+
+    addEvt('barcode-form', 'submit', async (e) => {
+        e.preventDefault();
+        const searchInput = id('barcode-searchable-container')?.querySelector('input');
+        const pId = searchInput?.dataset?.selectedId;
+        const bcode = id('barcode-input').value.trim();
+        if(!pId || !bcode) return window.showNotif("Selecione o produto e informe o código", true);
+        
+        const p = await DB.get('inventory', pId);
+        if(p) {
+            if(!p.barcodes) p.barcodes = [];
+            if(!p.barcodes.includes(bcode)) {
+                p.barcodes.push(bcode);
+                await DB.update('inventory', p);
+                window.showNotif(p.barcodes.length > 1 ? 'Código Adicional Similar Vinculado!' : 'Código vinculado ao produto!');
+            } else {
+                window.showNotif('Este código já está mapeado para este produto.', true);
+            }
+            e.target.reset(); searchInput.value=''; delete searchInput.dataset.selectedId;
+            refreshData();
+        }
+    });
+
+    addEvt('barcodes-table-body', 'click', async (e) => {
+        const btn = e.target.closest('.btn-unlink-barcode');
+        if(btn) {
+            const pId = btn.dataset.pid;
+            const bcodeToRemove = btn.dataset.bcode;
+            const p = await DB.get('inventory', pId);
+            if(p && p.barcodes) {
+                p.barcodes = p.barcodes.filter(b => b !== bcodeToRemove);
+                await DB.update('inventory', p);
+                window.showNotif('Vínculo removido'); refreshData();
+            }
+        }
+    });
+
 
     // --- COMPRAS E PEDIDOS ---
     addEvt('search-purchasing', 'input', renderPurchasing);
@@ -1722,44 +1836,41 @@
 
         const term = (id('search-purchasing')?.value || '').toLowerCase();
 
-        const purchEvents = {};
-        localInventory.forEach(i => {
-            if(i.pendingOrder && i.pendingOrder.active && i.pendingOrder.expectedDate) {
-                const d = i.pendingOrder.expectedDate;
-                if(!purchEvents[d]) purchEvents[d] = [];
-                purchEvents[d].push({
-                    title: `${i.supplier ? i.supplier.substring(0,6) : 'Forn'}: ${i.name}`,
-                    tooltip: `Qtd: ${i.pendingOrder.qty}`,
-                    classes: 'bg-ios-blue/20 text-ios-blue border border-ios-blue/30'
-                });
-            }
+        // Calculate average consumption over last 30 days
+        const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const startDateStr = thirtyDaysAgo.toISOString().split('T')[0];
+        
+        const consumptionMap = {};
+        localHistory.filter(h => (h.type === 'saída' || h.type === 'requisição') && h.date >= startDateStr).forEach(h => {
+            if(!consumptionMap[h.productId]) consumptionMap[h.productId] = 0;
+            consumptionMap[h.productId] += h.quantity;
         });
-
-        const calendarContainer = id('purchasing-calendar-container');
-        if(calendarContainer) {
-            calendarContainer.innerHTML = generateCalendarHTML(window.purchCalendarDate, purchEvents, 'purchasing');
-        }
 
         const suppliers = {};
         localInventory.filter(i => i.type !== 'semi_acabado').forEach(i => {
             const sup = i.supplier || 'Sem Fornecedor / Outros';
+            
             if(term && !sup.toLowerCase().includes(term) && !i.name.toLowerCase().includes(term)) return;
+
             if(!suppliers[sup]) suppliers[sup] = [];
+            
+            const totalOut30d = consumptionMap[i.id] || 0;
+            const dailyAvg = totalOut30d / 30;
             const minStock = i.minStock || 0;
             const leadTime = i.leadTime || 0;
             const balance = i.totalQuantity || 0;
-            suppliers[sup].push({ ...i, leadTime });
+            
+            // Duration calculation
+            let daysLeft = 999;
+            if (dailyAvg > 0) daysLeft = Math.floor(balance / dailyAvg);
+            else if (balance <= minStock && minStock > 0) daysLeft = 0;
+
+            suppliers[sup].push({ ...i, dailyAvg, daysLeft, leadTime });
         });
 
         let html = '';
         Object.keys(suppliers).sort().forEach(sup => {
-            const items = suppliers[sup];
-            items.sort((a,b) => {
-                const aPct = a.minStock > 0 ? a.totalQuantity / a.minStock : 999;
-                const bPct = b.minStock > 0 ? b.totalQuantity / b.minStock : 999;
-                return aPct - bPct;
-            });
-            
+            const items = suppliers[sup].sort((a,b) => a.daysLeft - b.daysLeft);
             html += `<div class="card p-0 overflow-hidden mb-6">
                 <div class="bg-ios-cardHover px-5 py-3 border-b border-ios-border flex justify-between items-center">
                     <h2 class="font-bold text-lg text-white"><i class="fa-solid fa-truck-field mr-2 text-ios-textMuted"></i>${sup}</h2>
@@ -1780,10 +1891,10 @@
                 if(balance <= minStock) { tankColor = 'bg-ios-red'; statusColor = 'bg-ios-red'; statusText = 'Reserva Intocada'; }
                 else if(balance <= minStock * 1.5) { tankColor = 'bg-ios-orange'; statusColor = 'bg-ios-orange'; statusText = 'Ponto de Pedido'; }
 
-                let orderHtml = `<button type="button" class="btn-primary py-2 px-3 text-xs w-full btn-place-order" data-id="${i.id}"><i class="fa-solid fa-cart-plus mr-2"></i>Fazer Pedido</button>`;
+                let orderHtml = `<button type="button" class="btn-primary py-2 px-3 text-xs w-full mt-3 btn-place-order" data-id="${i.id}"><i class="fa-solid fa-cart-plus mr-2"></i>Fazer Pedido</button>`;
                 
                 if(i.pendingOrder && i.pendingOrder.active) {
-                    orderHtml = `<div class="bg-ios-blue/20 border border-ios-blue text-ios-blue p-2 rounded-lg text-xs font-bold text-center"><i class="fa-solid fa-truck-fast mr-1"></i>Pedido em Trânsito<br><span class="font-normal text-[10px] text-white">Chega: ${new Date(i.pendingOrder.expectedDate+'T00:00:00').toLocaleDateString('pt-BR')} (Qtd: ${i.pendingOrder.qty})</span></div>`;
+                    orderHtml = `<div class="bg-ios-blue/20 border border-ios-blue text-ios-blue p-2 rounded-lg text-xs font-bold text-center mt-3"><i class="fa-solid fa-truck-fast mr-1"></i>Pedido em Trânsito<br><span class="font-normal text-[10px] text-white">Chega: ${new Date(i.pendingOrder.expectedDate+'T00:00:00').toLocaleDateString('pt-BR')} (Qtd: ${i.pendingOrder.qty})</span></div>`;
                 }
 
                 html += `<div class="bg-ios-bg p-4 rounded-xl border border-ios-border flex flex-col md:flex-row gap-4 items-center justify-between">
@@ -1792,8 +1903,9 @@
                             <span class="font-bold text-white">${i.name}</span>
                             <span class="text-xs font-bold px-2 py-1 rounded ${statusColor}/20 text-${statusColor.split('-')[1]} uppercase">${statusText}</span>
                         </div>
-                        <div class="text-xs text-ios-textMuted mt-2">
+                        <div class="text-xs text-ios-textMuted grid grid-cols-2 gap-2 mt-2">
                             <div>Prazo do Fornecedor: <strong class="text-ios-blue">${i.leadTime} dias úteis</strong></div>
+                            <div class="text-right">Durabilidade no Estoque: <strong class="font-mono text-white">${i.daysLeft===999 ? '> 99 dias' : i.daysLeft + ' dias'}</strong></div>
                         </div>
                         <div class="relative w-full h-6 bg-ios-input rounded-full overflow-hidden border border-ios-border mt-3 shadow-inner">
                             <div class="absolute left-0 top-0 bottom-0 bg-ios-red/30" style="width: ${minPct}%"></div>
@@ -1806,7 +1918,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="w-full md:w-48 shrink-0 border-t md:border-t-0 md:border-l border-ios-border pt-3 md:pt-0 md:pl-4 flex flex-col justify-center">
+                    <div class="w-full md:w-48 shrink-0 border-t md:border-t-0 md:border-l border-ios-border pt-3 md:pt-0 md:pl-4">
+                        <p class="text-[10px] text-ios-textMuted uppercase mb-1">Consumo Médio</p>
+                        <p class="text-lg font-bold text-white">${i.dailyAvg.toFixed(2)} / dia</p>
                         ${orderHtml}
                     </div>
                 </div>`;
@@ -1839,6 +1953,7 @@
                 id('order-product-id').value = p.id;
                 id('order-product-name').innerText = p.name;
                 id('order-qty').value = '';
+                // Business days calculation
                 const expDate = addBusinessDays(new Date(), (p.leadTime || 0));
                 const expStr = expDate.toISOString().split('T')[0];
                 id('order-date').value = expStr;
@@ -1879,7 +1994,7 @@
                 if(p) {
                     p.pendingOrder = { active: true, qty: qty, expectedDate: expDate };
                     await DB.update('inventory', p);
-                    window.showNotif('Pedido Registado!');
+                    window.showNotif('Pedido Registrado!');
                     hide(id('place-order-modal'));
                     await refreshData();
                 }
@@ -1887,13 +2002,137 @@
         };
 
         if(expDate < estimatedDate) {
-            showConfirmationModal("Atenção - Prazo Curto!", "A data informada é MENOR que o prazo estimado em sistema para o fornecedor. Certifique-se que comunicou com o Setor de Compras. Deseja confirmar esta encomenda?", executeOrder);
+            showConfirmationModal("Atenção - Prazo Curto!", "A data informada é MENOR que o prazo estimado em sistema para o fornecedor. Certifique-se de se comunicar com o setor de compras. Deseja confirmar este pedido?", executeOrder);
         } else {
             executeOrder();
         }
     });
 
-    // --- RECEITAS ---
+    // --- ENDEREÇAMENTO (LOCATIONS) ---
+    function searchLocation(code) {
+        const loc = localLocations.find(l => l.code === code);
+        if(loc) {
+            id('loc-detail-name').innerText = loc.name;
+            id('loc-detail-code').innerText = loc.code;
+            
+            const locBatches = localBatches.filter(b => b.locationCode === code && b.quantity > 0);
+            const tb = id('loc-batches-body');
+            tb.innerHTML = locBatches.map(b => {
+                const prod = localInventory.find(i => i.id === b.productId);
+                return `<tr class="base-tr"><td class="base-td font-medium text-white">${prod?prod.name:'?'}</td><td class="base-td">${b.code}</td><td class="base-td font-bold">${b.quantity.toFixed(2)}</td><td class="base-td text-center"><button type="button" class="btn-remove-batch-loc text-ios-red p-2" data-id="${b.id}"><i class="fa-solid fa-minus-circle"></i></button></td></tr>`;
+            }).join('');
+            if(!locBatches.length) tb.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-ios-textMuted">Endereço Vazio</td></tr>`;
+            
+            id('add-loc-target-code').value = code;
+            
+            hide(id('location-empty-state')); hide(id('location-create-panel')); show(id('location-details-panel'));
+        } else {
+            id('loc-form-code').value = code; id('loc-form-name').value = '';
+            hide(id('location-empty-state')); hide(id('location-details-panel')); show(id('location-create-panel'));
+        }
+    }
+
+    addEvt('btn-search-location', 'click', () => { const c = id('location-search-input').value.trim(); if(c) searchLocation(c); else window.showNotif("Digite o código do local", true); });
+    addEvt('btn-scan-location', 'click', () => { openScanner(code => { id('location-search-input').value = code; searchLocation(code); }); });
+
+    addEvt('location-form', 'submit', async (e) => {
+        e.preventDefault();
+        const code = id('loc-form-code').value; const name = id('loc-form-name').value;
+        await DB.add('locations', {code, name});
+        window.showNotif('Endereço criado!'); await refreshData(); searchLocation(code);
+    });
+
+    addEvt('btn-cancel-loc', 'click', () => { hide(id('location-create-panel')); show(id('location-empty-state')); id('location-search-input').value=''; });
+
+    addEvt('btn-delete-location', 'click', () => {
+        const code = id('loc-detail-code').innerText;
+        const loc = localLocations.find(l => l.code === code);
+        if(loc) {
+            showConfirmationModal("Excluir Local", "Deseja remover este endereço? Lotes continuarão existindo (mas sem local definido).", async () => {
+                await DB.remove('locations', loc.id); window.showNotif('Local removido');
+                hide(id('location-details-panel')); show(id('location-empty-state')); id('location-search-input').value='';
+                refreshData();
+            });
+        }
+    });
+
+    // Edição de Local
+    addEvt('btn-edit-location', 'click', () => {
+        const code = id('loc-detail-code').innerText;
+        const name = id('loc-detail-name').innerText;
+        id('edit-loc-old-code').value = code;
+        id('edit-loc-new-code').value = code;
+        id('edit-loc-new-name').value = name;
+        show(id('edit-location-modal'));
+    });
+
+    addEvt('edit-location-form', 'submit', async (e) => {
+        e.preventDefault();
+        const oldCode = id('edit-loc-old-code').value;
+        const newCode = id('edit-loc-new-code').value.trim();
+        const newName = id('edit-loc-new-name').value.trim();
+        
+        const loc = localLocations.find(l => l.code === oldCode);
+        if(!loc) return;
+
+        show(id('loading-overlay'));
+        try {
+            loc.code = newCode;
+            loc.name = newName;
+            await DB.update('locations', loc);
+
+            if(oldCode !== newCode) {
+                const batchesInLoc = localBatches.filter(b => b.locationCode === oldCode);
+                for(const b of batchesInLoc) {
+                    b.locationCode = newCode;
+                    await DB.update('batches', b);
+                }
+            }
+            window.showNotif('Endereço Atualizado!');
+            hide(id('edit-location-modal'));
+            await refreshData();
+            searchLocation(newCode);
+        } catch(err) { window.showNotif('Erro ao atualizar.', true); }
+        finally { hide(id('loading-overlay')); }
+    });
+
+    addEvt('btn-add-batch-to-loc', 'click', () => {
+        const ctn = id('add-loc-searchable-container');
+        createSearchableSelect(ctn, localInventory, 'Pesquise pelo Produto...', p => {
+            const batches = localBatches.filter(b => b.productId === p.id && b.quantity > 0);
+            const sel = id('add-loc-batch-select');
+            if(sel) {
+                sel.innerHTML = '<option value="">Escolha um Lote...</option>' + batches.map(b => `<option value="${b.code}">${b.code} (Saldo: ${b.quantity.toFixed(2)})</option>`).join('');
+            }
+        });
+        id('add-loc-batch-select').innerHTML = '<option value="">Aguardando produto...</option>';
+        show(id('modal-add-loc-batch'));
+    });
+
+    addEvt('add-loc-batch-form', 'submit', async (e) => {
+        e.preventDefault();
+        const batchCode = id('add-loc-batch-select').value;
+        const locCode = id('add-loc-target-code').value;
+        const batch = localBatches.find(b => b.code === batchCode && b.quantity > 0);
+        if(!batch) return window.showNotif('Selecione um lote válido', true);
+        
+        batch.locationCode = locCode;
+        await DB.update('batches', batch); window.showNotif('Lote Mapeado!');
+        hide(id('modal-add-loc-batch')); await refreshData(); searchLocation(locCode);
+    });
+
+    addEvt('loc-batches-body', 'click', async (e) => {
+        const btn = e.target.closest('.btn-remove-batch-loc');
+        if(btn) {
+            const batch = await DB.get('batches', btn.dataset.id);
+            if(batch) {
+                batch.locationCode = ''; await DB.update('batches', batch);
+                window.showNotif('Lote removido do local'); await refreshData(); searchLocation(id('loc-detail-code').innerText);
+            }
+        }
+    });
+
+    // --- RECEITAS E REQUISIÇÃO ---
     function addIngRowReq(container, prefillId=null, prefillQty='') {
         if(!container) return;
         const div = document.createElement('div'); div.className='req-item flex flex-col gap-2 bg-ios-bg p-3 rounded-xl border border-ios-border z-50';
@@ -1925,7 +2164,7 @@
                 planDisplay.innerHTML = isSufficient ? '<i class="fa-solid fa-check mr-1"></i> Lotes Alocados: ' + plan.map(x => `<strong>${x.batchCode}</strong>(${x.quantity.toFixed(2)})`).join(', ') : '<i class="fa-solid fa-triangle-exclamation mr-1"></i> ALERTA: Físico Insuficiente ou Bloqueado!';
                 planDisplay.className = isSufficient ? 'plan-display text-ios-green' : 'plan-display text-ios-red';
                 if(isSufficient) show(editBtn); else hide(editBtn);
-            } else { planDisplay.innerText = 'Aguardar produto e qtd...'; hide(editBtn); }
+            } else { planDisplay.innerText = 'Aguardando produto e qtd...'; hide(editBtn); }
         };
 
         createSearchableSelect(div.querySelector('.searchable-container'), localInventory, 'Buscar item...', item => { updatePlan(); });
@@ -1991,7 +2230,7 @@
         const ingCont = id('ingredients-container');
         if(ingCont) { ingCont.innerHTML = ''; (r.ingredients || []).forEach(ing => { addIngRowReq(ingCont, ing.productId, ing.quantity); }); }
         
-        if(id('recipe-modal-title')) id('recipe-modal-title').innerText = 'Editar Receita'; 
+        if(id('recipe-modal-title')) id('recipe-modal-title').innerHTML = '<i class="fa-solid fa-book-bookmark mr-3"></i>Editar Receita'; 
         show(id('recipe-modal'));
     }
 
@@ -2005,7 +2244,7 @@
         
         if(id('recipe-yield')) id('recipe-yield').value = 1;
         if(ingCont) addIngRowReq(ingCont); 
-        if(id('recipe-modal-title')) id('recipe-modal-title').innerText = 'Nova Receita'; 
+        if(id('recipe-modal-title')) id('recipe-modal-title').innerHTML = '<i class="fa-solid fa-book-bookmark mr-3"></i>Nova Receita'; 
         show(id('recipe-modal'));
     });
     
@@ -2026,37 +2265,40 @@
         hide(id('recipe-modal')); refreshData();
     });
 
-    // --- SEPARAÇÃO ---
+
+    // --- SEPARAÇÃO AGRUPADA (PICKING KITTING) & CÂMERA ---
     function renderPickingScreen() {
         const container = id('picking-lines-container');
         if(!container) return;
 
-        const limitDate = new Date();
-        limitDate.setDate(limitDate.getDate() + 2);
-        const limitDateStr = limitDate.toISOString().split('T')[0];
+        const pendingOps = localProductionOrders.filter(po => po.status === 'pendente');
+        if(!pendingOps.length) { container.innerHTML = `<div class="card text-center py-10"><i class="fa-solid fa-clipboard-check text-5xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Não há Ordens de Produção pendentes.</p></div>`; return; }
 
-        const pendingOps = localProductionOrders.filter(po => po.status === 'pendente' && po.date <= limitDateStr);
-        if(!pendingOps.length) { container.innerHTML = `<div class="card text-center py-10"><i class="fa-solid fa-clipboard-check text-5xl text-ios-cardHover mb-4"></i><p class="text-ios-textMuted">Não há Ordens de Produção pendentes para as próximas 48 horas.</p></div>`; return; }
-
-        pendingOps.sort((a,b) => {
-            if(a.date !== b.date) return a.date.localeCompare(b.date);
-            return (a.recipeCategory||'').localeCompare(b.recipeCategory||'');
-        });
-
-        const grouped = {};
+        // Agora agrupamos primeiramente por Data, depois por Linha de Produção
+        const opsByDate = {};
         pendingOps.forEach(op => {
-            if(!grouped[op.date]) grouped[op.date] = {};
-            if(!grouped[op.date][op.recipeCategory]) grouped[op.date][op.recipeCategory] = [];
-            grouped[op.date][op.recipeCategory].push(op);
+            const date = op.date || 'Sem Data';
+            if(!opsByDate[date]) opsByDate[date] = {};
+            
+            const line = op.recipeCategory || 'Diversos';
+            if(!opsByDate[date][line]) opsByDate[date][line] = [];
+            
+            opsByDate[date][line].push(op);
         });
 
-        let html = '';
-        Object.keys(grouped).sort().forEach(dateStr => {
-            const displayDate = new Date(dateStr+'T00:00:00').toLocaleDateString('pt-BR');
-            html += `<h2 class="title-md mt-6 mb-4 text-ios-blue border-b border-ios-border pb-2"><i class="fa-regular fa-calendar mr-2"></i>Data OP: ${displayDate}</h2>`;
+        let finalHTML = '';
+
+        Object.keys(opsByDate).sort().forEach(date => {
+            const dateObj = new Date(date + 'T00:00:00');
+            const dateFormatted = isNaN(dateObj.getTime()) ? date : dateObj.toLocaleDateString('pt-BR');
             
-            Object.keys(grouped[dateStr]).sort().forEach(line => {
-                const ops = grouped[dateStr][line];
+            finalHTML += `<div class="mb-10">
+                <h2 class="text-2xl font-bold text-white mb-5 flex items-center border-b border-ios-border pb-3"><i class="fa-regular fa-calendar-check text-ios-blue mr-3"></i>Programação para: ${dateFormatted}</h2>
+                <div class="space-y-6">`;
+
+            const opsByLine = opsByDate[date];
+            finalHTML += Object.keys(opsByLine).sort().map(line => {
+                const ops = opsByLine[line];
                 const concluidas = ops.filter(o => o.picking?.status === 'concluido').length;
                 const emAndamento = ops.filter(o => o.picking?.status === 'em_andamento').length;
                 const extrasPendentes = ops.filter(o => o.isExtra === true && o.picking?.status !== 'concluido');
@@ -2070,8 +2312,8 @@
 
                 const opIdsStr = JSON.stringify(ops.map(o=>o.id));
 
-                html += `
-                <div class="card p-0 overflow-hidden border ${isLineActive ? 'border-ios-blue' : 'border-ios-border'} transition-all mb-4">
+                return `
+                <div class="card p-0 overflow-hidden border ${isLineActive ? 'border-ios-blue' : 'border-ios-border'} transition-all ml-4">
                     <div class="bg-ios-cardHover px-5 py-4 flex flex-col gap-2 ${isLineActive ? 'bg-ios-blue/10' : ''}">
                         <div class="flex flex-wrap justify-between items-center gap-3">
                             <div>
@@ -2079,23 +2321,24 @@
                                     <i class="fa-solid fa-layer-group text-ios-blue mr-2"></i>Setor: ${line.toUpperCase()}
                                     ${extrasPendentes.length > 0 ? `<span class="ml-2 badge bg-ios-red text-white shadow shadow-ios-red">🚨 ${extrasPendentes.length} EXTRA(s)</span>` : ''}
                                 </h3>
-                                <p class="text-xs text-ios-textMuted mt-1">${ops.length} OP(s) programada(s) | ${concluidas} Separada(s)</p>
+                                <p class="text-xs text-ios-textMuted mt-1">${ops.length} OP(s) nesta linha | ${concluidas} Separada(s)</p>
                             </div>
                             <div class="flex flex-wrap items-center gap-4">
                                 ${lineStatusHTML}
-                                ${extrasPendentes.length > 0 ? `<button type="button" class="btn-secondary py-2 px-4 text-xs text-ios-red border-ios-red/50 hover:bg-ios-red/10 btn-print-extras" data-line="${line}" data-date="${dateStr}"><i class="fa-solid fa-print mr-2"></i>Imprimir Extras</button>` : ''}
-                                ${!allConcluido ? `<button type="button" class="btn-primary py-2 px-4 shadow-lg shadow-ios-blue/20 btn-open-line-picking" data-line="${line} - ${displayDate}" data-opids='${opIdsStr}'><i class="fa-solid fa-dolly mr-2"></i>Separar Linha</button>` : ''}
+                                ${extrasPendentes.length > 0 ? `<button type="button" class="btn-secondary py-2 px-4 text-xs text-ios-red border-ios-red/50 hover:bg-ios-red/10 btn-print-extras" data-line="${line}"><i class="fa-solid fa-print mr-2"></i>Imprimir Extras</button>` : ''}
+                                ${!allConcluido ? `<button type="button" class="btn-primary py-2 px-4 shadow-lg shadow-ios-blue/20 btn-open-line-picking" data-line="${line}" data-opids='${opIdsStr}'><i class="fa-solid fa-dolly mr-2"></i>Separar Insumos</button>` : ''}
                             </div>
                         </div>
+                        <!-- Barra de Progresso da Linha -->
                         <div class="w-full h-2 bg-ios-bg rounded-full mt-2 overflow-hidden border border-ios-border">
                             <div class="h-full bg-ios-green transition-all" style="width: ${pct}%"></div>
                         </div>
                     </div>
                     <div class="p-4 bg-ios-bg grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 border-t border-ios-border/50">
                         ${ops.map(op => {
-                            let timerHtml = op.picking?.status === 'concluido' ? '<i class="fa-solid fa-check text-ios-green"></i>' : '<i class="fa-solid fa-clock text-ios-textMuted"></i>';
+                            let statusIcon = op.picking?.status === 'concluido' ? '<span class="text-xs text-ios-green font-bold"><i class="fa-solid fa-check mr-1"></i>Concluído</span>' : '<span class="text-xs text-ios-textMuted"><i class="fa-solid fa-clock mr-1"></i>Pendente</span>';
                             if(op.picking?.status === 'em_andamento') {
-                                timerHtml = `<div class="live-timer text-ios-orange font-mono font-bold timer-active" data-start="${op.picking.start}">00:00</div>`;
+                                statusIcon = `<span class="text-xs text-ios-blue font-bold animate-pulse"><i class="fa-solid fa-spinner fa-spin mr-1"></i>Andamento</span>`;
                             }
                             return `
                             <div class="bg-ios-card p-3 rounded-lg border border-ios-border text-sm flex justify-between items-center relative overflow-hidden">
@@ -2103,15 +2346,17 @@
                                 <div class="${op.isExtra ? 'pl-2' : ''}">
                                     <span class="font-bold text-white">${op.recipeName}</span> <span class="text-ios-blue">(${op.multiplier}x)</span>
                                 </div>
-                                <div class="ml-2">${timerHtml}</div>
+                                <div class="ml-2">${statusIcon}</div>
                             </div>`;
                         }).join('')}
                     </div>
                 </div>`;
-            });
+            }).join('');
+            
+            finalHTML += `</div></div>`;
         });
-        
-        container.innerHTML = html;
+
+        container.innerHTML = finalHTML;
     }
 
     addEvt('picking-lines-container', 'click', e => {
@@ -2119,7 +2364,7 @@
         if(btnPick) openGroupedPickingModal(btnPick.dataset.line, JSON.parse(btnPick.dataset.opids));
 
         const btnPrint = e.target.closest('.btn-print-extras');
-        if(btnPrint) printExtras(btnPrint.dataset.line, btnPrint.dataset.date);
+        if(btnPrint) printExtras(btnPrint.dataset.line);
     });
 
     function getAggregatedIngredients(opIds) {
@@ -2129,8 +2374,8 @@
         return Object.values(agg);
     }
 
-    function printExtras(lineName, dateStr) {
-        const ops = localProductionOrders.filter(o => o.recipeCategory === lineName && o.date === dateStr && o.status === 'pendente' && o.isExtra === true && o.picking?.status !== 'concluido');
+    function printExtras(lineName) {
+        const ops = localProductionOrders.filter(o => o.recipeCategory === lineName && o.status === 'pendente' && o.isExtra === true && o.picking?.status !== 'concluido');
         if(!ops.length) return window.showNotif('Nenhuma OP Extra pendente para imprimir.', true);
 
         const agg = {};
@@ -2143,7 +2388,7 @@
 
         const { jsPDF } = window.jspdf; const doc = new jsPDF();
         doc.setFontSize(20); doc.setTextColor(255, 69, 58); doc.text(`Folha de Separação: EXTRAS / URGENTES`, 14, 20);
-        doc.setFontSize(12); doc.setTextColor(50, 50, 55); doc.text(`Setor: ${lineName.toUpperCase()} | Data OP: ${new Date(dateStr+'T00:00:00').toLocaleDateString('pt-BR')}`, 14, 28);
+        doc.setFontSize(12); doc.setTextColor(50, 50, 55); doc.text(`Setor: ${lineName.toUpperCase()}`, 14, 28);
         doc.setFontSize(10); doc.setTextColor(150, 150, 150); doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')} | Inclui ${ops.length} OPs`, 14, 34);
         doc.setLineWidth(0.5); doc.line(14, 38, 196, 38);
 
@@ -2153,7 +2398,7 @@
         });
 
         doc.autoTable({ startY: 45, head: [['Insumo a Separar', 'Quantidade Total FÍSICA Necessária']], body: tableData, theme: 'striped', headStyles: { fillColor: [255, 69, 58], textColor: [255, 255, 255] }, alternateRowStyles: { fillColor: [255, 245, 245] }, margin: { left: 14, right: 14 } });
-        doc.save(`Separacao_Extras_${lineName.replace(/\s+/g,'_')}_${dateStr}.pdf`);
+        doc.save(`Separacao_Extras_${lineName.replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`);
         window.showNotif('Folha de Extras gerada para impressão!');
     }
 
@@ -2167,18 +2412,10 @@
         const subEl = id('picking-modal-subtitle'); if(subEl) subEl.innerText = `Agrupando os insumos de ${ops.length} OP(s) para separação única.`;
         const respEl = id('picking-responsible'); if(respEl) respEl.value = picking.responsible || '';
 
-        const timerEl = id('picking-timer-display');
-        if(timerEl) {
-            timerEl.innerText = '00:00'; 
-            timerEl.classList.remove('timer-active');
-            timerEl.dataset.start = ""; 
-        }
-
         if(picking.status === 'em_andamento' && picking.start) {
             hide(id('picking-setup-view')); 
             show(id('picking-active-view'));
             const actResp = id('picking-active-resp'); if(actResp) actResp.innerText = picking.responsible;
-            if(timerEl) { timerEl.dataset.start = picking.start; timerEl.classList.add('timer-active'); }
         } else {
             show(id('picking-setup-view'));
             hide(id('picking-active-view'));
@@ -2230,13 +2467,12 @@
         hide(id('picking-setup-view')); 
         show(id('picking-active-view'));
         const actResp = id('picking-active-resp'); if(actResp) actResp.innerText = resp;
-        const timerEl = id('picking-timer-display');
-        if(timerEl) { timerEl.dataset.start = now; timerEl.classList.add('timer-active'); }
-        window.showNotif('Cronômetro Iniciado!'); 
+        window.showNotif('Check-list Iniciado!'); 
         
         refreshData(); 
     });
 
+    // Scanner no Picking
     addEvt('btn-picking-scan', 'click', () => {
         openScanner(code => {
             const prod = localInventory.find(p => p.code === code || (p.barcodes && p.barcodes.includes(code)));
@@ -2336,40 +2572,20 @@
     });
 
     // --- LOGICA OP (PRODUCAO) ---
+    addEvt('po-date', 'change', e => {
+        const selectedDate = new Date(e.target.value);
+        const today = new Date();
+        const diffTime = selectedDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        const extraChk = id('po-is-extra'); if (extraChk) extraChk.checked = diffDays <= 2;
+    });
+
     addEvt('search-po-by-date', 'change', renderPO);
-    
     function renderPO() {
-        const dateInput = id('search-po-by-date');
-        const d = dateInput ? dateInput.value : ''; 
-        
-        let list = localProductionOrders.filter(po => po.status === 'pendente');
-        if(d) {
-            list = list.filter(po => po.date === d);
-        } else {
-            list.sort((a,b) => {
-                if(a.date !== b.date) return a.date.localeCompare(b.date);
-                return (a.recipeName||'').localeCompare(b.recipeName||'');
-            });
-        }
-        
-        const prodEvents = {};
-        localProductionOrders.forEach(op => {
-            const dateStr = op.date;
-            if(!prodEvents[dateStr]) prodEvents[dateStr] = [];
-            let colorClass = 'bg-ios-orange';
-            if(op.status === 'concluído') colorClass = 'bg-ios-green';
-            else if(op.isExtra) colorClass = 'bg-ios-red';
-            prodEvents[dateStr].push({ classes: colorClass }); 
-        });
-        const calendarContainer = id('production-calendar-container');
-        if(calendarContainer) {
-            calendarContainer.innerHTML = generateCalendarHTML(window.prodCalendarDate, prodEvents, 'production');
-        }
-
-        const container = id('production-orders-list'); 
-        if(!container) return;
-
-        if(!list.length) { container.innerHTML = `<div class="col-span-full text-center text-ios-textMuted py-10 bg-ios-card rounded-2xl border border-ios-border">Fila de produção vazia nesta data. Selecione um dia no calendário.</div>`; return; }
+        const dateInput = id('search-po-by-date'); if(!dateInput) return;
+        const d = dateInput.value; const list = localProductionOrders.filter(po => po.date === d);
+        const container = id('production-orders-list'); if(!container) return;
+        if(!list.length) { container.innerHTML = `<div class="col-span-full text-center text-ios-textMuted py-10 bg-ios-card rounded-2xl border border-ios-border">Fila de produção vazia nesta data.</div>`; return; }
         
         container.innerHTML = list.map(po => {
             const p = po.picking || { status: 'pendente' }; let pickBadge = '';
@@ -2442,14 +2658,6 @@
     }
 
     addEvt('po-quantity', 'input', updatePOIngredients);
-    addEvt('po-date', 'change', e => {
-        const selectedDate = new Date(e.target.value);
-        const today = new Date();
-        const diffTime = selectedDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-        const extraChk = id('po-is-extra'); if (extraChk) extraChk.checked = diffDays <= 2;
-    });
-
     addEvt('btn-new-production-order', 'click', () => {
         const form = id('production-order-form'); if(form) form.reset(); 
         const bodyEl = id('po-ingredients-body'); if(bodyEl) bodyEl.innerHTML = '';
@@ -2502,6 +2710,7 @@
         showConfirmationModal('Executar Baixa', `${warnMsg}As quantidades REAIS digitadas na separação (se existirem) serão descontadas. Gerar baixas de <strong>${pendentes.length} OP(s)</strong>?`, async () => {
             show(id('loading-overlay'));
             try {
+                // Pre-check all items with ACTUAL amounts
                 for(const op of pendentes) {
                     for(const ing of op.ingredients) {
                         let actualQty = ing.adjustedQuantity;
@@ -2512,11 +2721,14 @@
                         if(actualQty > 0) {
                             const product = await DB.get('inventory', ing.productId);
                             if(!product || (product.totalQuantity || 0) < actualQty - 0.001) throw new Error(`Sem saldo suficiente para: ${product ? product.name : 'Insumo Excluído'} (Requer ${actualQty.toFixed(2)}).`);
+                            
+                            // Re-calculate FIFO for Actual Qty just to be safe
                             const checkFIFO = getFIFOPlan(ing.productId, actualQty);
                             if(!checkFIFO.isSufficient) throw new Error(`Lotes insuficientes ou bloqueados para atender quantidade de ${actualQty.toFixed(2)} de ${product.name}!`);
                         }
                     }
                 }
+                // Perform Deductions
                 for(const op of pendentes) {
                     for(const ing of op.ingredients) {
                         let actualQty = ing.adjustedQuantity;
@@ -2526,6 +2738,8 @@
                         
                         if(actualQty > 0) {
                             const product = await DB.get('inventory', ing.productId);
+                            
+                            // Get fresh FIFO Plan based on actual
                             const freshFIFO = getFIFOPlan(ing.productId, actualQty);
                             
                             for(const pl of freshFIFO.plan) { const b = await DB.get('batches', pl.batchId); b.quantity -= pl.quantity; await DB.update('batches', b); }
@@ -2552,7 +2766,7 @@
                     }
                     op.status = 'concluído'; await DB.update('productionOrders', op);
                 }
-                window.showNotif('Sucesso! Movimentações registadas baseadas nas quantidades reais.'); 
+                window.showNotif('Sucesso! Movimentações registradas baseadas nas quantidades reais.'); 
             } catch(e) { window.showNotif(e.message || 'Erro crítico', true); } finally { hide(id('loading-overlay')); await refreshData(); }
         });
     });
@@ -2586,7 +2800,7 @@
         let list = localMonthlyConsumption.filter(c => c.period === p);
         if(term) list = list.filter(c => localInventory.find(i=>i.id===c.productId)?.name.toLowerCase().includes(term));
         const tbody = id('consumption-table-body'); if(!tbody) return;
-        if(!list.length) return tbody.innerHTML = `<tr><td colspan="2" class="base-td text-center border-none py-10">Nada registado.</td></tr>`;
+        if(!list.length) return tbody.innerHTML = `<tr><td colspan="2" class="base-td text-center border-none py-10">Nada registrado.</td></tr>`;
         tbody.innerHTML = list.map(c => `<tr class="base-tr"><td class="base-td text-white">${localInventory.find(i=>i.id===c.productId)?.name||'?'}</td><td class="base-td text-right font-bold text-ios-blue">${c.totalConsumed.toFixed(2)}</td></tr>`).join('');
     }
 
@@ -2602,7 +2816,56 @@
         } catch(err) { window.showNotif('Erro no ajuste', true); }
     });
 
-    // --- CONFIGURAÇÕES ---
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('.open-batch-selector');
+        if(btn) {
+            currentBatchTarget = btn.closest('.req-item') || btn.closest('tr');
+            const pId = currentBatchTarget.dataset.productId; const qtyStr = currentBatchTarget.querySelector('input[type="number"]').value; const qty = parseFloat(qtyStr) || 0;
+            const currentPlan = JSON.parse(currentBatchTarget.dataset.plan || '[]');
+            openBatchSelector(pId, qty, currentPlan);
+        }
+    });
+
+    function openBatchSelector(pId, qtyNeeded, currentPlan) {
+        if(id('batch-selector-needed')) id('batch-selector-needed').innerText = qtyNeeded.toFixed(4);
+        const batches = localBatches.filter(b => b.productId === pId && b.quantity > 0 && b.isReleased !== false);
+        const listEl = id('batch-selector-list');
+        if(listEl) {
+            listEl.innerHTML = batches.map(b => {
+                const inPlan = currentPlan.find(p => p.batchId === b.id); const val = inPlan ? inPlan.quantity : '';
+                return `<div class="flex justify-between items-center mb-3 bg-ios-input p-3 rounded-xl border border-ios-border"><span class="text-white font-medium"><i class="fa-solid fa-box mr-2 text-ios-textMuted"></i>${b.code} <br><span class="text-xs text-ios-textMuted ml-6">Disponível: ${b.quantity.toFixed(2)}</span></span><input type="number" class="form-input w-28 text-right batch-input font-bold" data-bid="${b.id}" data-bcode="${b.code}" max="${b.quantity + (inPlan?inPlan.quantity:0)}" value="${val}" placeholder="0"></div>`;
+            }).join('');
+        }
+        updateBatchSelectorSum(); show(id('batch-selector-modal'));
+    }
+
+    addEvt('batch-selector-list', 'input', updateBatchSelectorSum);
+    function updateBatchSelectorSum() {
+        if(event && event.target.classList.contains('batch-input')) {
+            const listEl = id('batch-selector-list'); if(!listEl) return;
+            const inputs = [...listEl.querySelectorAll('.batch-input')]; const sum = inputs.reduce((a, b) => a + (parseFloat(b.value) || 0), 0);
+            const selEl = id('batch-selector-selected'); const needEl = id('batch-selector-needed');
+            if(selEl && needEl) {
+                selEl.innerText = sum.toFixed(4); const needed = parseFloat(needEl.innerText);
+                selEl.className = Math.abs(sum - needed) < 0.001 ? 'font-bold text-xl text-ios-green' : 'font-bold text-xl text-ios-red';
+            }
+        }
+    }
+
+    addEvt('confirm-batch-selection', 'click', () => {
+        if (!currentBatchTarget) return;
+        const needed = parseFloat(id('batch-selector-needed')?.innerText || 0); const sum = parseFloat(id('batch-selector-selected')?.innerText || 0);
+        if(sum < needed - 0.001) return window.showNotif('A quantidade marcada é menor que a necessária!', true);
+        const listEl = id('batch-selector-list'); if(!listEl) return;
+        const inputs = [...listEl.querySelectorAll('.batch-input')];
+        const newPlan = inputs.map(inp => ({ batchId: inp.dataset.bid, batchCode: inp.dataset.bcode, quantity: parseFloat(inp.value) || 0 })).filter(p => p.quantity > 0);
+        currentBatchTarget.dataset.plan = JSON.stringify(newPlan);
+        const planDisplay = currentBatchTarget.querySelector('.plan-display');
+        if(planDisplay) planDisplay.innerHTML = '<i class="fa-solid fa-hand mr-1"></i> Lotes Manuais: ' + newPlan.map(p => `<strong>${p.batchCode}</strong>(${p.quantity})`).join(', ');
+        hide(id('batch-selector-modal'));
+    });
+
+    // --- CONFIGURAÇÕES: BACKUP E ZERAR BD ---
     addEvt('btn-download-db', 'click', async () => {
         show(id('loading-overlay'));
         try {
@@ -2615,7 +2878,7 @@
             const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
             a.download = `EstoqueOS_Backup_${new Date().toISOString().split('T')[0]}.json`;
             a.click(); window.showNotif('Backup salvo no seu dispositivo!');
-        } catch(e) { window.showNotif('Erro ao gerar ficheiro.', true); }
+        } catch(e) { window.showNotif('Erro ao gerar arquivo.', true); }
         finally { hide(id('loading-overlay')); }
     });
 
