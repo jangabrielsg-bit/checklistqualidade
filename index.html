@@ -9,6 +9,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Ícones -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Biblioteca para PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     /* Tema Claro - Baseado na identidade (Stone + Yellow) */
@@ -179,6 +181,16 @@
     @media (min-width: 768px) {
       .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     }
+
+    /* PDF Estilos de Exportação - Evita Quebras de Página */
+    #pdf-container-hidden { display: none; }
+    .pdf-mode { background: #fff; color: #000; padding: 40px; font-family: Arial, sans-serif; font-size: 14px; }
+    .pdf-mode table { width: 100%; border-collapse: collapse; margin: 15px 0; page-break-inside: auto; }
+    .pdf-mode tr { page-break-inside: avoid; page-break-after: auto; }
+    .pdf-mode th, .pdf-mode td { border: 1px solid #000; padding: 8px; text-align: left; }
+    .pdf-mode th { background-color: #f5f5f4; font-weight: bold; }
+    .pdf-mode h1 { font-size: 20px; text-align: center; margin-bottom: 20px; text-transform: uppercase; }
+    .pdf-block { page-break-inside: avoid; margin-bottom: 20px; }
   </style>
 
   <!-- Firebase SDKs -->
@@ -508,6 +520,7 @@
         }
     };
 
+    // Rascunho
     window.salvarRascunhoStart = () => {
        const form = document.getElementById('form-start'); const draft = {};
        form.querySelectorAll('input').forEach(el => {
@@ -940,7 +953,7 @@
        } else {
            historico.innerHTML = concluidos.map(t => `
              <div class="bg-white p-4 mb-3 rounded-xl border border-stone-200 shadow-sm flex justify-between items-center hover:border-yellow-400 transition" >
-               <div class="flex gap-4 items-center flex-1 cursor-pointer" onclick="window.gerarLaudoWord(${JSON.stringify(t).replace(/"/g, '&quot;')})" title="Download do Laudo em Word">
+               <div class="flex gap-4 items-center flex-1 cursor-pointer" onclick="window.gerarLaudoPDF(${JSON.stringify(t).replace(/"/g, '&quot;')})" title="Download do Laudo em PDF">
                   ${t.fotoBase64_1 ? `<img src="${t.fotoBase64_1}" class="w-12 h-12 object-cover rounded-lg shadow-sm border border-stone-200">` : `<div class="w-12 h-12 bg-stone-100 rounded-lg flex items-center justify-center"><i data-lucide="image" class="w-5 h-5 text-stone-400"></i></div>`}
                   <div>
                      <div class="font-bold text-stone-800">${t.produtoNome} <span class="text-xs text-stone-500 font-normal ml-1">Lote: ${t.loteProduto || '--'}</span></div>
@@ -950,7 +963,7 @@
                <div class="flex flex-col items-end gap-2 ml-4">
                  <span class="text-[10px] uppercase font-bold px-2 py-1 rounded-full ${t.liberado ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${t.liberado ? 'Aprovado' : 'Retido'}</span>
                  <div class="flex items-center gap-3">
-                     <i data-lucide="download" class="w-4 h-4 text-blue-500 cursor-pointer" onclick="window.gerarLaudoWord(${JSON.stringify(t).replace(/"/g, '&quot;')})"></i>
+                     <i data-lucide="download" class="w-4 h-4 text-blue-500 cursor-pointer" onclick="window.gerarLaudoPDF(${JSON.stringify(t).replace(/"/g, '&quot;')})"></i>
                      <button onclick="window.excluirTeste('${t.id}')" class="text-stone-300 hover:text-red-500 transition-colors p-1" title="Eliminar"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                  </div>
                </div>
@@ -1147,7 +1160,7 @@
         try {
             await updateDoc(doc(window.appState.db, 'artifacts', window.appState.appId, 'users', window.appState.user.uid, 'testes_farinha', id), atualizacao);
             window.showToast("Laudo emitido com sucesso!"); window.fecharModalSupervisor();
-            window.gerarLaudoWord({ ...testeData, ...atualizacao });
+            window.gerarLaudoPDF({ ...testeData, ...atualizacao });
         } catch(err) { window.showToast("Erro ao gravar laudo."); }
     };
 
@@ -1158,9 +1171,9 @@
         return canvas.toDataURL() !== blank.toDataURL();
     }
 
-    // Exportação em formato WORD (.doc)
-    window.gerarLaudoWord = async (dados) => {
-        window.showToast("Gerando arquivo Word editável...");
+    // Exportação em formato PDF usando html2pdf.js
+    window.gerarLaudoPDF = async (dados) => {
+        window.showToast("Gerando arquivo PDF...");
         const start = window.appState.starts.find(s => s.id === dados.startId);
         const dataProducao = start ? start.dataFabricacao.split('-').reverse().join('/') : '--';
         const dataRecebimento = dados.dataRecebimentoFar ? dados.dataRecebimentoFar.split('-').reverse().join('/') : '--';
@@ -1171,101 +1184,71 @@
             dataTesteStr = dados.dataRealizacaoTeste.split('-').reverse().join('/');
         }
 
-        const verificaStatus = (val) => val === 'bom' ? 'CONFORME (Bom)' : (val === 'regular' ? 'CONFORME (Regular)' : 'NÃO CONFORME (Ruim)');
+        const verificaStatus = (val) => val === 'bom' ? 'CONFORME' : (val === 'regular' ? 'CONFORME (Reg)' : 'NÃO CONFORME');
         
-        const logoHtml = window.appState.config?.logoBase64 ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${window.appState.config.logoBase64}" width="180" height="auto" /></div>` : '';
-        const img1Html = dados.fotoBase64_1 ? `<img src="${dados.fotoBase64_1}" width="280" height="auto" style="margin: 10px; border: 1px solid #ccc;" />` : '';
-        const img2Html = dados.fotoBase64_2 ? `<img src="${dados.fotoBase64_2}" width="280" height="auto" style="margin: 10px; border: 1px solid #ccc;" />` : '';
-        const assinaturaHtml = dados.assinaturaSupervisorBase64 ? `<img src="${dados.assinaturaSupervisorBase64}" width="200" height="auto" style="border-bottom: 1px solid #000; margin-bottom: 5px;" />` : '<div style="border-bottom: 1px solid #000; width: 200px; height: 50px; margin: 0 auto 5px auto;"></div>';
+        // Preenche o template oculto
+        document.getElementById('pdf-produto').innerText = dados.produtoNome || '--';
+        document.getElementById('pdf-lote').innerText = dados.loteProduto || '--';
+        document.getElementById('pdf-producao').innerText = dataProducao;
+        document.getElementById('pdf-validade').innerText = dataValidade;
+        document.getElementById('pdf-rec-farinha').innerText = dataRecebimento;
+        document.getElementById('pdf-lote-farinha').innerText = dados.loteFarinhaUsada || '--';
+        document.getElementById('pdf-data-teste').innerText = dataTesteStr;
+        document.getElementById('pdf-pl').innerText = dados.fatorPL || '--';
+        document.getElementById('pdf-w').innerText = dados.fatorW || '--';
+        
+        document.getElementById('pdf-craquelamento').innerText = verificaStatus(dados.craquelamento);
+        document.getElementById('pdf-pestana').innerText = verificaStatus(dados.pestana);
+        document.getElementById('pdf-volume').innerText = verificaStatus(dados.volume);
+        document.getElementById('pdf-cor').innerText = verificaStatus(dados.cor);
+        document.getElementById('pdf-alveolar').innerText = verificaStatus(dados.estruturaAlveolar);
+        document.getElementById('pdf-cormiolo').innerText = verificaStatus(dados.corMiolo);
+        document.getElementById('pdf-visual').innerText = verificaStatus(dados.conformidadeVisual);
+        
+        document.getElementById('pdf-nota').innerText = dados.notaFinal || '--';
 
-        const htmlContent = `
-            <div style="font-family: 'Arial', sans-serif; font-size: 12pt; color: #000; max-width: 800px; margin: 0 auto;">
-                ${logoHtml}
-                <h2 style="text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 20px;">CERTIFICADO DE GARANTIA DA QUALIDADE</h2>
-                
-                <table style="width: 100%; margin-bottom: 20px; font-weight: bold; border: none;">
-                    <tr>
-                        <td style="padding: 5px;">Produto: <span style="font-weight: normal;">${dados.produtoNome || '--'}</span></td>
-                        <td style="padding: 5px;">Lote: <span style="font-weight: normal;">${dados.loteProduto || '--'}</span></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">Produção: <span style="font-weight: normal;">${dataProducao}</span></td>
-                        <td style="padding: 5px;">Validade: <span style="font-weight: normal;">${dataValidade}</span></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">Data Rec. Farinha: <span style="font-weight: normal;">${dataRecebimento}</span></td>
-                        <td style="padding: 5px;">Lote Farinha: <span style="font-weight: normal;">${dados.loteFarinhaUsada || '--'}</span></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">Data do Teste: <span style="font-weight: normal;">${dataTesteStr}</span></td>
-                        <td style="padding: 5px;"></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 5px;">P/L: <span style="font-weight: normal;">${dados.fatorPL || '--'}</span></td>
-                        <td style="padding: 5px;">W: <span style="font-weight: normal;">${dados.fatorW || '--'}</span></td>
-                    </tr>
-                </table>
+        // Imagens
+        const logoImg = document.getElementById('pdf-logo-img');
+        if(window.appState.config?.logoBase64) {
+             logoImg.src = window.appState.config.logoBase64;
+             logoImg.style.display = 'block';
+        } else {
+             logoImg.style.display = 'none';
+        }
 
-                <table border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 30px;">
-                    <thead style="background-color: #f2f2f2;">
-                        <tr>
-                            <th style="width: 30%;">Grupo</th>
-                            <th style="width: 40%;">Característica</th>
-                            <th style="width: 30%; text-align: center;">Resultado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td rowspan="4" style="font-weight:bold; vertical-align: top;">Características Externas</td><td>Craquelamento</td><td style="text-align: center;">${verificaStatus(dados.craquelamento)}</td></tr>
-                        <tr><td>Abertura de pestana</td><td style="text-align: center;">${verificaStatus(dados.pestana)}</td></tr>
-                        <tr><td>Volume</td><td style="text-align: center;">${verificaStatus(dados.volume)}</td></tr>
-                        <tr><td>Cor</td><td style="text-align: center;">${verificaStatus(dados.cor)}</td></tr>
-                        <tr><td rowspan="2" style="font-weight:bold; vertical-align: top;">Características Internas</td><td>Estrutura alveolar</td><td style="text-align: center;">${verificaStatus(dados.estruturaAlveolar)}</td></tr>
-                        <tr><td>Cor do miolo</td><td style="text-align: center;">${verificaStatus(dados.corMiolo)}</td></tr>
-                        <tr><td style="font-weight:bold; vertical-align: top;">Uniformidade na assadeira</td><td>Conformidade Visual</td><td style="text-align: center;">${verificaStatus(dados.conformidadeVisual)}</td></tr>
-                    </tbody>
-                </table>
+        const assImg = document.getElementById('pdf-assinatura-img');
+        if(dados.assinaturaSupervisorBase64) {
+             assImg.src = dados.assinaturaSupervisorBase64;
+             assImg.style.display = 'block';
+        } else {
+             assImg.style.display = 'none';
+        }
+        
+        const f1 = document.getElementById('pdf-foto-1');
+        if(dados.fotoBase64_1) { f1.src = dados.fotoBase64_1; f1.style.display='inline-block'; } else { f1.style.display='none'; }
+        
+        const f2 = document.getElementById('pdf-foto-2');
+        if(dados.fotoBase64_2) { f2.src = dados.fotoBase64_2; f2.style.display='inline-block'; } else { f2.style.display='none'; }
 
-                <div style="text-align: center; margin-bottom: 30px;">
-                    <strong style="font-size: 14pt;">NOTA TÉCNICA</strong><br>
-                    <div style="font-size: 28pt; font-weight: bold; border: 3px solid #000; display: inline-block; padding: 15px 30px; margin-top: 10px;">${dados.notaFinal || '--'}</div>
-                </div>
+        // Mostra o container para a captura
+        const element = document.getElementById('pdf-container-hidden');
+        element.style.display = 'block'; 
 
-                <div style="text-align: center; margin-bottom: 30px;">
-                    ${img1Html}
-                    ${img2Html}
-                </div>
+        const opt = { 
+            margin:       10, 
+            filename:     `Laudo_CQ_${dados.produtoNome}_L${dados.loteProduto}.pdf`, 
+            image:        { type: 'jpeg', quality: 0.98 }, 
+            html2canvas:  { scale: 2, useCORS: true }, 
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+        };
 
-                <div style="font-size: 10pt; text-align: justify; margin-bottom: 15px; line-height: 1.5;">
-                    <strong>DESCRIÇÃO DO ENSAIO</strong><br>
-                    Os ensaios para garantia da qualidade foram estabelecidos nas condições de processamento da IMAC, elaborados em conformidade com padrões de identidade e qualidade (PIQ) e boas práticas de fabricação (BPF), atendem a requisitos específicos de composição, características sensoriais e segurança, além de seguir procedimentos padronizados para garantir sua qualidade ao longo do processo produtivo.
-                </div>
-                
-                <div style="font-size: 10pt; margin-bottom: 50px; line-height: 1.5;">
-                    <strong>LEGISLAÇÃO E REFERÊNCIAS</strong><br>
-                    - ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 16170: Panificação - Pão francês - Diretrizes para avaliação da qualidade.<br>
-                    - BRASIL, ANVISA. IN n. 161, RDC n. 711, RDC n. 727 de 1º de julho de 2022.
-                </div>
-
-                <div style="text-align: center;">
-                    ${assinaturaHtml}<br>
-                    <span style="font-size: 10pt;">Assinatura do Responsável (Aprovado Digitalmente)</span>
-                </div>
-            </div>
-        `;
-
-        const blob = new Blob(['\ufeff', `
-            <html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40">
-            <head><meta charset="utf-8"><title>Laudo</title></head><body>${htmlContent}</body></html>
-        `], { type: 'application/msword' });
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Laudo_CQ_${dados.produtoNome}_L${dados.loteProduto}.doc`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        try { 
+            await html2pdf().set(opt).from(element.querySelector('.pdf-mode')).save(); 
+        } catch(e) {
+            console.error(e);
+        } finally { 
+            element.style.display = 'none'; 
+        }
     }
 
     // Cronômetros (Masseira / Túnel)
@@ -1702,11 +1685,13 @@
                 <label class="app-label text-stone-800 mb-3"><i data-lucide="camera" class="w-4 h-4 inline mb-0.5"></i> Fotos (Obrigatório Foto 1)</label>
                 <div class="mb-3 p-3 border border-stone-200 rounded-xl bg-white">
                    <span class="text-xs font-bold text-stone-500 block mb-2">Foto Externa</span>
+                   <!-- Removido 'capture="environment"' para permitir escolha da galeria -->
                    <input type="file" accept="image/*" id="t_foto_1" class="text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-yellow-50 file:text-yellow-700 file:font-bold w-full" onchange="window.processarFotoTeste(event, 1)" required>
                    <img id="preview_foto_teste_1" class="image-preview" src="">
                 </div>
                 <div class="p-3 border border-stone-200 rounded-xl bg-white">
                    <span class="text-xs font-bold text-stone-500 block mb-2">Foto do Miolo (Opcional)</span>
+                   <!-- Removido 'capture="environment"' para permitir escolha da galeria -->
                    <input type="file" accept="image/*" id="t_foto_2" class="text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-stone-100 file:text-stone-600 file:font-bold w-full" onchange="window.processarFotoTeste(event, 2)">
                    <img id="preview_foto_teste_2" class="image-preview" src="">
                 </div>
@@ -1784,7 +1769,7 @@
                    </div>
                    
                    <button type="submit" class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl text-lg hover:bg-blue-700 transition shadow-md flex justify-center items-center gap-2">
-                       <i data-lucide="file-text"></i> Salvar e Gerar Arquivo Word
+                       <i data-lucide="file-text"></i> Salvar e Gerar PDF
                    </button>
                 </div>
              </div>
@@ -1830,6 +1815,91 @@
              <button onclick="window.fecharModalDetalhes()" class="text-stone-400 hover:text-stone-800"><i data-lucide="x" class="w-6 h-6"></i></button>
           </div>
           <div id="conteudo-detalhes-start"></div>
+       </div>
+    </div>
+
+    <!-- Oculto para exportação de PDF (A4) com classes anti-quebra de página -->
+    <div id="pdf-container-hidden">
+       <div class="pdf-mode" id="pdf-template">
+          <div style="text-align: center; margin-bottom: 20px;">
+             <img id="pdf-logo-img" src="" style="max-height: 80px; margin-bottom: 10px; display: none; margin-left: auto; margin-right: auto;">
+             <h1>CERTIFICADO DE GARANTIA DA QUALIDADE</h1>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; margin-bottom: 20px; font-weight: bold;">
+             <div style="width: 50%; font-size: 12px; margin-bottom: 5px;">Produto: <span style="font-weight: normal" id="pdf-produto"></span></div>
+             <div style="width: 50%; font-size: 12px; margin-bottom: 5px;">Lote: <span style="font-weight: normal" id="pdf-lote"></span></div>
+             <div style="width: 50%; font-size: 12px; margin-bottom: 5px;">Produção: <span style="font-weight: normal" id="pdf-producao"></span></div>
+             <div style="width: 50%; font-size: 12px; margin-bottom: 5px;">Validade: <span style="font-weight: normal" id="pdf-validade"></span></div>
+             <div style="width: 50%; font-size: 12px; margin-bottom: 5px;">Data de recebimento farinha: <span style="font-weight: normal" id="pdf-rec-farinha"></span></div>
+             <div style="width: 50%; font-size: 12px; margin-bottom: 5px;">Lote da farinha: <span style="font-weight: normal" id="pdf-lote-farinha"></span></div>
+             <div style="width: 50%; font-size: 12px; margin-bottom: 5px;">Data do teste: <span style="font-weight: normal" id="pdf-data-teste"></span></div>
+             <div style="width: 25%; font-size: 12px; margin-bottom: 5px;">P/L: <span style="font-weight: normal" id="pdf-pl"></span></div>
+             <div style="width: 25%; font-size: 12px; margin-bottom: 5px;">W: <span style="font-weight: normal" id="pdf-w"></span></div>
+          </div>
+          <table>
+             <thead>
+                <tr>
+                   <th style="width: 30%">Grupo</th>
+                   <th style="width: 40%">Característica</th>
+                   <th style="width: 30%; text-align: center;">Resultado</th>
+                </tr>
+             </thead>
+             <tbody>
+                <tr>
+                    <td rowspan="4" style="font-weight:bold;">Características Externas</td>
+                    <td>Craquelamento</td>
+                    <td style="text-align: center;" id="pdf-craquelamento"></td>
+                </tr>
+                <tr>
+                    <td>Abertura de pestana</td>
+                    <td style="text-align: center;" id="pdf-pestana"></td>
+                </tr>
+                <tr>
+                    <td>Volume</td>
+                    <td style="text-align: center;" id="pdf-volume"></td>
+                </tr>
+                <tr>
+                    <td>Cor</td>
+                    <td style="text-align: center;" id="pdf-cor"></td>
+                </tr>
+                <tr>
+                    <td rowspan="2" style="font-weight:bold;">Características Internas</td>
+                    <td>Estrutura alveolar</td>
+                    <td style="text-align: center;" id="pdf-alveolar"></td>
+                </tr>
+                <tr>
+                    <td>Cor do miolo</td>
+                    <td style="text-align: center;" id="pdf-cormiolo"></td>
+                </tr>
+                <tr>
+                    <td style="font-weight:bold;">Uniformidade na assadeira</td>
+                    <td>Conformidade Visual</td>
+                    <td style="text-align: center;" id="pdf-visual"></td>
+                </tr>
+             </tbody>
+          </table>
+          <div style="text-align: center; margin: 20px 0; page-break-inside: avoid;">
+             <p style="margin:0; font-weight: bold;">NOTA TÉCNICA</p>
+             <div style="font-size: 24px; font-weight: bold; text-align: center; border: 2px solid #000; padding: 10px; width: 100px; margin: 10px auto;" id="pdf-nota"></div>
+          </div>
+          <div style="text-align: center; margin-top: 10px; page-break-inside: avoid;">
+             <img id="pdf-foto-1" src="" style="max-width: 45%; max-height: 200px; display: none; margin: 5px; border: 1px solid #ccc; page-break-inside: avoid;">
+             <img id="pdf-foto-2" src="" style="max-width: 45%; max-height: 200px; display: none; margin: 5px; border: 1px solid #ccc; page-break-inside: avoid;">
+          </div>
+          <div style="margin-top: 20px; font-size: 11px; text-align: justify; page-break-inside: avoid;">
+             <strong>DESCRIÇÃO DO ENSAIO</strong><br>
+             Os ensaios para garantia da qualidade foram estabelecidos nas condições de processamento da IMAC, elaborados em conformidade com padrões de identidade e qualidade (PIQ) e boas práticas de fabricação (BPF), atendem a requisitos específicos de composição, características sensoriais e segurança, além de seguir procedimentos padronizados para garantir sua qualidade ao longo do processo produtivo.
+          </div>
+          <div style="margin-top: 10px; font-size: 11px; text-align: justify; page-break-inside: avoid;">
+             <strong>LEGISLAÇÃO E REFERÊNCIAS</strong><br>
+             - ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 16170: Panificação - Pão francês - Diretrizes para avaliação da qualidade.<br>
+             - BRASIL, ANVISA. IN n. 161, RDC n. 711, RDC n. 727 de 1º de julho de 2022.
+          </div>
+          
+          <div style="margin-top: 40px; text-align: center; page-break-inside: avoid;">
+             <img id="pdf-assinatura-img" src="" style="max-height: 80px; margin: 0 auto; display: none; border-bottom: 1px solid #000; padding-bottom: 5px; width: 60%; object-fit: contain;">
+             <div style="font-size: 12px; margin-top: 5px;">Assinatura do Responsável (Aprovado Digitalmente)</div>
+          </div>
        </div>
     </div>
 
