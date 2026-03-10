@@ -9,8 +9,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Ícones -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Biblioteca para PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
     /* Tema Claro - Baseado na identidade (Stone + Yellow) */
@@ -172,7 +170,7 @@
       border-radius: 12px;
       width: 100%;
       height: 160px;
-      background-color: #fafaf9;
+      background-color: #ffffff;
       cursor: crosshair;
       touch-action: none; /* Previne scroll ao assinar no touch */
     }
@@ -181,14 +179,6 @@
     @media (min-width: 768px) {
       .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     }
-
-    /* PDF Oculto */
-    #pdf-container-hidden { display: none; }
-    .pdf-mode { background: #fff; color: #000; padding: 40px; font-family: Arial, sans-serif; }
-    .pdf-mode table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-    .pdf-mode th, .pdf-mode td { border: 1px solid #000; padding: 8px; text-align: left; font-size: 12px; }
-    .pdf-mode th { background-color: #f5f5f4; font-weight: bold; }
-    .pdf-mode h1 { font-size: 18px; text-align: center; margin-bottom: 20px; text-transform: uppercase; }
   </style>
 
   <!-- Firebase SDKs -->
@@ -281,7 +271,6 @@
           }
         });
 
-        // Ignora erro no sandbox se houver token inválido
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
             try { await signInWithCustomToken(auth, __initial_auth_token); } catch (e) {}
         }
@@ -406,7 +395,7 @@
 
         const totalPesos = Object.values(pesos).reduce((a, b) => a + b, 0);
         if(totalPesos !== 100) {
-            window.showToast(`Atenção: A soma dos pesos está dando ${totalPesos}. O ideal é 100.`);
+            window.showToast(`Atenção: A soma dos pesos de qualidade está dando ${totalPesos}. O ideal é fechar em 100.`);
         }
 
         const configData = {
@@ -432,7 +421,7 @@
         if(input) filtrados = window.appState.produtos.filter(p => p.nome.toLowerCase().includes(input));
 
         if (filtrados.length === 0) {
-            dropdown.innerHTML = '<div class="p-4 text-sm text-stone-500 text-center">Nenhum produto cadastrado com esse nome.</div>';
+            dropdown.innerHTML = '<div class="p-4 text-sm text-stone-500 text-center">Nenhum produto encontrado com esse nome.</div>';
         } else {
             dropdown.innerHTML = filtrados.map(p => `
                 <div class="busca-item flex flex-col" onclick="window.selecionarProduto('${p.nome}')">
@@ -474,7 +463,6 @@
             labelPadrao.classList.add('hidden');
         }
 
-        // Renderiza a tabela da receita em "Conferência de Insumos"
         if(p && p.ingredientes && p.ingredientes.length > 0) {
             tabelaIngredientes.innerHTML = p.ingredientes.map(ing => `
                 <tr>
@@ -520,7 +508,6 @@
         }
     };
 
-    // Rascunho
     window.salvarRascunhoStart = () => {
        const form = document.getElementById('form-start'); const draft = {};
        form.querySelectorAll('input').forEach(el => {
@@ -552,7 +539,7 @@
        }
     }
     
-    // Configura eventos globais da assinatura do responsável
+    // Preparar Canvas de Assinatura globalmente
     window.limparAssinatura = () => {
         if(sigCtx && sigCanvas) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
     };
@@ -561,7 +548,6 @@
        document.getElementById('form-start').addEventListener('input', () => { window.salvarRascunhoStart(); window.checkLimits(); });
        document.getElementById('form-start').addEventListener('change', () => { window.salvarRascunhoStart(); window.checkLimits(); });
 
-       // Configura Canvas de Assinatura
        sigCanvas = document.getElementById('sup_assinatura_canvas');
        if(sigCanvas) {
            sigCtx = sigCanvas.getContext('2d');
@@ -579,7 +565,7 @@
            };
            const draw = (e) => {
                if (!isSigDrawing) return;
-               e.preventDefault(); // Evita scroll ao desenhar
+               e.preventDefault(); 
                const {x, y} = getCoords(e);
                sigCtx.lineTo(x, y);
                sigCtx.stroke();
@@ -620,29 +606,23 @@
       const data = {
         produto: nomeProduto,
         dataFabricacao: document.getElementById('s_data_fab').value,
-        
         tempAmbiente: document.getElementById('s_temp_ambiente').value, 
         tempFarinha: document.getElementById('s_temp_farinha').value,
         tempAgua: document.getElementById('s_temp_agua').value, 
         tempFermento: document.getElementById('s_temp_fermento').value, 
         tempMassa: document.getElementById('s_temp_massa').value,
-        
         insumosOk: document.getElementById('s_insumos_ok').checked, 
         pesoInsumosOk: document.getElementById('s_peso_insumos_ok').checked,
         loteFarinha: loteFar, 
         qtdAgua: document.getElementById('s_qtd_agua').value, 
         qtdGelo: document.getElementById('s_qtd_gelo').value,
-        
         batidaStr: `${lenta}+${rapida}`, 
         batidaFimMs: batidaFimMs,
-        
         tempoCilindro: document.getElementById('s_tempo_cilindro').value, 
         grupoAutomatico: document.getElementById('s_grupo_automatico').value,
         pesoProduto: document.getElementById('s_peso_produto').value,
-        
         tempoTunelConfigurado: document.getElementById('s_tempo_tunel').value,
         tempTunel: document.getElementById('s_temp_tunel').value,
-        
         isTeste: isTeste, 
         timestamp: serverTimestamp(), 
         status: 'Em Andamento'
@@ -651,7 +631,6 @@
       try {
         const docRef = await addDoc(col, data);
         
-        // Se for teste, cria obrigatoriamente um registro no lab
         if(isTeste) {
             await addDoc(window.getCol('testes_farinha'), { 
                 startId: docRef.id, 
@@ -665,7 +644,6 @@
             window.showToast("Produção iniciada com sucesso!"); 
         }
 
-        // Limpa formulário
         document.getElementById('form-start').reset();
         document.getElementById('s_data_fab').value = new Date().toISOString().split('T')[0];
         document.getElementById('s_produto_search').value = '';
@@ -693,14 +671,17 @@
                 dataCriacao: serverTimestamp()
             });
             window.showToast("Produção enviada para a aba Testes!");
-        } catch (error) {
-            window.showToast("Erro ao enviar para testes.");
-        }
+        } catch (error) { window.showToast("Erro ao enviar para testes."); }
+    };
+
+    window.excluirTeste = async (id) => {
+       if(!confirm("Atenção: Deseja apagar este teste definitivamente? Esta ação não pode ser desfeita.")) return;
+       try { await deleteDoc(doc(window.appState.db, 'artifacts', window.appState.appId, 'users', window.appState.user.uid, 'testes_farinha', id)); window.showToast("Teste apagado do sistema."); } catch(e) { window.showToast("Erro ao apagar teste."); }
     };
 
     // -- DASHBOARD --
     window.excluirStart = async (id) => {
-       if(!confirm("Atenção: Deseja apagar este registro definitivamente?")) return;
+       if(!confirm("Atenção: Deseja apagar esta produção da linha?")) return;
        try { await deleteDoc(doc(window.appState.db, 'artifacts', window.appState.appId, 'users', window.appState.user.uid, 'starts_producao', id)); window.showToast("Registro apagado."); } catch(e) {}
     };
 
@@ -923,7 +904,10 @@
                <div class="app-card border-l-4 border-yellow-500 mb-4">
                  <div class="flex justify-between items-center mb-3">
                     <div class="font-bold text-stone-800 text-lg">${t.produtoNome}</div>
-                    <span class="text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded">Ação Necessária</span>
+                    <div class="flex gap-2 items-center">
+                        <span class="text-xs font-bold text-yellow-600 bg-yellow-50 px-2 py-1 rounded">Ação Necessária</span>
+                        <button onclick="window.excluirTeste('${t.id}')" class="text-stone-400 hover:text-red-500 transition-colors p-1" title="Eliminar"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                    </div>
                  </div>
                  <div class="bg-stone-50 p-3 rounded-lg flex justify-between text-sm mb-4 border border-stone-200">
                     <div><span class="text-stone-500 text-[10px] uppercase font-bold block">Lote Gerado</span><span class="font-bold text-stone-800">${loteFinal}</span></div>
@@ -941,10 +925,13 @@
                <div class="app-card border-l-4 border-blue-500 mb-4">
                  <div class="flex justify-between items-center mb-3">
                     <div class="font-bold text-stone-800 text-lg">${t.produtoNome}</div>
-                    <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">Revisão</span>
+                    <div class="flex gap-2 items-center">
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">Revisão</span>
+                        <button onclick="window.excluirTeste('${t.id}')" class="text-stone-400 hover:text-red-500 transition-colors p-1" title="Eliminar"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                    </div>
                  </div>
                  <div class="text-sm text-stone-600 mb-4"><b>Lote:</b> ${t.loteProduto || '--'} | <b>Far:</b> ${t.loteFarinhaUsada || '--'}</div>
-                 <button onclick="window.abrirModalSupervisor('${t.id}')" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">Analisar e Liberar PDF</button>
+                 <button onclick="window.abrirModalSupervisor('${t.id}')" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700 transition">Analisar e Emitir Laudo</button>
                </div>`
            }).join('');
        }
@@ -952,17 +939,20 @@
        if(concluidos.length === 0) { historico.innerHTML = `<div class="p-6 text-center text-stone-500 text-sm">Nenhum histórico.</div>`;
        } else {
            historico.innerHTML = concluidos.map(t => `
-             <div class="bg-white p-4 mb-3 rounded-xl border border-stone-200 shadow-sm flex justify-between items-center cursor-pointer hover:border-yellow-400 transition" onclick="window.gerarLaudoPDF(${JSON.stringify(t).replace(/"/g, '&quot;')})" title="Refazer Download do Laudo">
-               <div class="flex gap-4 items-center">
+             <div class="bg-white p-4 mb-3 rounded-xl border border-stone-200 shadow-sm flex justify-between items-center hover:border-yellow-400 transition" >
+               <div class="flex gap-4 items-center flex-1 cursor-pointer" onclick="window.gerarLaudoWord(${JSON.stringify(t).replace(/"/g, '&quot;')})" title="Download do Laudo em Word">
                   ${t.fotoBase64_1 ? `<img src="${t.fotoBase64_1}" class="w-12 h-12 object-cover rounded-lg shadow-sm border border-stone-200">` : `<div class="w-12 h-12 bg-stone-100 rounded-lg flex items-center justify-center"><i data-lucide="image" class="w-5 h-5 text-stone-400"></i></div>`}
                   <div>
                      <div class="font-bold text-stone-800">${t.produtoNome} <span class="text-xs text-stone-500 font-normal ml-1">Lote: ${t.loteProduto || '--'}</span></div>
                      <div class="text-xs text-stone-500 mt-1">Nota: <b>${t.notaFinal || '--'}</b> | Farinha: ${t.loteFarinhaUsada}</div>
                   </div>
                </div>
-               <div class="flex flex-col items-end gap-2">
+               <div class="flex flex-col items-end gap-2 ml-4">
                  <span class="text-[10px] uppercase font-bold px-2 py-1 rounded-full ${t.liberado ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${t.liberado ? 'Aprovado' : 'Retido'}</span>
-                 <i data-lucide="download" class="w-4 h-4 text-blue-500"></i>
+                 <div class="flex items-center gap-3">
+                     <i data-lucide="download" class="w-4 h-4 text-blue-500 cursor-pointer" onclick="window.gerarLaudoWord(${JSON.stringify(t).replace(/"/g, '&quot;')})"></i>
+                     <button onclick="window.excluirTeste('${t.id}')" class="text-stone-300 hover:text-red-500 transition-colors p-1" title="Eliminar"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                 </div>
                </div>
              </div>`).join('');
        }
@@ -1054,56 +1044,75 @@
         const testeData = window.appState.testes.find(t => t.id === id);
         if(!testeData) return;
 
-        document.getElementById('sup_dados_view').innerHTML = `
-            <div class="font-bold text-stone-800 mb-2 border-b border-stone-200 pb-1">Resumo da Avaliação:</div>
-            <div class="grid grid-cols-2 gap-2 text-xs mb-3">
-                <div><b>Craquelamento:</b> <span class="uppercase">${testeData.craquelamento || '--'}</span></div>
-                <div><b>Crocância:</b> <span class="uppercase">${testeData.crocancia || '--'}</span></div>
-                <div><b>Pestana:</b> <span class="uppercase">${testeData.pestana || '--'}</span></div>
-                <div><b>Volume:</b> <span class="uppercase">${testeData.volume || '--'}</span></div>
-                <div><b>Cor Capa:</b> <span class="uppercase">${testeData.cor || '--'}</span></div>
-                <div><b>Alvéolos:</b> <span class="uppercase">${testeData.estruturaAlveolar || '--'}</span></div>
-                <div><b>Cor Miolo:</b> <span class="uppercase">${testeData.corMiolo || '--'}</span></div>
-                <div><b>Conf. Visual:</b> <span class="uppercase">${testeData.conformidadeVisual || '--'}</span></div>
+        // Visualização à Esquerda (Infos Gerais)
+        document.getElementById('sup_info_geral').innerHTML = `
+            <div class="font-bold text-stone-800 text-sm mb-1 border-b border-stone-200 pb-1">Identificação</div>
+            <div class="grid grid-cols-2 gap-2 text-xs mb-3 text-stone-600">
+                <div><b>Lote Produto:</b> <span class="uppercase">${testeData.loteProduto || '--'}</span></div>
+                <div><b>Lote Farinha:</b> <span class="uppercase">${testeData.loteFarinhaUsada || '--'}</span></div>
+                <div><b>P/L Farinha:</b> <span class="uppercase">${testeData.fatorPL || '--'}</span></div>
+                <div><b>W Farinha:</b> <span class="uppercase">${testeData.fatorW || '--'}</span></div>
             </div>
-            <div class="flex gap-2">
-                ${testeData.fotoBase64_1 ? `<img src="${testeData.fotoBase64_1}" class="h-20 w-20 object-cover rounded border border-stone-300">` : ''}
-                ${testeData.fotoBase64_2 ? `<img src="${testeData.fotoBase64_2}" class="h-20 w-20 object-cover rounded border border-stone-300">` : ''}
+            <div class="font-bold text-stone-800 text-sm mb-1 border-b border-stone-200 pb-1">Registro Fotográfico</div>
+            <div class="flex gap-2 mt-2">
+                ${testeData.fotoBase64_1 ? `<img src="${testeData.fotoBase64_1}" class="w-1/2 h-24 object-cover rounded-lg border border-stone-300">` : ''}
+                ${testeData.fotoBase64_2 ? `<img src="${testeData.fotoBase64_2}" class="w-1/2 h-24 object-cover rounded-lg border border-stone-300">` : ''}
             </div>
         `;
 
-        // Cálculo da Nota Automática baseada nos Pesos do Config
+        // Cálculo da Nota Automática na Tabela à Direita
         const cfg = window.appState.config || {};
         const pesos = cfg.pesos || { craquelamento: 15, crocancia: 15, pestana: 15, volume: 15, cor: 10, estrutura: 10, corMiolo: 10, visual: 10 };
-        const calcVal = (val) => val === 'bom' ? 1 : (val === 'regular' ? 0.5 : 0);
         
-        let nota = 0;
-        nota += pesos.craquelamento * calcVal(testeData.craquelamento);
-        nota += pesos.crocancia * calcVal(testeData.crocancia);
-        nota += pesos.pestana * calcVal(testeData.pestana);
-        nota += pesos.volume * calcVal(testeData.volume);
-        nota += pesos.cor * calcVal(testeData.cor);
-        nota += pesos.estrutura * calcVal(testeData.estruturaAlveolar);
-        nota += pesos.corMiolo * calcVal(testeData.corMiolo);
-        nota += pesos.visual * calcVal(testeData.conformidadeVisual);
-        
-        nota = Math.round(nota);
-        document.getElementById('sup_nota_display').innerText = nota;
-        document.getElementById('sup_nota').value = nota;
-        
-        document.getElementById('sup_aprovar').checked = (nota >= 70);
+        const formatRow = (label, value, maxPoints) => {
+            const factor = value === 'bom' ? 1 : (value === 'regular' ? 0.5 : 0);
+            const score = maxPoints * factor;
+            const textValue = value === 'bom' ? 'BOM' : (value === 'regular' ? 'REGULAR' : 'RUIM');
+            const color = value === 'bom' ? 'text-green-600' : (value === 'regular' ? 'text-yellow-600' : 'text-red-600');
+            
+            return {
+                html: `<tr>
+                        <td class="p-2 border-b border-stone-100 text-stone-600">${label}</td>
+                        <td class="p-2 border-b border-stone-100 text-center font-bold ${color}">${textValue}</td>
+                        <td class="p-2 border-b border-stone-100 text-right font-black text-stone-800">${score.toFixed(1)}</td>
+                       </tr>`,
+                score: score
+            };
+        };
 
-        // Prepara e ajusta o Canvas de Assinatura
-        if(sigCanvas) {
-            const rect = sigCanvas.parentElement.getBoundingClientRect();
-            sigCanvas.width = rect.width;
-            sigCanvas.height = 160;
-            sigCtx.strokeStyle = '#1c1917'; // stone-900
-            sigCtx.lineWidth = 3;
-            sigCtx.lineCap = 'round';
-            sigCtx.lineJoin = 'round';
-            sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-        }
+        const rows = [
+            formatRow('Craquelamento', testeData.craquelamento, pesos.craquelamento),
+            formatRow('Crocância', testeData.crocancia, pesos.crocancia),
+            formatRow('Pestana', testeData.pestana, pesos.pestana),
+            formatRow('Volume', testeData.volume, pesos.volume),
+            formatRow('Cor da Capa', testeData.cor, pesos.cor),
+            formatRow('Malha Alveolar', testeData.estruturaAlveolar, pesos.estrutura),
+            formatRow('Cor do Miolo', testeData.corMiolo, pesos.corMiolo),
+            formatRow('Uniformidade', testeData.conformidadeVisual, pesos.visual),
+        ];
+
+        document.getElementById('sup_tabela_notas').innerHTML = rows.map(r => r.html).join('');
+        
+        let notaTotal = rows.reduce((acc, r) => acc + r.score, 0);
+        notaTotal = Math.round(notaTotal);
+        
+        document.getElementById('sup_nota_display').innerText = notaTotal;
+        document.getElementById('sup_nota').value = notaTotal;
+        document.getElementById('sup_aprovar').checked = (notaTotal >= 70);
+
+        // Prepara Canvas de Assinatura
+        setTimeout(() => {
+            if(sigCanvas) {
+                const rect = sigCanvas.parentElement.getBoundingClientRect();
+                sigCanvas.width = rect.width;
+                sigCanvas.height = 140;
+                sigCtx.strokeStyle = '#1c1917';
+                sigCtx.lineWidth = 3;
+                sigCtx.lineCap = 'round';
+                sigCtx.lineJoin = 'round';
+                sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+            }
+        }, 50);
     }
 
     window.fecharModalSupervisor = () => { 
@@ -1138,7 +1147,7 @@
         try {
             await updateDoc(doc(window.appState.db, 'artifacts', window.appState.appId, 'users', window.appState.user.uid, 'testes_farinha', id), atualizacao);
             window.showToast("Laudo emitido com sucesso!"); window.fecharModalSupervisor();
-            window.gerarLaudoPDF({ ...testeData, ...atualizacao });
+            window.gerarLaudoWord({ ...testeData, ...atualizacao });
         } catch(err) { window.showToast("Erro ao gravar laudo."); }
     };
 
@@ -1149,8 +1158,9 @@
         return canvas.toDataURL() !== blank.toDataURL();
     }
 
-    window.gerarLaudoPDF = async (dados) => {
-        window.showToast("Gerando PDF, aguarde...");
+    // Exportação em formato WORD (.doc)
+    window.gerarLaudoWord = async (dados) => {
+        window.showToast("Gerando arquivo Word editável...");
         const start = window.appState.starts.find(s => s.id === dados.startId);
         const dataProducao = start ? start.dataFabricacao.split('-').reverse().join('/') : '--';
         const dataRecebimento = dados.dataRecebimentoFar ? dados.dataRecebimentoFar.split('-').reverse().join('/') : '--';
@@ -1161,41 +1171,101 @@
             dataTesteStr = dados.dataRealizacaoTeste.split('-').reverse().join('/');
         }
 
-        const verificaStatus = (val) => val !== 'ruim' ? 'CONFORME' : 'NÃO CONFORME';
-
-        document.getElementById('pdf-produto').innerText = dados.produtoNome || '--'; document.getElementById('pdf-lote').innerText = dados.loteProduto || '--';
-        document.getElementById('pdf-producao').innerText = dataProducao; document.getElementById('pdf-validade').innerText = dataValidade;
-        document.getElementById('pdf-rec-farinha').innerText = dataRecebimento; document.getElementById('pdf-lote-farinha').innerText = dados.loteFarinhaUsada || '--';
-        document.getElementById('pdf-data-teste').innerText = dataTesteStr; document.getElementById('pdf-pl').innerText = dados.fatorPL || '--'; document.getElementById('pdf-w').innerText = dados.fatorW || '--';
+        const verificaStatus = (val) => val === 'bom' ? 'CONFORME (Bom)' : (val === 'regular' ? 'CONFORME (Regular)' : 'NÃO CONFORME (Ruim)');
         
-        document.getElementById('pdf-craquelamento').innerText = verificaStatus(dados.craquelamento); document.getElementById('pdf-pestana').innerText = verificaStatus(dados.pestana);
-        document.getElementById('pdf-volume').innerText = verificaStatus(dados.volume); document.getElementById('pdf-cor').innerText = verificaStatus(dados.cor);
-        document.getElementById('pdf-alveolar').innerText = verificaStatus(dados.estruturaAlveolar); document.getElementById('pdf-cormiolo').innerText = verificaStatus(dados.corMiolo); document.getElementById('pdf-visual').innerText = verificaStatus(dados.conformidadeVisual);
-        document.getElementById('pdf-nota').innerText = dados.notaFinal || '--';
+        const logoHtml = window.appState.config?.logoBase64 ? `<div style="text-align: center; margin-bottom: 20px;"><img src="${window.appState.config.logoBase64}" width="180" height="auto" /></div>` : '';
+        const img1Html = dados.fotoBase64_1 ? `<img src="${dados.fotoBase64_1}" width="280" height="auto" style="margin: 10px; border: 1px solid #ccc;" />` : '';
+        const img2Html = dados.fotoBase64_2 ? `<img src="${dados.fotoBase64_2}" width="280" height="auto" style="margin: 10px; border: 1px solid #ccc;" />` : '';
+        const assinaturaHtml = dados.assinaturaSupervisorBase64 ? `<img src="${dados.assinaturaSupervisorBase64}" width="200" height="auto" style="border-bottom: 1px solid #000; margin-bottom: 5px;" />` : '<div style="border-bottom: 1px solid #000; width: 200px; height: 50px; margin: 0 auto 5px auto;"></div>';
 
-        // Set signature image
-        if(dados.assinaturaSupervisorBase64) {
-             document.getElementById('pdf-assinatura-img').src = dados.assinaturaSupervisorBase64;
-             document.getElementById('pdf-assinatura-img').style.display = 'block';
-        } else {
-             document.getElementById('pdf-assinatura-img').style.display = 'none';
-        }
-        
-        if(dados.fotoBase64_1) { document.getElementById('pdf-foto-1').src = dados.fotoBase64_1; document.getElementById('pdf-foto-1').style.display='inline-block'; } else { document.getElementById('pdf-foto-1').style.display='none'; }
-        if(dados.fotoBase64_2) { document.getElementById('pdf-foto-2').src = dados.fotoBase64_2; document.getElementById('pdf-foto-2').style.display='inline-block'; } else { document.getElementById('pdf-foto-2').style.display='none'; }
+        const htmlContent = `
+            <div style="font-family: 'Arial', sans-serif; font-size: 12pt; color: #000; max-width: 800px; margin: 0 auto;">
+                ${logoHtml}
+                <h2 style="text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 20px;">CERTIFICADO DE GARANTIA DA QUALIDADE</h2>
+                
+                <table style="width: 100%; margin-bottom: 20px; font-weight: bold; border: none;">
+                    <tr>
+                        <td style="padding: 5px;">Produto: <span style="font-weight: normal;">${dados.produtoNome || '--'}</span></td>
+                        <td style="padding: 5px;">Lote: <span style="font-weight: normal;">${dados.loteProduto || '--'}</span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">Produção: <span style="font-weight: normal;">${dataProducao}</span></td>
+                        <td style="padding: 5px;">Validade: <span style="font-weight: normal;">${dataValidade}</span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">Data Rec. Farinha: <span style="font-weight: normal;">${dataRecebimento}</span></td>
+                        <td style="padding: 5px;">Lote Farinha: <span style="font-weight: normal;">${dados.loteFarinhaUsada || '--'}</span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">Data do Teste: <span style="font-weight: normal;">${dataTesteStr}</span></td>
+                        <td style="padding: 5px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 5px;">P/L: <span style="font-weight: normal;">${dados.fatorPL || '--'}</span></td>
+                        <td style="padding: 5px;">W: <span style="font-weight: normal;">${dados.fatorW || '--'}</span></td>
+                    </tr>
+                </table>
 
-        // Inject Config Logo into PDF if exists
-        const logoConfig = window.appState.config?.logoBase64;
-        if(logoConfig) {
-             document.getElementById('pdf-logo-img').src = logoConfig;
-             document.getElementById('pdf-logo-img').style.display = 'block';
-        } else {
-             document.getElementById('pdf-logo-img').style.display = 'none';
-        }
+                <table border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 30px;">
+                    <thead style="background-color: #f2f2f2;">
+                        <tr>
+                            <th style="width: 30%;">Grupo</th>
+                            <th style="width: 40%;">Característica</th>
+                            <th style="width: 30%; text-align: center;">Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td rowspan="4" style="font-weight:bold; vertical-align: top;">Características Externas</td><td>Craquelamento</td><td style="text-align: center;">${verificaStatus(dados.craquelamento)}</td></tr>
+                        <tr><td>Abertura de pestana</td><td style="text-align: center;">${verificaStatus(dados.pestana)}</td></tr>
+                        <tr><td>Volume</td><td style="text-align: center;">${verificaStatus(dados.volume)}</td></tr>
+                        <tr><td>Cor</td><td style="text-align: center;">${verificaStatus(dados.cor)}</td></tr>
+                        <tr><td rowspan="2" style="font-weight:bold; vertical-align: top;">Características Internas</td><td>Estrutura alveolar</td><td style="text-align: center;">${verificaStatus(dados.estruturaAlveolar)}</td></tr>
+                        <tr><td>Cor do miolo</td><td style="text-align: center;">${verificaStatus(dados.corMiolo)}</td></tr>
+                        <tr><td style="font-weight:bold; vertical-align: top;">Uniformidade na assadeira</td><td>Conformidade Visual</td><td style="text-align: center;">${verificaStatus(dados.conformidadeVisual)}</td></tr>
+                    </tbody>
+                </table>
 
-        const element = document.getElementById('pdf-container-hidden'); element.style.display = 'block'; 
-        const opt = { margin: 10, filename: `Laudo_CQ_${dados.produtoNome}_L${dados.loteProduto}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-        try { await html2pdf().set(opt).from(element).save(); } catch(e) {} finally { element.style.display = 'none'; }
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <strong style="font-size: 14pt;">NOTA TÉCNICA</strong><br>
+                    <div style="font-size: 28pt; font-weight: bold; border: 3px solid #000; display: inline-block; padding: 15px 30px; margin-top: 10px;">${dados.notaFinal || '--'}</div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 30px;">
+                    ${img1Html}
+                    ${img2Html}
+                </div>
+
+                <div style="font-size: 10pt; text-align: justify; margin-bottom: 15px; line-height: 1.5;">
+                    <strong>DESCRIÇÃO DO ENSAIO</strong><br>
+                    Os ensaios para garantia da qualidade foram estabelecidos nas condições de processamento da IMAC, elaborados em conformidade com padrões de identidade e qualidade (PIQ) e boas práticas de fabricação (BPF), atendem a requisitos específicos de composição, características sensoriais e segurança, além de seguir procedimentos padronizados para garantir sua qualidade ao longo do processo produtivo.
+                </div>
+                
+                <div style="font-size: 10pt; margin-bottom: 50px; line-height: 1.5;">
+                    <strong>LEGISLAÇÃO E REFERÊNCIAS</strong><br>
+                    - ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 16170: Panificação - Pão francês - Diretrizes para avaliação da qualidade.<br>
+                    - BRASIL, ANVISA. IN n. 161, RDC n. 711, RDC n. 727 de 1º de julho de 2022.
+                </div>
+
+                <div style="text-align: center;">
+                    ${assinaturaHtml}<br>
+                    <span style="font-size: 10pt;">Assinatura do Responsável (Aprovado Digitalmente)</span>
+                </div>
+            </div>
+        `;
+
+        const blob = new Blob(['\ufeff', `
+            <html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="utf-8"><title>Laudo</title></head><body>${htmlContent}</body></html>
+        `], { type: 'application/msword' });
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Laudo_CQ_${dados.produtoNome}_L${dados.loteProduto}.doc`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
     // Cronômetros (Masseira / Túnel)
@@ -1632,13 +1702,11 @@
                 <label class="app-label text-stone-800 mb-3"><i data-lucide="camera" class="w-4 h-4 inline mb-0.5"></i> Fotos (Obrigatório Foto 1)</label>
                 <div class="mb-3 p-3 border border-stone-200 rounded-xl bg-white">
                    <span class="text-xs font-bold text-stone-500 block mb-2">Foto Externa</span>
-                   <!-- Removido 'capture="environment"' para permitir escolha da galeria -->
                    <input type="file" accept="image/*" id="t_foto_1" class="text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-yellow-50 file:text-yellow-700 file:font-bold w-full" onchange="window.processarFotoTeste(event, 1)" required>
                    <img id="preview_foto_teste_1" class="image-preview" src="">
                 </div>
                 <div class="p-3 border border-stone-200 rounded-xl bg-white">
                    <span class="text-xs font-bold text-stone-500 block mb-2">Foto do Miolo (Opcional)</span>
-                   <!-- Removido 'capture="environment"' para permitir escolha da galeria -->
                    <input type="file" accept="image/*" id="t_foto_2" class="text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-stone-100 file:text-stone-600 file:font-bold w-full" onchange="window.processarFotoTeste(event, 2)">
                    <img id="preview_foto_teste_2" class="image-preview" src="">
                 </div>
@@ -1661,40 +1729,65 @@
        </div>
     </div>
 
-    <!-- Modal Supervisor (Laudo) -->
+    <!-- Modal Supervisor (Laudo Revisão e Nota) -->
     <div id="modal-supervisor-liberar" class="modal-overlay">
-       <div class="modal-content">
+       <div class="modal-content !max-w-[800px] w-full">
           <div class="flex justify-between items-center mb-4 border-b border-stone-100 pb-3">
-             <h3 class="font-black text-xl text-blue-600">Emitir Laudo</h3>
+             <h3 class="font-black text-xl text-blue-600">Revisão e Laudo de Qualidade</h3>
              <button onclick="window.fecharModalSupervisor()" class="text-stone-400 hover:text-stone-800"><i data-lucide="x" class="w-6 h-6"></i></button>
           </div>
           <form id="form-supervisor" onsubmit="window.submitLiberacaoSupervisor(event)">
              <input type="hidden" id="sup_id_teste">
              
-             <!-- Visualização do Teste para o Supervisor -->
-             <div id="sup_dados_view" class="bg-stone-50 p-4 rounded-xl mb-4 text-sm text-stone-700 border border-stone-200">
-               <!-- Injetado via JS -->
-             </div>
-             
-             <div class="mb-4 text-center">
-                <label class="font-black text-stone-800 text-sm uppercase mb-2">Nota Final Calculada</label>
-                <div id="sup_nota_display" class="text-5xl font-black text-blue-600 py-4">00</div>
-                <input type="hidden" id="sup_nota" required>
-             </div>
-
-             <div class="mb-6">
-                <div class="flex justify-between items-center mb-2">
-                    <label class="app-label m-0">Assinatura (Supervisor)</label>
-                    <button type="button" onclick="window.limparAssinatura()" class="text-xs text-stone-500 hover:text-stone-800 underline font-bold">Limpar Assinatura</button>
+             <div class="grid md:grid-cols-2 gap-6">
+                <!-- Coluna Esquerda: Informações e Fotos -->
+                <div>
+                   <div id="sup_info_geral" class="bg-stone-50 p-4 rounded-xl border border-stone-200 mb-4 text-sm space-y-2">
+                       <!-- Injetado via JS -->
+                   </div>
+                   <div id="sup_fotos_view" class="flex gap-2 w-full">
+                       <!-- Injetado via JS -->
+                   </div>
                 </div>
-                <canvas id="sup_assinatura_canvas" class="signature-pad"></canvas>
+                
+                <!-- Coluna Direita: Calculadora de Nota e Assinatura -->
+                <div>
+                   <div class="bg-stone-50 rounded-xl border border-stone-200 overflow-hidden mb-4 shadow-sm">
+                      <table class="w-full text-left text-xs">
+                         <thead class="bg-stone-100 text-stone-500 uppercase">
+                            <tr><th class="p-3">Critério</th><th class="p-3 text-center">Status</th><th class="p-3 text-right">Pontos</th></tr>
+                         </thead>
+                         <tbody id="sup_tabela_notas" class="divide-y divide-stone-200 bg-white">
+                            <!-- Injetado via JS -->
+                         </tbody>
+                         <tfoot class="bg-blue-50 border-t border-blue-100">
+                            <tr>
+                               <td colspan="2" class="p-3 font-bold text-right text-blue-800 uppercase">Nota Final Sugerida:</td>
+                               <td id="sup_nota_display" class="p-3 font-black text-blue-600 text-2xl text-right">00</td>
+                            </tr>
+                         </tfoot>
+                      </table>
+                      <input type="hidden" id="sup_nota" required>
+                   </div>
+                   
+                   <div class="mb-4">
+                      <div class="flex justify-between items-center mb-2">
+                          <label class="app-label m-0">Assinatura do Responsável</label>
+                          <button type="button" onclick="window.limparAssinatura()" class="text-xs text-stone-500 hover:text-stone-800 font-bold underline"><i data-lucide="eraser" class="w-3 h-3 inline"></i> Limpar</button>
+                      </div>
+                      <canvas id="sup_assinatura_canvas" class="signature-pad bg-white shadow-inner"></canvas>
+                   </div>
+                   
+                   <div class="flex justify-between items-center mb-6 bg-stone-50 p-4 rounded-xl border border-stone-200">
+                      <span class="font-bold text-stone-800">Aprovar e Liberar Lote?</span>
+                      <label class="toggle-switch"><input type="checkbox" id="sup_aprovar"><span class="toggle-slider"></span></label>
+                   </div>
+                   
+                   <button type="submit" class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl text-lg hover:bg-blue-700 transition shadow-md flex justify-center items-center gap-2">
+                       <i data-lucide="file-text"></i> Salvar e Gerar Arquivo Word
+                   </button>
+                </div>
              </div>
-             
-             <div class="flex justify-between items-center mb-6 bg-stone-50 p-4 rounded-xl border border-stone-200">
-                <span class="font-bold text-stone-800">Aprovar e Liberar Lote?</span>
-                <label class="toggle-switch"><input type="checkbox" id="sup_aprovar"><span class="toggle-slider"></span></label>
-             </div>
-             <button type="submit" class="w-full py-4 bg-blue-600 text-white font-bold rounded-xl text-lg hover:bg-blue-700 transition shadow-md">Salvar e Gerar PDF</button>
           </form>
        </div>
     </div>
@@ -1737,51 +1830,6 @@
              <button onclick="window.fecharModalDetalhes()" class="text-stone-400 hover:text-stone-800"><i data-lucide="x" class="w-6 h-6"></i></button>
           </div>
           <div id="conteudo-detalhes-start"></div>
-       </div>
-    </div>
-
-    <!-- PDF -->
-    <div id="pdf-container-hidden">
-       <div class="pdf-mode" id="pdf-template">
-          <div style="text-align: center; margin-bottom: 20px;">
-             <img id="pdf-logo-img" src="" style="max-height: 80px; margin-bottom: 10px; display: none; margin-left: auto; margin-right: auto;">
-             <h1>CERTIFICADO DE GARANTIA DA QUALIDADE</h1>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; margin-bottom: 20px; font-weight: bold;">
-             <div class="info-row" style="width: 50%;">Produto: <span style="font-weight: normal" id="pdf-produto"></span></div>
-             <div class="info-row" style="width: 50%;">Lote: <span style="font-weight: normal" id="pdf-lote"></span></div>
-             <div class="info-row" style="width: 50%;">Produção: <span style="font-weight: normal" id="pdf-producao"></span></div>
-             <div class="info-row" style="width: 50%;">Validade: <span style="font-weight: normal" id="pdf-validade"></span></div>
-             <div class="info-row" style="width: 50%;">Data de recebimento farinha: <span style="font-weight: normal" id="pdf-rec-farinha"></span></div>
-             <div class="info-row" style="width: 50%;">Lote da farinha: <span style="font-weight: normal" id="pdf-lote-farinha"></span></div>
-             <div class="info-row" style="width: 50%;">Data do teste: <span style="font-weight: normal" id="pdf-data-teste"></span></div>
-             <div class="info-row" style="width: 25%;">P/L: <span style="font-weight: normal" id="pdf-pl"></span></div>
-             <div class="info-row" style="width: 25%;">W: <span style="font-weight: normal" id="pdf-w"></span></div>
-          </div>
-          <table>
-             <thead><tr><th style="width: 30%">Grupo</th><th style="width: 40%">Característica</th><th style="width: 30%; text-align: center;">Resultado</th></tr></thead>
-             <tbody>
-                <tr><td rowspan="4" style="font-weight:bold;">Características Externas</td><td>Craquelamento</td><td style="text-align: center;" id="pdf-craquelamento"></td></tr>
-                <tr><td>Abertura de pestana</td><td style="text-align: center;" id="pdf-pestana"></td></tr>
-                <tr><td>Volume</td><td style="text-align: center;" id="pdf-volume"></td></tr>
-                <tr><td>Cor</td><td style="text-align: center;" id="pdf-cor"></td></tr>
-                <tr><td rowspan="2" style="font-weight:bold;">Características Internas</td><td>Estrutura alveolar</td><td style="text-align: center;" id="pdf-alveolar"></td></tr>
-                <tr><td>Cor do miolo</td><td style="text-align: center;" id="pdf-cormiolo"></td></tr>
-                <tr><td style="font-weight:bold;">Uniformidade na assadeira</td><td>Conformidade Visual</td><td style="text-align: center;" id="pdf-visual"></td></tr>
-             </tbody>
-          </table>
-          <div style="text-align: center; margin: 30px 0;"><p style="margin:0; font-weight: bold;">NOTA</p><div class="nota-box" id="pdf-nota"></div></div>
-          <div style="text-align: center; margin-top: 10px;">
-             <img id="pdf-foto-1" src="" style="max-width: 45%; max-height: 200px; display: none; margin: 5px; border: 1px solid #ccc;">
-             <img id="pdf-foto-2" src="" style="max-width: 45%; max-height: 200px; display: none; margin: 5px; border: 1px solid #ccc;">
-          </div>
-          <div class="text-block" style="margin-top: 30px;"><strong>DESCRIÇÃO DO ENSAIO</strong><br>Os ensaios para garantia da qualidade foram estabelecidos nas condições de processamento da IMAC, elaborados em conformidade com padrões de identidade e qualidade (PIQ) e boas práticas de fabricação (BPF), atendem a requisitos específicos de composição, características sensoriais e segurança, além de seguir procedimentos padronizados para garantir sua qualidade ao longo do processo produtivo.</div>
-          <div class="text-block"><strong>LEGISLAÇÃO E REFERÊNCIAS</strong><br>- ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. NBR 16170: Panificação - Pão francês - Diretrizes para avaliação da qualidade.<br>- BRASIL, ANVISA. IN n. 161, RDC n. 711, RDC n. 727 de 1º de julho de 2022.</div>
-          
-          <div style="margin-top: 60px; text-align: center;">
-             <img id="pdf-assinatura-img" src="" style="max-height: 80px; margin: 0 auto; display: none; border-bottom: 1px solid #000; padding-bottom: 5px; width: 60%; object-fit: contain;">
-             <div style="font-size: 12px; margin-top: 5px;">Assinatura do Responsável (Aprovado Digitalmente)</div>
-          </div>
        </div>
     </div>
 
