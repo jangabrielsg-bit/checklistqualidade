@@ -281,6 +281,7 @@
           }
         });
 
+        // Ignora erro no sandbox se houver token inválido
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
             try { await signInWithCustomToken(auth, __initial_auth_token); } catch (e) {}
         }
@@ -421,7 +422,7 @@
         } catch(err) { window.showToast("Erro ao gravar definições."); }
     };
 
-    // -- BUSCA INTELIGENTE --
+    // -- BUSCA INTELIGENTE E TABELA DE RECEITAS --
     window.filtrarProdutos = () => {
         const input = document.getElementById('s_produto_search').value.toLowerCase();
         const dropdown = document.getElementById('dropdown_produtos');
@@ -461,13 +462,32 @@
     window.onProdutoChange = (prodName) => {
         const p = window.appState.produtos.find(x => x.nome === prodName);
         window.appState.currentProduto = p;
+        
         const labelPadrao = document.getElementById('lbl_peso_padrao');
+        const displayReceita = document.getElementById('display_receita_selecionada');
+        const tabelaIngredientes = document.getElementById('tabela_ingredientes_start');
+
         if(p && p.pesoPadrao) {
             labelPadrao.innerHTML = `Padrão: ${p.pesoPadrao}g`;
             labelPadrao.classList.remove('hidden');
         } else {
             labelPadrao.classList.add('hidden');
         }
+
+        // Renderiza a tabela da receita em "Conferência de Insumos"
+        if(p && p.ingredientes && p.ingredientes.length > 0) {
+            tabelaIngredientes.innerHTML = p.ingredientes.map(ing => `
+                <tr>
+                    <td class="py-1.5 text-stone-600">${ing.nome}</td>
+                    <td class="py-1.5 text-stone-900 font-bold text-right">${ing.peso} <span class="text-xs font-normal text-stone-500">${ing.unid}</span></td>
+                </tr>
+            `).join('');
+            displayReceita.classList.remove('hidden');
+        } else {
+            tabelaIngredientes.innerHTML = '';
+            displayReceita.classList.add('hidden');
+        }
+
         window.checkLimits();
     };
 
@@ -579,7 +599,7 @@
        }
     });
 
-    // -- SALVAR PRODUÇÃO (START) --
+    // -- ENVIAR PRODUÇÃO OU TESTE --
     window.submitStartForm = async (e) => {
       e.preventDefault();
       const col = window.getCol('starts_producao'); if (!col) return;
@@ -631,6 +651,7 @@
       try {
         const docRef = await addDoc(col, data);
         
+        // Se for teste, cria obrigatoriamente um registro no lab
         if(isTeste) {
             await addDoc(window.getCol('testes_farinha'), { 
                 startId: docRef.id, 
@@ -644,10 +665,12 @@
             window.showToast("Produção iniciada com sucesso!"); 
         }
 
+        // Limpa formulário
         document.getElementById('form-start').reset();
         document.getElementById('s_data_fab').value = new Date().toISOString().split('T')[0];
         document.getElementById('s_produto_search').value = '';
         document.getElementById('s_produto_hidden').value = '';
+        document.getElementById('display_receita_selecionada').classList.add('hidden');
         ['s_insumos_ok', 's_peso_insumos_ok', 's_is_teste'].forEach(id => document.getElementById(id).checked = false);
         document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
         document.querySelectorAll('[id^="warn_"]').forEach(el => el.classList.add('hidden'));
@@ -657,6 +680,22 @@
         window.switchTab('view-dashboard');
       } catch (error) { window.showToast("Erro ao comunicar com o servidor."); }
       finally { btn.innerHTML = 'Iniciar Produção'; btn.disabled = false; lucide.createIcons(); }
+    };
+
+    window.enviarParaTeste = async (startId, produtoNome, loteFarinha) => {
+        if(!confirm(`Deseja enviar a produção de "${produtoNome}" para o laboratório de testes?`)) return;
+        try {
+            await addDoc(window.getCol('testes_farinha'), {
+                startId: startId,
+                produtoNome: produtoNome,
+                loteFarinhaStart: loteFarinha || '',
+                status: 'Pendente Operador',
+                dataCriacao: serverTimestamp()
+            });
+            window.showToast("Produção enviada para a aba Testes!");
+        } catch (error) {
+            window.showToast("Erro ao enviar para testes.");
+        }
     };
 
     // -- DASHBOARD --
@@ -722,7 +761,10 @@
                   <h3 class="font-bold text-stone-800 text-lg flex items-center gap-2">
                      ${s.isTeste ? '<i data-lucide="flask-conical" class="w-5 h-5 text-yellow-600"></i>' : ''} ${s.produto}
                   </h3>
-                  <button onclick="window.excluirStart('${s.id}')" class="text-stone-400 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                  <div class="flex gap-2">
+                      <button onclick="window.enviarParaTeste('${s.id}', '${s.produto}', '${s.loteFarinha || ''}')" class="text-stone-400 hover:text-yellow-600 transition-colors p-1" title="Enviar para Testes"><i data-lucide="microscope" class="w-5 h-5"></i></button>
+                      <button onclick="window.excluirStart('${s.id}')" class="text-stone-400 hover:text-red-500 transition-colors p-1" title="Eliminar"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                  </div>
                 </div>
                 
                 <div class="text-xs text-stone-600 mb-4 grid grid-cols-2 gap-3 bg-stone-50 p-3 rounded-xl border border-stone-200">
@@ -790,8 +832,9 @@
                    <div class="text-xs text-stone-500 mt-1">${dateStr}</div>
                 </div>
                 <div class="flex gap-2">
-                   <button onclick="window.abrirEdicaoHistorico('${s.id}')" class="text-stone-400 hover:text-blue-500 transition"><i data-lucide="edit-3" class="w-5 h-5"></i></button>
-                   <button onclick="window.excluirStart('${s.id}')" class="text-stone-400 hover:text-red-500 transition"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                   <button onclick="window.enviarParaTeste('${s.id}', '${s.produto}', '${s.loteFarinha || ''}')" class="text-stone-400 hover:text-yellow-600 transition" title="Enviar para Teste"><i data-lucide="microscope" class="w-5 h-5"></i></button>
+                   <button onclick="window.abrirEdicaoHistorico('${s.id}')" class="text-stone-400 hover:text-blue-500 transition" title="Editar"><i data-lucide="edit-3" class="w-5 h-5"></i></button>
+                   <button onclick="window.excluirStart('${s.id}')" class="text-stone-400 hover:text-red-500 transition" title="Apagar"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
                 </div>
              </div>
              <div class="bg-stone-50 p-3 rounded-xl flex justify-between text-sm mb-4 border border-stone-200">
@@ -1388,6 +1431,15 @@
 
           <div class="app-card">
             <h3 class="font-black text-stone-800 text-lg mb-4 border-b border-stone-100 pb-2">Conferência de Insumos</h3>
+            
+            <div id="display_receita_selecionada" class="bg-white border border-stone-200 rounded-xl p-3 mb-4 hidden shadow-sm">
+                <div class="text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-2 border-b border-stone-100 pb-1">Fórmula da Receita</div>
+                <table class="w-full text-sm text-left">
+                    <tbody id="tabela_ingredientes_start" class="divide-y divide-stone-100">
+                    </tbody>
+                </table>
+            </div>
+            
             <div class="flex justify-between items-center mb-5 bg-stone-50 p-3 rounded-xl border border-stone-200">
               <label class="font-bold text-stone-700 m-0">Insumos Conferidos?</label>
               <label class="toggle-switch"><input type="checkbox" id="s_insumos_ok"><span class="toggle-slider"></span></label>
@@ -1580,11 +1632,13 @@
                 <label class="app-label text-stone-800 mb-3"><i data-lucide="camera" class="w-4 h-4 inline mb-0.5"></i> Fotos (Obrigatório Foto 1)</label>
                 <div class="mb-3 p-3 border border-stone-200 rounded-xl bg-white">
                    <span class="text-xs font-bold text-stone-500 block mb-2">Foto Externa</span>
+                   <!-- Removido 'capture="environment"' para permitir escolha da galeria -->
                    <input type="file" accept="image/*" id="t_foto_1" class="text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-yellow-50 file:text-yellow-700 file:font-bold w-full" onchange="window.processarFotoTeste(event, 1)" required>
                    <img id="preview_foto_teste_1" class="image-preview" src="">
                 </div>
                 <div class="p-3 border border-stone-200 rounded-xl bg-white">
                    <span class="text-xs font-bold text-stone-500 block mb-2">Foto do Miolo (Opcional)</span>
+                   <!-- Removido 'capture="environment"' para permitir escolha da galeria -->
                    <input type="file" accept="image/*" id="t_foto_2" class="text-sm file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-stone-100 file:text-stone-600 file:font-bold w-full" onchange="window.processarFotoTeste(event, 2)">
                    <img id="preview_foto_teste_2" class="image-preview" src="">
                 </div>
