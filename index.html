@@ -121,12 +121,12 @@
             <h1 class="text-2xl font-bold text-gray-800 mb-2">Gestão de Gratificações</h1>
             <p class="text-gray-500 mb-8 text-sm">Faça login com a sua conta para aceder ao painel administrativo.</p>
             
-            <button data-action="loginGoogle" class="w-full bg-white border-2 border-gray-200 hover:bg-gray-50 text-gray-700 font-bold py-3.5 px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center space-x-3 mb-6">
+            <button id="btn-login-google" class="w-full bg-white border-2 border-gray-200 hover:bg-gray-50 text-gray-700 font-bold py-3.5 px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center space-x-3 mb-6">
                 <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6" alt="Google">
                 <span>Aceder com Google</span>
             </button>
 
-            <button data-action="loginAnon" class="text-gray-400 hover:text-gray-600 text-xs font-medium underline transition-colors">
+            <button id="btn-login-anon" class="text-gray-400 hover:text-gray-600 text-xs font-medium underline transition-colors">
                 Aceder como Visitante (Modo Teste)
             </button>
         </div>
@@ -143,6 +143,7 @@
                 <h1 class="text-lg font-bold leading-tight">Gestão de<br><span class="text-blue-400">Gratificações</span></h1>
             </div>
             <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto hide-scroll flex flex-col" id="sidebar-nav">
+                <!-- Nav Buttons will be handled by Event Delegation -->
                 <button data-nav="dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-600 text-white transition-colors">
                     <i class="fa-solid fa-chart-pie w-5"></i><span>Visão Geral</span>
                 </button>
@@ -169,7 +170,7 @@
                 </button>
 
                 <div class="mt-auto pt-4 border-t border-slate-700">
-                    <button data-action="logout" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500 hover:text-white transition-colors">
+                    <button id="btn-logout" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500 hover:text-white transition-colors">
                         <i class="fa-solid fa-arrow-right-from-bracket w-5"></i><span>Sair do Sistema</span>
                     </button>
                 </div>
@@ -182,14 +183,14 @@
                 <i class="fa-solid fa-hand-holding-dollar text-xl text-blue-400"></i>
                 <h1 class="font-bold">Gratificações</h1>
             </div>
-            <button data-action="toggleMenu" class="text-2xl">
+            <button id="btn-mobile-menu-open" class="text-2xl">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </div>
 
         <!-- Menu Mobile Overlay -->
         <div id="mobile-menu" class="hidden md:hidden fixed inset-0 bg-slate-900 z-40 flex flex-col pt-16 no-print overflow-y-auto">
-            <button data-action="toggleMenu" class="absolute top-4 right-4 text-3xl text-white">
+            <button id="btn-mobile-menu-close" class="absolute top-4 right-4 text-3xl text-white">
                 <i class="fa-solid fa-times"></i>
             </button>
             <nav class="flex flex-col p-6 space-y-4 text-lg text-slate-300" id="mobile-nav">
@@ -202,7 +203,7 @@
                 <a href="#" data-nav="relatorios"><i class="fa-solid fa-file-invoice-dollar mr-3 w-6"></i> Relatórios</a>
                 <a href="#" data-nav="configuracoes"><i class="fa-solid fa-cog mr-3 w-6"></i> Definições</a>
                 
-                <a href="#" data-action="logout" class="text-red-400 mt-6 border-t border-slate-700 pt-6"><i class="fa-solid fa-arrow-right-from-bracket mr-3 w-6"></i> Sair do Sistema</a>
+                <a href="#" id="btn-mobile-logout" class="text-red-400 mt-6 border-t border-slate-700 pt-6"><i class="fa-solid fa-arrow-right-from-bracket mr-3 w-6"></i> Sair do Sistema</a>
             </nav>
         </div>
 
@@ -222,7 +223,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, query, onSnapshot, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, query, onSnapshot, doc, setDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Estado Global
         const state = {
@@ -241,8 +242,103 @@
 
         let db, auth, appId, unsubscribeFuncs = [];
 
+        // Configuração Inicial do Firebase
+        const initFirebase = async () => {
+            try {
+                const defaultFirebaseConfig = {
+                    apiKey: "AIzaSyAACkZnNeizzXIfH0cS1WZWCITD0scqpJY",
+                    authDomain: "gratificacao-2e6e8.firebaseapp.com",
+                    projectId: "gratificacao-2e6e8",
+                    storageBucket: "gratificacao-2e6e8.firebasestorage.app",
+                    messagingSenderId: "843644337269",
+                    appId: "1:843644337269:web:36c4bfb09a19f9f0a44c3c",
+                    measurementId: "G-66CCNYZEN0"
+                };
+
+                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
+                appId = typeof __app_id !== 'undefined' ? __app_id : 'gestao-grat-app';
+                
+                const firebaseApp = initializeApp(firebaseConfig);
+                auth = getAuth(firebaseApp);
+                db = getFirestore(firebaseApp);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    const loader = document.getElementById('loading-overlay');
+                    const loginScreen = document.getElementById('login-screen');
+                    const appLayout = document.getElementById('app-layout');
+
+                    loader.classList.add('hidden');
+
+                    if (user) {
+                        state.user = user;
+                        loginScreen.classList.add('hidden');
+                        loginScreen.classList.remove('flex');
+                        appLayout.classList.remove('hidden');
+                        setupListeners();
+                    } else {
+                        state.user = null;
+                        appLayout.classList.add('hidden');
+                        loginScreen.classList.remove('hidden');
+                        loginScreen.classList.add('flex');
+                    }
+                });
+
+            } catch (error) {
+                console.error("Firebase init error:", error);
+                document.getElementById('loading-overlay').classList.add('hidden');
+                alert("Erro crítico ao inicializar o Firebase. Verifique a configuração.");
+            }
+        };
+
+        // Escutadores do Firestore em Tempo Real
+        const setupListeners = () => {
+            unsubscribeFuncs.forEach(unsub => unsub());
+            const publicPath = `artifacts/${appId}/public/data`;
+            
+            unsubscribeFuncs.push(onSnapshot(doc(db, `${publicPath}/settings`, 'main'), (docSnap) => {
+                if (docSnap.exists()) state.settings = docSnap.data();
+                if(state.view === 'configuracoes' || state.view === 'relatorios') window.app.render();
+            }, (e) => console.error(e)));
+
+            unsubscribeFuncs.push(onSnapshot(query(collection(db, `${publicPath}/employees`)), (snap) => {
+                state.employees = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if(state.view === 'colaboradores' || state.view === 'lancamentos' || state.view === 'higiene') window.app.render();
+            }, (e) => console.error(e)));
+
+            unsubscribeFuncs.push(onSnapshot(query(collection(db, `${publicPath}/sectors`)), (snap) => {
+                state.sectors = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if(state.sectors.length === 0) window.app.populateInitialSectors();
+                if(state.view === 'setores' || state.view === 'colaboradores' || state.view === 'lancamentos') window.app.render();
+            }, (e) => console.error(e)));
+
+            unsubscribeFuncs.push(onSnapshot(query(collection(db, `${publicPath}/rules`)), (snap) => {
+                state.rules = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if(state.rules.length === 0) window.app.populateInitialRules();
+                if(state.view === 'setores' || state.view === 'lancamentos' || state.view === 'relatorios' || state.view === 'dashboard') window.app.render();
+            }, (e) => console.error(e)));
+
+            unsubscribeFuncs.push(onSnapshot(query(collection(db, `${publicPath}/logs`)), (snap) => {
+                state.logs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if(state.view === 'lancamentos' || state.view === 'relatorios' || state.view === 'dashboard') window.app.render();
+            }, (e) => console.error(e)));
+
+            unsubscribeFuncs.push(onSnapshot(query(collection(db, `${publicPath}/prorations`)), (snap) => {
+                state.prorations = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if(state.view === 'proporcionais' || state.view === 'relatorios') window.app.render();
+            }, (e) => console.error(e)));
+
+            unsubscribeFuncs.push(onSnapshot(query(collection(db, `${publicPath}/hygiene_checks`)), (snap) => {
+                state.hygieneChecks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                if (state.view === 'higiene' || state.view === 'relatorios' || state.view === 'lancamentos') window.app.render();
+            }, (e) => console.error(e)));
+        };
+
         // Objeto Central da Aplicação (App) - Totalmente Encapsulado
-        const App = {
+        window.app = {
             generateId: () => {
                 return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' 
                     ? crypto.randomUUID() 
@@ -282,7 +378,7 @@
             },
 
             confirmAction: (msg, actionStr, dataId = '') => {
-                App.openModal(`
+                window.app.openModal(`
                     <div class="p-6 text-center">
                         <i class="fa-solid fa-circle-exclamation text-5xl text-red-500 mb-4"></i>
                         <p class="text-lg text-gray-800 font-medium mb-6 mt-4">${msg}</p>
@@ -292,6 +388,68 @@
                         </div>
                     </div>
                 `);
+            },
+
+            loginWithGoogle: async () => {
+                const provider = new GoogleAuthProvider();
+                try {
+                    await signInWithPopup(auth, provider);
+                    window.app.toast("Login realizado com sucesso!", "success");
+                } catch (error) {
+                    console.error("Erro no login Google:", error);
+                    window.app.toast("Falha na autenticação: " + error.message, "error");
+                }
+            },
+
+            loginAnonymously: async () => {
+                try {
+                    window.app.toast("Entrando no modo teste...", "info");
+                    await signInAnonymously(auth);
+                } catch (error) {
+                    console.error("Erro login anônimo:", error);
+                    window.app.toast("Falha na autenticação anônima.", "error");
+                }
+            },
+
+            logout: async () => {
+                try {
+                    await signOut(auth);
+                    window.location.reload();
+                } catch (error) {
+                    console.error("Erro ao sair:", error);
+                    window.app.toast("Erro ao desconectar.", "error");
+                }
+            },
+
+            // --- Semeadura Inicial de Dados ---
+            populateInitialSectors: async () => {
+                const initial = [
+                    { id: 'salgado', name: 'Salgado', val_liderado: 180, val_lider: 250 },
+                    { id: 'ped', name: 'P&D', val_liderado: 180, val_lider: 250 },
+                    { id: 'expedicao_dia', name: 'Expedição Dia', val_liderado: 180, val_lider: 250 },
+                    { id: 'expedicao_noite', name: 'Expedição Noite', val_liderado: 180, val_lider: 250 }
+                ];
+                for (let sec of initial) {
+                    await setDoc(doc(db, `artifacts/${appId}/public/data/sectors`, sec.id), sec);
+                }
+            },
+            
+            populateInitialRules: async () => {
+                const initialRules = [
+                    { id: 'produtividade', name: 'Produtividade', pct: 0.20, max: 1 },
+                    { id: 'qualidade', name: 'Qualidade do Produto', pct: 0.05, max: 3 },
+                    { id: 'pontualidade', name: 'Pontualidade/Assiduidade', pct: 0.05, max: 3 },
+                    { id: 'procedimentos', name: 'Cumprimento de Procedimentos', pct: 0.0333, max: 3 },
+                    { id: 'colaboracao', name: 'Colaboração/Trabalho em Equipe', pct: 0.0333, max: 3 },
+                    { id: 'perdas', name: 'Perdas e Desperdícios', pct: 0.0333, max: 3 },
+                    { id: 'auditoria', name: 'Auditoria BPF', pct: 0.10, max: 1 },
+                    { id: 'seguranca', name: 'Segurança no Trabalho', pct: 0.05, max: 1 },
+                    { id: 'dds', name: 'Participação DDS, Reuniões', pct: 0.05, max: 1 },
+                    { id: 'higiene', name: 'Higiene Pessoal (Inadequada)', pct: 0.0333, max: 3 }
+                ];
+                for (let r of initialRules) {
+                    await setDoc(doc(db, `artifacts/${appId}/public/data/rules`, r.id), r);
+                }
             },
 
             // --- Navegação e Renderização ---
@@ -307,7 +465,17 @@
                     }
                 });
                 document.getElementById('mobile-menu').classList.add('hidden');
-                App.render();
+                window.app.render();
+            },
+
+            setReportTab: (tab) => {
+                state.reportTab = tab;
+                window.app.render();
+            },
+
+            setLogTab: (tab) => {
+                state.logTab = tab;
+                window.app.render();
             },
 
             render: () => {
@@ -315,29 +483,326 @@
                 if(!container) return;
                 
                 switch (state.view) {
-                    case 'dashboard': container.innerHTML = App.views.dashboard(); break;
-                    case 'colaboradores': container.innerHTML = App.views.colaboradores(); break;
-                    case 'setores': container.innerHTML = App.views.setores(); break;
-                    case 'lancamentos': container.innerHTML = App.views.lancamentos(); break;
-                    case 'higiene': container.innerHTML = App.views.higiene(); break;
-                    case 'proporcionais': container.innerHTML = App.views.proporcionais(); break;
-                    case 'relatorios': container.innerHTML = App.views.relatorios(); break;
-                    case 'configuracoes': container.innerHTML = App.views.configuracoes(); break;
+                    case 'dashboard': container.innerHTML = window.app.views.dashboard(); break;
+                    case 'colaboradores': container.innerHTML = window.app.views.colaboradores(); break;
+                    case 'setores': container.innerHTML = window.app.views.setores(); break;
+                    case 'lancamentos': container.innerHTML = window.app.views.lancamentos(); break;
+                    case 'higiene': container.innerHTML = window.app.views.higiene(); break;
+                    case 'proporcionais': container.innerHTML = window.app.views.proporcionais(); break;
+                    case 'relatorios': container.innerHTML = window.app.views.relatorios(); break;
+                    case 'configuracoes': container.innerHTML = window.app.views.configuracoes(); break;
                 }
 
-                // Injetar comportamentos complementares após a injeção do HTML
-                if (state.view === 'colaboradores') App.filterColaboradores();
-                if (state.view === 'lancamentos' && state.logTab === 'historico') App.renderLogsHistoryList();
+                if (state.view === 'colaboradores') window.app.filterColaboradores();
+                if (state.view === 'lancamentos' && state.logTab === 'historico') window.app.renderLogsHistoryList();
             },
 
-            // --- Lógica das Vistas (Views) ---
+            // --- Exposing Modals and Actions for Delegation ---
+            showImportModal: () => {
+                window.app.openModal(`
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-file-excel text-emerald-600 mr-2"></i> Importar Colaboradores</h2>
+                        <button data-action="closeModal" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-times text-xl"></i></button>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl text-sm text-blue-900 leading-relaxed">
+                            <p class="font-bold mb-2">Instruções para a folha de cálculo (.xlsx ou .csv):</p>
+                            <ul class="list-disc pl-5 space-y-1 mb-2 font-medium">
+                                <li><b>Nome</b> (Nome do colaborador)</li>
+                                <li><b>Setor</b> (Ex: Salgado, P&D)</li>
+                                <li><b>Função/Cargo</b> (Líder ou Liderado)</li>
+                                <li><b>Valor</b> (Valor base, ex: 180)</li>
+                            </ul>
+                        </div>
+
+                        <div class="flex flex-col items-center justify-center w-full mt-4">
+                            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-emerald-300 border-dashed rounded-xl cursor-pointer bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-emerald-500 mb-2"></i>
+                                    <p class="text-sm font-semibold text-emerald-800">Selecionar Planilha</p>
+                                </div>
+                                <input id="dropzone-file" type="file" class="hidden" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+                            </label>
+                        </div>
+                    </div>
+                `);
+            },
+            
+            showEmployeeForm: (id = null) => {
+                const emp = id && id !== 'null' ? state.employees.find(e => e.id === id) : {};
+                const sectorOpts = state.sectors.map(s => `<option value="${s.id}" ${emp.sectorId === s.id ? 'selected' : ''}>${s.name}</option>`).join('');
+                window.app.openModal(`
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-bold text-gray-800">${emp.id ? 'Editar Colaborador' : 'Novo Colaborador'}</h2>
+                        <button data-action="closeModal" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-times text-xl"></i></button>
+                    </div>
+                    <form id="form-employee" class="p-6 space-y-4">
+                        <input type="hidden" id="emp_id" value="${emp.id || ''}">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Nome Completo</label>
+                            <input type="text" id="emp_name" value="${emp.name || ''}" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Setor</label>
+                                <select id="emp_sector" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                                    <option value="">Selecione...</option>
+                                    ${sectorOpts}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Cargo/Perfil</label>
+                                <select id="emp_role" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                                    <option value="liderado" ${emp.role === 'liderado' ? 'selected' : ''}>Liderado</option>
+                                    <option value="lider" ${emp.role === 'lider' ? 'selected' : ''}>Líder</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Valor Base Personalizado (R$)</label>
+                            <input type="number" step="0.01" id="emp_custom_val" value="${emp.customBaseValue || ''}" placeholder="Vazio = Padrão do Setor" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                        </div>
+                        <div class="pt-4 flex justify-end space-x-3">
+                            <button type="button" data-action="closeModal" class="px-5 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium">Cancelar</button>
+                            <button type="submit" class="px-5 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">Salvar</button>
+                        </div>
+                    </form>
+                `);
+            },
+            
+            showSectorForm: (id = null) => {
+                const sec = id && id !== 'null' ? state.sectors.find(s => s.id === id) : {};
+                window.app.openModal(`
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-bold text-gray-800">${sec.id ? 'Editar Setor' : 'Novo Setor'}</h2>
+                        <button data-action="closeModal" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-times text-xl"></i></button>
+                    </div>
+                    <form id="form-sector" class="p-6 space-y-4">
+                        <input type="hidden" id="sec_id" value="${sec.id || ''}">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Nome do Setor</label>
+                            <input type="text" id="sec_name" value="${sec.name || ''}" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Valor Liderado (R$)</label>
+                                <input type="number" step="0.01" id="sec_val_liderado" value="${sec.val_liderado || ''}" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Valor Líder (R$)</label>
+                                <input type="number" step="0.01" id="sec_val_lider" value="${sec.val_lider || ''}" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="pt-4 flex justify-end space-x-3">
+                            <button type="button" data-action="closeModal" class="px-5 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium">Cancelar</button>
+                            <button type="submit" class="px-5 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">Salvar</button>
+                        </div>
+                    </form>
+                `);
+            },
+            
+            showRuleForm: (id = null) => {
+                const rule = id && id !== 'null' ? state.rules.find(r => r.id === id) : {};
+                const pctVal = rule.pct !== undefined ? (rule.pct * 100).toFixed(2) : '';
+                window.app.openModal(`
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-bold text-gray-800">${rule.id ? 'Editar Critério' : 'Novo Critério'}</h2>
+                        <button data-action="closeModal" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-times text-xl"></i></button>
+                    </div>
+                    <form id="form-rule" class="p-6 space-y-4">
+                        <input type="hidden" id="rule_id" value="${rule.id || ''}">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Nome do Critério</label>
+                            <input type="text" id="rule_name" value="${rule.name || ''}" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">% Desconto</label>
+                                <div class="relative">
+                                    <input type="number" step="0.01" id="rule_pct" value="${pctVal}" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+                                    <span class="absolute right-4 top-2.5 text-gray-400 font-bold">%</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Máx. Acúmulo</label>
+                                <input type="number" step="1" min="1" id="rule_max" value="${rule.max || 1}" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
+                            </div>
+                        </div>
+                        <div class="pt-4 flex justify-end space-x-3">
+                            <button type="button" data-action="closeModal" class="px-5 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium">Cancelar</button>
+                            <button type="submit" class="px-5 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">Salvar</button>
+                        </div>
+                    </form>
+                `);
+            },
+            
+            showProrationForm: () => {
+                const empOpts = state.employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
+                const currentMonth = window.app.getMonthId(new Date());
+                window.app.openModal(`
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h2 class="text-xl font-bold text-gray-800">Registrar Férias/Admissão</h2>
+                        <button data-action="closeModal" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-times text-xl"></i></button>
+                    </div>
+                    <form id="form-proration" class="p-6 space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Colaborador</label>
+                            <select id="pro_emp" required class="w-full px-4 py-2 border rounded-lg bg-white">${empOpts}</select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Mês de Referência</label>
+                            <input type="month" id="pro_month" value="${currentMonth}" required class="w-full px-4 py-2 border rounded-lg">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Dias Trabalhados</label>
+                                <input type="number" min="0" max="31" id="pro_days" required class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Total Dias no Mês</label>
+                                <input type="number" min="28" max="31" id="pro_total" value="30" required class="w-full px-4 py-2 border rounded-lg">
+                            </div>
+                        </div>
+                        <div class="pt-4 flex justify-end space-x-3">
+                            <button type="button" data-action="closeModal" class="px-5 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium">Cancelar</button>
+                            <button type="submit" class="px-5 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium">Salvar</button>
+                        </div>
+                    </form>
+                `);
+            },
+            
+            filterColaboradores: () => {
+                const term = (document.getElementById('search_colab')?.value || '').toLowerCase();
+                const sortType = document.getElementById('sort_colab')?.value || 'name_asc';
+                
+                let filtered = state.employees.filter(e => e.name.toLowerCase().includes(term));
+                filtered.sort((a,b) => {
+                    if (sortType === 'name_asc') return a.name.localeCompare(b.name);
+                    if (sortType === 'name_desc') return b.name.localeCompare(a.name);
+                    if (sortType === 'sec_asc') {
+                        const secA = state.sectors.find(s => s.id === a.sectorId)?.name || 'Z';
+                        const secB = state.sectors.find(s => s.id === b.sectorId)?.name || 'Z';
+                        return secA.localeCompare(secB) || a.name.localeCompare(b.name);
+                    }
+                    return 0;
+                });
+
+                const tbody = document.getElementById('colab_tbody');
+                if(!tbody) return;
+
+                const rows = filtered.map(emp => {
+                    const sec = state.sectors.find(s => s.id === emp.sectorId);
+                    const roleName = emp.role === 'lider' ? '<span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded font-semibold">Líder</span>' : '<span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded font-semibold">Liderado</span>';
+                    let baseVal = emp.customBaseValue ? emp.customBaseValue : (sec ? (emp.role === 'lider' ? sec.val_lider : sec.val_liderado) : 0);
+                    const valDisplay = emp.customBaseValue 
+                        ? `<span class="text-emerald-600 font-bold" title="Personalizado">${window.app.formatBRL(baseVal)}</span>` 
+                        : `<span class="text-gray-500">${window.app.formatBRL(baseVal)}</span>`;
+
+                    return `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-4 py-3 font-medium text-gray-800">${emp.name}</td>
+                            <td class="px-4 py-3 text-gray-600">${sec ? sec.name : 'N/A'}</td>
+                            <td class="px-4 py-3">${roleName}</td>
+                            <td class="px-4 py-3">${valDisplay}</td>
+                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                <button data-action="showEmployeeForm" data-id="${emp.id}" class="text-blue-500 hover:text-blue-700 mx-2 p-2 rounded hover:bg-blue-50 transition-colors"><i class="fa-solid fa-pen"></i></button>
+                                <button data-action="deleteEmployee" data-id="${emp.id}" class="text-red-500 hover:text-red-700 mx-2 p-2 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+                tbody.innerHTML = rows || '<tr><td colspan="5" class="text-center py-8 text-gray-500">Nenhum colaborador encontrado.</td></tr>';
+            },
+
+            filterLogEmp: (term) => {
+                term = term.toLowerCase();
+                const select = document.getElementById('log_emp');
+                if(!select) return;
+                Array.from(select.options).forEach(opt => {
+                    if (opt.value === "") return;
+                    if (opt.text.toLowerCase().includes(term)) opt.style.display = ''; 
+                    else opt.style.display = 'none';
+                });
+            },
+
+            filterHigiene: (term) => {
+                term = term.toLowerCase();
+                document.querySelectorAll('.sector-group').forEach(group => {
+                    let hasVisible = false;
+                    group.querySelectorAll('.higiene-emp-row').forEach(row => {
+                        if (row.dataset.name.includes(term)) { row.style.display = 'flex'; hasVisible = true; } 
+                        else { row.style.display = 'none'; }
+                    });
+                    group.style.display = hasVisible ? 'block' : 'none';
+                });
+            },
+
+            renderLogsHistoryList: () => {
+                const month = document.getElementById('hist_month')?.value || window.app.getMonthId(new Date());
+                const sectorId = document.getElementById('hist_sec')?.value || '';
+                
+                let filteredLogs = state.logs.filter(l => l.monthId === month);
+                let filteredHygiene = state.hygieneChecks.filter(h => (h.monthId || window.app.getMonthId(new Date(h.date + 'T12:00:00'))) === month);
+                
+                if (sectorId) {
+                    const empsInSec = state.employees.filter(e => e.sectorId === sectorId).map(e => e.id);
+                    filteredLogs = filteredLogs.filter(l => empsInSec.includes(l.employeeId));
+                    filteredHygiene = filteredHygiene.filter(h => empsInSec.includes(h.employeeId));
+                }
+
+                const hygieneAsLogs = filteredHygiene.map(h => ({
+                    id: h.id, employeeId: h.employeeId, date: h.date, ruleId: 'higiene', obs: h.obs, timestamp: h.timestamp, isHygiene: true
+                }));
+
+                const allRecords = [...filteredLogs, ...hygieneAsLogs].sort((a,b) => b.timestamp - a.timestamp);
+                const container = document.getElementById('log_history_container');
+                if (!container) return;
+
+                if (allRecords.length === 0) {
+                    container.innerHTML = '<div class="p-8 text-center text-gray-500 bg-white rounded-xl border border-gray-100 shadow-sm">Nenhum registo encontrado.</div>';
+                    return;
+                }
+
+                container.innerHTML = allRecords.map(log => {
+                    const emp = state.employees.find(e => e.id === log.employeeId);
+                    const sec = state.sectors.find(s => s.id === emp?.sectorId);
+                    const rule = state.rules.find(r => r.id === log.ruleId);
+                    const dateStr = log.date ? log.date.split('-').reverse().join('/') : '--';
+                    const obsSnippet = log.obs ? `<p class="text-sm text-gray-600 mt-2 bg-gray-50 p-2 rounded border border-gray-100"><i class="fa-solid fa-comment-dots text-gray-400 mr-1"></i> ${log.obs}</p>` : '';
+                    const deleteAction = log.isHygiene ? 'deleteHygieneRecord' : 'deleteLog';
+
+                    return `
+                        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow mb-3 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h4 class="font-bold text-gray-800 text-lg">${emp ? emp.name : 'Desconhecido'}</h4>
+                                    <span class="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded">${dateStr}</span>
+                                </div>
+                                <div class="flex items-center space-x-2 text-sm">
+                                    <span class="text-slate-600 font-medium"><i class="fa-solid fa-sitemap opacity-50 mr-1"></i> ${sec ? sec.name : 'Geral'}</span>
+                                    <span class="text-gray-300">|</span>
+                                    <span class="text-red-600 font-bold">${rule ? rule.name : 'Infração'}</span>
+                                </div>
+                                ${obsSnippet}
+                            </div>
+                            <div class="flex items-center md:flex-col md:justify-center border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-4">
+                                <button data-action="${deleteAction}" data-id="${log.id}" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg font-medium transition-colors flex items-center w-full md:w-auto justify-center">
+                                    <i class="fa-solid fa-trash mr-2"></i> Excluir
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            },
+
+            // --- VIEWS ---
             views: {
                 dashboard: () => {
-                    const monthId = App.getMonthId(new Date());
-                    const report = App.calculateMonthlyReport(monthId);
+                    const monthId = window.app.getMonthId(new Date());
+                    const report = window.app.calculateMonthlyReport ? window.app.calculateMonthlyReport(monthId) : [];
                     const totalPay = report.reduce((sum, r) => sum + r.finalValue, 0);
                     const totalErrors = state.logs.filter(l => l.monthId === monthId).length + 
-                                        state.hygieneChecks.filter(h => (h.monthId === monthId || App.getMonthId(new Date(h.date+'T12:00:00')) === monthId)).length;
+                                        state.hygieneChecks.filter(h => (h.monthId === monthId || window.app.getMonthId(new Date(h.date+'T12:00:00')) === monthId)).length;
 
                     return `
                         <h3 class="text-gray-800 text-xl font-bold mb-4">Visão Geral - ${monthId}</h3>
@@ -348,10 +813,10 @@
                             </div>
                             <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-emerald-500">
                                 <p class="text-sm text-gray-500 font-semibold mb-1">Previsão de Pagamento</p>
-                                <p class="text-3xl font-bold text-gray-800">${App.formatBRL(totalPay)}</p>
+                                <p class="text-3xl font-bold text-gray-800">${window.app.formatBRL(totalPay)}</p>
                             </div>
                             <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-red-500">
-                                <p class="text-sm text-gray-500 font-semibold mb-1">Ocorrências Registadas (Mês)</p>
+                                <p class="text-sm text-gray-500 font-semibold mb-1">Erros Registados (Mês)</p>
                                 <p class="text-3xl font-bold text-gray-800">${totalErrors}</p>
                             </div>
                         </div>
@@ -363,7 +828,7 @@
                             <h2 class="text-2xl font-bold text-gray-800">Colaboradores</h2>
                             <div class="flex space-x-3 w-full md:w-auto">
                                 <button data-action="showImportModal" class="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors flex justify-center items-center">
-                                    <i class="fa-solid fa-file-import mr-2"></i> Importar Ficheiro
+                                    <i class="fa-solid fa-file-import mr-2"></i> Importar Planilha
                                 </button>
                                 <button data-action="showEmployeeForm" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm flex justify-center items-center">
                                     <i class="fa-solid fa-plus mr-2"></i> Novo
@@ -374,7 +839,7 @@
                         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-4 flex flex-col md:flex-row gap-4 items-center">
                             <div class="relative flex-1 w-full">
                                 <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"><i class="fa-solid fa-magnifying-glass text-gray-400"></i></div>
-                                <input type="text" id="search_colab" placeholder="Procurar por nome..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+                                <input type="text" id="search_colab" placeholder="Buscar por nome..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
                             </div>
                             <div class="flex items-center w-full md:w-auto">
                                 <label class="text-sm font-semibold text-gray-600 mr-2 whitespace-nowrap">Ordenar:</label>
@@ -408,11 +873,11 @@
                     const secRows = state.sectors.sort((a,b)=>a.name.localeCompare(b.name)).map(sec => `
                         <tr class="border-b hover:bg-gray-50">
                             <td class="px-4 py-3 font-medium text-gray-800">${sec.name}</td>
-                            <td class="px-4 py-3">${App.formatBRL(sec.val_liderado)}</td>
-                            <td class="px-4 py-3">${App.formatBRL(sec.val_lider)}</td>
+                            <td class="px-4 py-3">${window.app.formatBRL(sec.val_liderado)}</td>
+                            <td class="px-4 py-3">${window.app.formatBRL(sec.val_lider)}</td>
                             <td class="px-4 py-3 text-right whitespace-nowrap min-w-[100px]">
                                 <button data-action="showSectorForm" data-id="${sec.id}" class="text-blue-500 hover:text-blue-700 mx-2 p-2 rounded hover:bg-blue-50 transition-colors"><i class="fa-solid fa-pen"></i></button>
-                                <button data-action="confirmDeleteSector" data-id="${sec.id}" class="text-red-500 hover:text-red-700 mx-2 p-2 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
+                                <button data-action="deleteSector" data-id="${sec.id}" class="text-red-500 hover:text-red-700 mx-2 p-2 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
                             </td>
                         </tr>
                     `).join('');
@@ -420,11 +885,11 @@
                     const ruleRows = state.rules.map(rule => `
                         <tr class="border-b hover:bg-gray-50">
                             <td class="px-4 py-3 text-gray-800 font-medium">${rule.name}</td>
-                            <td class="px-4 py-3 text-red-500 font-bold">-${App.formatPct(rule.pct)}</td>
+                            <td class="px-4 py-3 text-red-500 font-bold">-${window.app.formatPct(rule.pct)}</td>
                             <td class="px-4 py-3 text-gray-600 font-medium">Até ${rule.max}x</td>
                             <td class="px-4 py-3 text-right whitespace-nowrap min-w-[100px]">
                                 <button data-action="showRuleForm" data-id="${rule.id}" class="text-blue-500 hover:text-blue-700 mx-1 p-2 rounded hover:bg-blue-50 transition-colors"><i class="fa-solid fa-pen"></i></button>
-                                ${rule.id !== 'higiene' ? `<button data-action="confirmDeleteRule" data-id="${rule.id}" class="text-red-500 hover:text-red-700 mx-1 p-2 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>` : ''}
+                                ${rule.id !== 'higiene' ? `<button data-action="deleteRule" data-id="${rule.id}" class="text-red-500 hover:text-red-700 mx-1 p-2 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>` : ''}
                             </td>
                         </tr>
                     `).join('');
@@ -449,7 +914,7 @@
                             </div>
                             <div>
                                 <div class="flex justify-between items-center mb-4">
-                                    <h2 class="text-xl font-bold text-gray-800">Critérios de Desconto</h2>
+                                    <h2 class="text-xl font-bold text-gray-800">Regras de Desconto</h2>
                                     <button data-action="showRuleForm" class="bg-blue-600 text-white px-3 py-1.5 text-sm rounded-lg shadow-sm font-medium hover:bg-blue-700 transition-colors"><i class="fa-solid fa-plus mr-1"></i> Nova Regra</button>
                                 </div>
                                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -480,7 +945,7 @@
                     `;
 
                     if (activeTab === 'historico') {
-                        const monthOpts = [...new Set([...state.logs, ...state.hygieneChecks].map(l => l.monthId||App.getMonthId(new Date(l.date+'T12:00:00')))), App.getMonthId(new Date())].sort().reverse().map(m => `<option value="${m}">${m}</option>`).join('');
+                        const monthOpts = [...new Set([...state.logs, ...state.hygieneChecks].map(l => l.monthId||window.app.getMonthId(new Date(l.date+'T12:00:00')))), window.app.getMonthId(new Date())].sort().reverse().map(m => `<option value="${m}">${m}</option>`).join('');
                         const sectorOpts = state.sectors.sort((a,b)=>a.name.localeCompare(b.name)).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
 
                         return `
@@ -505,7 +970,7 @@
 
                     const empOpts = state.employees.sort((a,b)=>(a.name||'').localeCompare(b.name||'')).map(e => `<option value="${e.id}" class="py-2 border-b border-gray-50">${e.name}</option>`).join('');
                     const sectorOpts = state.sectors.sort((a,b)=>a.name.localeCompare(b.name)).map(s => `<option value="${s.id}">${s.name}</option>`).join('');
-                    const ruleOpts = state.rules.filter(r => r.id !== 'higiene').map(r => `<option value="${r.id}">${r.name} (-${App.formatPct(r.pct)})</option>`).join('');
+                    const ruleOpts = state.rules.filter(r => r.id !== 'higiene').map(r => `<option value="${r.id}">${r.name} (-${window.app.formatPct(r.pct)})</option>`).join('');
                     const today = new Date().toISOString().split('T')[0];
 
                     return `
@@ -591,7 +1056,7 @@
                             <div class="higiene-emp-row flex flex-col p-4 border-b hover:bg-gray-50 transition-colors" data-name="${emp.name.toLowerCase()}">
                                 <div class="flex items-center justify-between">
                                     <span class="text-gray-800 font-medium text-lg">${emp.name}</span>
-                                    <label class="relative inline-flex items-center cursor-pointer" title="Marcar como inadequado irá gerar um desconto">
+                                    <label class="relative inline-flex items-center cursor-pointer" title="Marcar como inadequado gerará penalidade (desconto)">
                                         <span class="mr-3 text-sm font-bold ${isChecked ? 'text-red-500' : 'text-emerald-600'}">${isChecked ? 'Descontar!' : 'De Acordo'}</span>
                                         <input type="checkbox" class="sr-only peer hygiene-checkbox" data-empid="${emp.id}" data-date="${today}" ${isChecked?'checked':''}>
                                         <div class="w-14 h-7 bg-emerald-400 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
@@ -620,7 +1085,7 @@
                             <i class="fa-solid fa-circle-info text-emerald-600 text-xl mr-3 mt-0.5"></i>
                             <p class="text-sm text-emerald-900 leading-relaxed">
                                 <b>Por defeito, o sistema assume que todos estão de acordo.</b> 
-                                Apenas necessita de marcar os botões a vermelho e preencher a ocorrência para quem for penalizado naquele dia.
+                                Apenas necessita de marcar as chaves vermelhas e preencher a ocorrência para quem for penalizado naquele dia.
                             </p>
                         </div>
 
@@ -632,7 +1097,7 @@
                     `;
                 },
                 proporcionais: () => {
-                    const currentMonthId = App.getMonthId(new Date());
+                    const currentMonthId = window.app.getMonthId(new Date());
                     const list = state.prorations.filter(p => p.monthId === currentMonthId).map(p => {
                         const emp = state.employees.find(e => e.id === p.employeeId);
                         return `<div class="flex justify-between items-center p-4 border-b"><div><p class="font-bold text-gray-800">${emp?emp.name:'Desc.'}</p><p class="text-sm text-gray-500">${p.daysWorked} de ${p.totalDays} dias</p></div><button data-action="confirmDeleteProration" data-id="${p.id}" class="text-red-500"><i class="fa-solid fa-trash"></i></button></div>`;
@@ -643,27 +1108,101 @@
                     `;
                 },
                 relatorios: () => {
+                    window.app.calculateMonthlyReport = (monthId) => {
+                        const report = [];
+                        state.employees.forEach(emp => {
+                            const sector = state.sectors.find(s => s.id === emp.sectorId);
+                            if(!sector) return;
+
+                            let baseValue = emp.role === 'lider' ? sector.val_lider : sector.val_liderado;
+                            if (emp.customBaseValue) baseValue = Number(emp.customBaseValue);
+                            
+                            const proration = state.prorations.find(p => p.employeeId === emp.id && p.monthId === monthId);
+                            let validBase = baseValue;
+                            let proportionMsg = "Mês Integral";
+                            if (proration) {
+                                const ratio = proration.daysWorked / proration.totalDays;
+                                validBase = baseValue * ratio;
+                                proportionMsg = `${proration.daysWorked}/${proration.totalDays} dias`;
+                            }
+
+                            const empLogs = state.logs.filter(l => l.employeeId === emp.id && l.monthId === monthId);
+                            const empHygiene = state.hygieneChecks.filter(h => h.employeeId === emp.id && (h.monthId === monthId || window.app.getMonthId(new Date(h.date+'T12:00:00')) === monthId));
+                            
+                            let totalDeductionPct = 0;
+                            const errorCounts = {};
+
+                            empLogs.forEach(log => { errorCounts[log.ruleId] = (errorCounts[log.ruleId] || 0) + 1; });
+                            if (empHygiene.length > 0) errorCounts['higiene'] = empHygiene.length;
+
+                            state.rules.forEach(rule => {
+                                const count = errorCounts[rule.id] || 0;
+                                const validCount = Math.min(count, rule.max);
+                                totalDeductionPct += (validCount * rule.pct);
+                            });
+
+                            if (totalDeductionPct > 1) totalDeductionPct = 1;
+
+                            const deductionValue = validBase * totalDeductionPct;
+                            const finalValue = validBase - deductionValue;
+
+                            report.push({ emp, sectorName: sector.name, baseValue, validBase, proportionMsg, totalDeductionPct, deductionValue, finalValue, errorCounts });
+                        });
+                        return report.sort((a,b) => a.sectorName.localeCompare(b.sectorName) || a.emp.name.localeCompare(b.emp.name));
+                    };
+
+                    window.app.generateErrorLogsReportHtml = (monthId) => {
+                        let html = '';
+                        const sortedSectors = [...state.sectors].sort((a,b)=>(a.name || '').localeCompare(b.name || ''));
+                        sortedSectors.forEach(sec => {
+                            const emps = state.employees.filter(e => e.sectorId === sec.id).sort((a,b)=>(a.name || '').localeCompare(b.name || ''));
+                            if(emps.length === 0) return;
+                            
+                            let sectorLogsHtml = '';
+                            emps.forEach(emp => {
+                                const empLogs = state.logs.filter(l => l.employeeId === emp.id && l.monthId === monthId);
+                                const empHygiene = state.hygieneChecks.filter(h => h.employeeId === emp.id && (h.monthId === monthId || window.app.getMonthId(new Date(h.date+'T12:00:00')) === monthId))
+                                                  .map(h => ({ ...h, ruleId: 'higiene' }));
+                                
+                                const allLogs = [...empLogs, ...empHygiene].sort((a,b) => new Date(a.date || 0) - new Date(b.date || 0));
+                                if(allLogs.length === 0) return;
+                                
+                                const logsList = allLogs.map(l => {
+                                    const rule = state.rules.find(r => r.id === l.ruleId);
+                                    const dateStr = l.date ? l.date.split('-').reverse().join('/') : '--/--/----';
+                                    const obsStr = l.obs ? `<br><span class="text-xs text-gray-500 italic mt-1 block"><i class="fa-solid fa-comment-dots text-gray-400 mr-1"></i> ${l.obs}</span>` : '';
+                                    return `<li class="text-sm text-gray-700 ml-4 border-l-2 border-red-400 pl-3 py-2 mb-1"><span class="font-bold w-24 inline-block text-gray-500">${dateStr}</span><span>${rule ? rule.name : 'Desconhecido'} <b class="text-red-500">(-${window.app.formatPct(rule?.pct||0)})</b></span>${obsStr}</li>`;
+                                }).join('');
+                                sectorLogsHtml += `<div class="mb-4 bg-gray-50 rounded-lg p-4 border border-gray-100"><p class="font-bold text-gray-800 text-lg mb-2"><i class="fa-solid fa-user text-gray-400 mr-2"></i> ${emp.name}</p><ul class="mt-1">${logsList}</ul></div>`;
+                            });
+                            
+                            if(sectorLogsHtml) html += `<div class="mb-8 page-break-avoid"><h3 class="bg-slate-800 text-white px-5 py-3 rounded-xl font-bold mb-4 shadow-sm flex items-center"><i class="fa-solid fa-sitemap mr-3 opacity-70"></i> ${sec.name}</h3><div class="px-2">${sectorLogsHtml}</div></div>`;
+                        });
+                        return html || '<div class="p-12 text-center text-gray-500 text-lg bg-gray-50 rounded-xl border border-gray-100">Nenhum erro registado neste mês para os setores.</div>';
+                    };
+
+                    const allMonthsFound = [...state.logs, ...state.hygieneChecks].map(l => l.monthId || window.app.getMonthId(new Date(l.date+'T12:00:00')));
+                    const months = [...new Set(allMonthsFound), window.app.getMonthId(new Date())].sort().reverse();
+                    
+                    const selectedMonth = document.getElementById('report_month')?.value || months[0];
+                    const monthOpts = months.map(m => `<option value="${m}" ${m===selectedMonth?'selected':''}>${m}</option>`).join('');
+
                     const reportType = state.reportTab; 
 
                     let reportContent = '';
                     let pdfTitle = '';
-                    
-                    const allMonthsFound = [...state.logs, ...state.hygieneChecks].map(l => l.monthId || App.getMonthId(new Date(l.date+'T12:00:00')));
-                    const months = [...new Set(allMonthsFound), App.getMonthId(new Date())].sort().reverse();
-                    const selectedMonth = document.getElementById('report_month')?.value || months[0];
-                    const monthOpts = months.map(m => `<option value="${m}" ${m===selectedMonth?'selected':''}>${m}</option>`).join('');
 
                     if (reportType === 'fechamento') {
                         pdfTitle = 'Relatório de Fechamento Financeiro';
-                        const reportData = App.calculateMonthlyReport(selectedMonth);
+                        const reportData = window.app.calculateMonthlyReport(selectedMonth);
                         const tableRows = reportData.map(row => `
                             <tr class="text-sm border-b hover:bg-gray-50">
                                 <td class="px-3 py-3 font-medium text-gray-800">${row.emp.name}</td>
                                 <td class="px-3 py-3 text-gray-600">${row.sectorName}</td>
-                                <td class="px-3 py-3 text-right text-gray-500">${App.formatBRL(row.baseValue)}</td>
+                                <td class="px-3 py-3 text-right text-gray-500">${window.app.formatBRL(row.baseValue)}</td>
                                 <td class="px-3 py-3 text-center text-xs text-blue-600">${row.proportionMsg}</td>
-                                <td class="px-3 py-3 text-center font-bold text-red-500">${App.formatPct(row.totalDeductionPct)}</td>
-                                <td class="px-3 py-3 text-right font-bold text-emerald-600 bg-emerald-50/20">${App.formatBRL(row.finalValue)}</td>
+                                <td class="px-3 py-3 text-center font-bold text-red-500">${window.app.formatPct(row.totalDeductionPct)}</td>
+                                <td class="px-3 py-3 text-right font-bold text-emerald-600 bg-emerald-50/20">${window.app.formatBRL(row.finalValue)}</td>
                             </tr>
                         `).join('');
 
@@ -679,12 +1218,12 @@
                                         <th class="px-3 py-4 font-semibold text-right rounded-tr-xl">A RECEBER</th>
                                     </tr>
                                 </thead>
-                                <tbody>${tableRows || '<tr><td colspan="6" class="text-center py-10 text-gray-500">Nenhum dado para este mês.</td></tr>'}</tbody>
+                                <tbody>${tableRows || '<tr><td colspan="6" class="text-center py-10 text-gray-500">Sem dados para este mês.</td></tr>'}</tbody>
                             </table>
                         `;
                     } else {
                         pdfTitle = 'Detalhamento de Erros por Setor';
-                        reportContent = App.generateErrorLogsReportHtml(selectedMonth);
+                        reportContent = window.app.generateErrorLogsReportHtml(selectedMonth);
                     }
 
                     let mesExtenso = selectedMonth;
@@ -767,1408 +1306,298 @@
                         </div>
                     `;
                 }
-            },
-
-            // --- Helper de Eventos ---
-            filterColaboradores: () => {
-                const search = document.getElementById('search_colab');
-                const sort = document.getElementById('sort_colab');
-                if(!search || !sort) return;
-                
-                const updateList = () => {
-                    const term = search.value.toLowerCase();
-                    const sortVal = sort.value;
-                    let filtered = state.employees.filter(e => e.name.toLowerCase().includes(term));
-                    
-                    if (sortVal === 'name_asc') {
-                        filtered.sort((a,b) => a.name.localeCompare(b.name));
-                    } else if (sortVal === 'name_desc') {
-                        filtered.sort((a,b) => b.name.localeCompare(a.name));
-                    } else if (sortVal === 'sec_asc') {
-                        filtered.sort((a,b) => {
-                            const sa = state.sectors.find(s=>s.id===a.sectorId)?.name || '';
-                            const sb = state.sectors.find(s=>s.id===b.sectorId)?.name || '';
-                            const secCmp = sa.localeCompare(sb);
-                            return secCmp !== 0 ? secCmp : a.name.localeCompare(b.name);
-                        });
-                    }
-
-                    const tbody = document.getElementById('colab_tbody');
-                    if (filtered.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Nenhum colaborador encontrado.</td></tr>';
-                        return;
-                    }
-
-                    tbody.innerHTML = filtered.map(emp => {
-                        const sec = state.sectors.find(s => s.id === emp.sectorId);
-                        const roleDesc = emp.role === 'lider' ? 'Líder' : 'Liderado';
-                        const baseVal = emp.role === 'lider' ? sec?.val_lider : sec?.val_liderado;
-
-                        return `
-                            <tr class="border-b hover:bg-gray-50 transition-colors">
-                                <td class="px-4 py-3 font-medium text-gray-800">${emp.name}</td>
-                                <td class="px-4 py-3 text-gray-600">${sec ? sec.name : '<span class="text-red-400">Sem Setor</span>'}</td>
-                                <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs font-bold ${emp.role === 'lider' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}">${roleDesc}</span></td>
-                                <td class="px-4 py-3 font-semibold text-emerald-600">${App.formatBRL(baseVal || 0)}</td>
-                                <td class="px-4 py-3 text-right whitespace-nowrap min-w-[100px]">
-                                    <button data-action="showEmployeeForm" data-id="${emp.id}" class="text-blue-500 hover:text-blue-700 mx-1 p-2 rounded hover:bg-blue-50 transition-colors"><i class="fa-solid fa-pen"></i></button>
-                                    <button data-action="confirmDeleteEmployee" data-id="${emp.id}" class="text-red-500 hover:text-red-700 mx-1 p-2 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-                };
-
-                search.addEventListener('input', updateList);
-                sort.addEventListener('change', updateList);
-                updateList();
-            },
-
-            renderLogsHistoryList: () => {
-                const month = document.getElementById('hist_month')?.value;
-                const secId = document.getElementById('hist_sec')?.value;
-                const container = document.getElementById('log_history_container');
-                if(!container) return;
-
-                let logs = state.logs.filter(l => l.monthId === month);
-                let higienes = state.hygieneChecks.filter(h => App.getMonthId(new Date(h.date+'T12:00:00')) === month);
-
-                if (secId) {
-                    logs = logs.filter(l => state.employees.find(e => e.id === l.employeeId)?.sectorId === secId || (l.targetType === 'setor' && l.sectorId === secId));
-                    higienes = higienes.filter(h => state.employees.find(e => e.id === h.employeeId)?.sectorId === secId);
-                }
-
-                logs.sort((a,b) => new Date(b.date) - new Date(a.date));
-                higienes.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-                let htmlContent = '';
-
-                if (logs.length === 0 && higienes.length === 0) {
-                    htmlContent = '<div class="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500"><i class="fa-solid fa-folder-open text-4xl mb-3 text-gray-300"></i><p>Nenhum registo encontrado para este mês.</p></div>';
-                } else {
-                    const logsHtml = logs.map(l => {
-                        const rule = state.rules.find(r => r.id === l.ruleId);
-                        let targetDesc = '';
-                        if (l.targetType === 'setor') {
-                            const sec = state.sectors.find(s => s.id === l.sectorId);
-                            targetDesc = `<span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold mr-2">SETOR</span> ${sec?.name}`;
-                        } else {
-                            const emp = state.employees.find(e => e.id === l.employeeId);
-                            targetDesc = emp?.name || 'Desconhecido';
-                        }
-
-                        return `
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3"><span class="text-sm font-semibold">${new Date(l.date+'T12:00:00').toLocaleDateString('pt-PT')}</span></td>
-                                <td class="px-4 py-3">${targetDesc}</td>
-                                <td class="px-4 py-3"><span class="text-red-500 font-bold">-${App.formatPct(rule?.pct||0)}</span> <span class="text-sm text-gray-600">(${rule?.name})</span></td>
-                                <td class="px-4 py-3 text-sm text-gray-500 italic max-w-xs truncate" title="${l.obs||''}">${l.obs||'-'}</td>
-                                <td class="px-4 py-3 text-right">
-                                    <button data-action="confirmDeleteLog" data-id="${l.id}" class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-                    
-                    if (logsHtml) {
-                        htmlContent += `
-                            <h4 class="font-bold text-gray-700 mb-3 ml-1 mt-6">Regras e Faltas</h4>
-                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-                                <table class="w-full text-left">
-                                    <thead class="bg-gray-50 text-sm text-gray-500 border-b"><tr><th class="px-4 py-3">Data</th><th class="px-4 py-3">Alvo</th><th class="px-4 py-3">Desconto</th><th class="px-4 py-3">Obs</th><th class="px-4 py-3 text-right">Ação</th></tr></thead>
-                                    <tbody>${logsHtml}</tbody>
-                                </table>
-                            </div>
-                        `;
-                    }
-
-                    const higHtml = higienes.map(h => {
-                        const emp = state.employees.find(e => e.id === h.employeeId);
-                        const rule = state.rules.find(r => r.id === 'higiene');
-                        return `
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3"><span class="text-sm font-semibold">${new Date(h.date+'T12:00:00').toLocaleDateString('pt-PT')}</span></td>
-                                <td class="px-4 py-3">${emp?.name || 'Desconhecido'}</td>
-                                <td class="px-4 py-3"><span class="text-red-500 font-bold">-${App.formatPct(rule?.pct||0.05)}</span></td>
-                                <td class="px-4 py-3 text-sm text-gray-500 italic max-w-xs truncate" title="${h.obs||''}">${h.obs||'-'}</td>
-                                <td class="px-4 py-3 text-right">
-                                    <button data-action="confirmDeleteHygiene" data-id="${h.id}" class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-
-                    if (higHtml) {
-                        htmlContent += `
-                            <h4 class="font-bold text-gray-700 mb-3 ml-1 mt-6"><i class="fa-solid fa-hands-bubbles text-blue-500 mr-2"></i> Falhas de Higiene</h4>
-                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-                                <table class="w-full text-left">
-                                    <thead class="bg-gray-50 text-sm text-gray-500 border-b"><tr><th class="px-4 py-3">Data</th><th class="px-4 py-3">Colaborador</th><th class="px-4 py-3">Desconto</th><th class="px-4 py-3">Obs</th><th class="px-4 py-3 text-right">Ação</th></tr></thead>
-                                    <tbody>${higHtml}</tbody>
-                                </table>
-                            </div>
-                        `;
-                    }
-                }
-
-                container.innerHTML = htmlContent;
-
-                document.getElementById('hist_month')?.addEventListener('change', App.renderLogsHistoryList);
-                document.getElementById('hist_sec')?.addEventListener('change', App.renderLogsHistoryList);
-            },
-
-            calculateMonthlyReport: (monthId) => {
-                return state.employees.map(emp => {
-                    const sector = state.sectors.find(s => s.id === emp.sectorId);
-                    const baseValue = emp.role === 'lider' ? sector?.val_lider : sector?.val_liderado;
-                    
-                    if (!baseValue) return null;
-
-                    let finalBase = baseValue;
-                    let proportionMsg = '-';
-                    const proration = state.prorations.find(p => p.employeeId === emp.id && p.monthId === monthId);
-                    
-                    if (proration) {
-                        finalBase = (baseValue / proration.totalDays) * proration.daysWorked;
-                        proportionMsg = `${proration.daysWorked}/${proration.totalDays}`;
-                    }
-
-                    const empLogs = state.logs.filter(l => l.monthId === monthId && l.employeeId === emp.id);
-                    const sectorLogs = state.logs.filter(l => l.monthId === monthId && l.targetType === 'setor' && l.sectorId === emp.sectorId);
-                    const higLogs = state.hygieneChecks.filter(h => App.getMonthId(new Date(h.date+'T12:00:00')) === monthId && h.employeeId === emp.id);
-
-                    const ruleCounts = {};
-                    let totalDeductionPct = 0;
-
-                    const addDeduction = (ruleId) => {
-                        const rule = state.rules.find(r => r.id === ruleId);
-                        if (!rule) return;
-                        if (!ruleCounts[ruleId]) ruleCounts[ruleId] = 0;
-                        if (ruleCounts[ruleId] < rule.max) {
-                            ruleCounts[ruleId]++;
-                            totalDeductionPct += rule.pct;
-                        }
-                    };
-
-                    empLogs.forEach(l => addDeduction(l.ruleId));
-                    sectorLogs.forEach(l => addDeduction(l.ruleId));
-                    
-                    const higRule = state.rules.find(r => r.id === 'higiene');
-                    if (higRule) {
-                        higLogs.forEach(() => {
-                            totalDeductionPct += higRule.pct; 
-                        });
-                    }
-
-                    if (totalDeductionPct > 1) totalDeductionPct = 1;
-
-                    const finalValue = Math.max(0, finalBase - (finalBase * totalDeductionPct));
-
-                    return {
-                        emp,
-                        sectorName: sector?.name || 'Sem Setor',
-                        baseValue,
-                        finalBase,
-                        proportionMsg,
-                        totalDeductionPct,
-                        finalValue
-                    };
-                }).filter(Boolean).sort((a,b) => a.sectorName.localeCompare(b.sectorName) || a.emp.name.localeCompare(b.emp.name));
-            },
-
-            generateErrorLogsReportHtml: (monthId) => {
-                let html = '';
-                [...state.sectors].sort((a,b)=>a.name.localeCompare(b.name)).forEach(sec => {
-                    const emps = state.employees.filter(e => e.sectorId === sec.id).sort((a,b)=>a.name.localeCompare(b.name));
-                    if (emps.length === 0) return;
-                    
-                    let secHtml = '';
-                    emps.forEach(emp => {
-                        const logs = state.logs.filter(l => l.monthId === monthId && l.employeeId === emp.id);
-                        const secLogs = state.logs.filter(l => l.monthId === monthId && l.targetType === 'setor' && l.sectorId === emp.sectorId);
-                        const higLogs = state.hygieneChecks.filter(h => App.getMonthId(new Date(h.date+'T12:00:00')) === monthId && h.employeeId === emp.id);
-                        
-                        const allLogs = [...logs, ...secLogs, ...higLogs].sort((a,b)=>new Date(a.date) - new Date(b.date));
-                        
-                        if (allLogs.length > 0) {
-                            secHtml += `<div class="mb-3 ml-4">
-                                <h5 class="font-bold text-gray-700 border-b border-gray-200 pb-1 mb-2">${emp.name}</h5>
-                                <ul class="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
-                                    ${allLogs.map(l => {
-                                        const date = new Date((l.date||l.date)+'T12:00:00').toLocaleDateString('pt-PT');
-                                        const rule = state.rules.find(r => r.id === (l.ruleId || 'higiene'));
-                                        const desc = l.targetType === 'setor' ? '(FALHA COLETIVA SETOR)' : '';
-                                        return `<li><b>${date}</b> - <span class="text-red-500 font-semibold">-${App.formatPct(rule?.pct||0)}</span> ${rule?.name} ${desc} <span class="italic text-gray-400"> ${l.obs||''}</span></li>`;
-                                    }).join('')}
-                                </ul>
-                            </div>`;
-                        }
-                    });
-
-                    if (secHtml) {
-                        html += `<div class="mb-6 page-break-avoid"><h4 class="bg-gray-100 px-4 py-2 font-bold text-gray-800 rounded-t-lg border-b-2 border-slate-300">${sec.name}</h4><div class="p-4 border border-t-0 border-gray-100 rounded-b-lg">${secHtml}</div></div>`;
-                    }
-                });
-                return html || '<p class="text-center text-gray-500 py-10">Não foram registadas ocorrências neste mês.</p>';
-            },
-
-            // --- Ações CRUD ---
-            saveDoc: async (coll, data, redirectView = null) => {
-                App.toast('A guardar...', 'info');
-                try {
-                    if(!auth?.currentUser) {
-                        App.toast('Sem permissão (faça login primeiro)', 'error');
-                        return;
-                    }
-                    if (!data.id) data.id = App.generateId();
-                    
-                    const uid = auth.currentUser.uid;
-                    await setDoc(doc(db, `users/${uid}/${coll}`, data.id), data);
-                    
-                    App.toast('Guardado com sucesso!', 'success');
-                    App.closeModal();
-                    if (redirectView) App.navigate(redirectView);
-                } catch(e) {
-                    console.error(e);
-                    App.toast('Erro ao guardar: ' + e.message, 'error');
-                }
-            },
-
-            deleteDoc: async (coll, id, confirmMsg = null) => {
-                if(!auth?.currentUser) return;
-                const processDelete = async () => {
-                    try {
-                        await deleteDoc(doc(db, `users/${auth.currentUser.uid}/${coll}`, id));
-                        App.toast('Removido com sucesso!', 'success');
-                        App.closeModal();
-                        if(state.view === 'lancamentos' && state.logTab === 'historico') App.renderLogsHistoryList();
-                    } catch(e) {
-                        console.error(e);
-                        App.toast('Erro ao remover: ' + e.message, 'error');
-                    }
-                };
-                if (confirmMsg) App.confirmAction(confirmMsg, `delete_${coll}_now`, id);
-                else processDelete();
-            },
-
-            // --- Eventos Globais (Delegação) ---
-            bindEvents: () => {
-                document.addEventListener('click', (e) => {
-                    const btn = e.target.closest('button, a, label');
-                    if (!btn) return;
-                    
-                    const action = btn.dataset.action;
-                    const nav = btn.dataset.nav;
-                    const dataId = btn.dataset.id;
-
-                    if (nav) {
-                        e.preventDefault();
-                        if (state.user) App.navigate(nav);
-                    }
-                    
-                    if (action) {
-                        e.preventDefault();
-                        
-                        switch(action) {
-                            case 'loginGoogle':
-                                signInWithPopup(auth, new GoogleAuthProvider()).catch(err => App.toast(err.message, 'error'));
-                                break;
-                            case 'loginAnon':
-                                signInAnonymously(auth).catch(err => App.toast(err.message, 'error'));
-                                break;
-                            case 'logout':
-                                signOut(auth).then(() => window.location.reload());
-                                break;
-                            case 'toggleMenu':
-                                document.getElementById('mobile-menu').classList.toggle('hidden');
-                                break;
-                            case 'closeModal':
-                                App.closeModal();
-                                break;
-                                
-                            case 'showEmployeeForm':
-                                {
-                                    const emp = state.employees.find(x => x.id === dataId) || { id: '', name: '', role: 'liderado', sectorId: '' };
-                                    const opts = state.sectors.map(s => `<option value="${s.id}" ${s.id === emp.sectorId ? 'selected':''}>${s.name}</option>`).join('');
-                                    App.openModal(`
-                                        <div class="p-6">
-                                            <h3 class="text-xl font-bold mb-4">${emp.id ? 'Editar' : 'Novo'} Colaborador</h3>
-                                            <form id="emp_form" class="space-y-4">
-                                                <input type="hidden" id="emp_id" value="${emp.id}">
-                                                <div><label class="block text-sm font-semibold mb-1">Nome Completo</label><input type="text" id="emp_name" required value="${emp.name}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                <div><label class="block text-sm font-semibold mb-1">Setor</label><select id="emp_sector" required class="w-full border p-2 rounded focus:ring-2 outline-none"><option value="">Selecione...</option>${opts}</select></div>
-                                                <div><label class="block text-sm font-semibold mb-1">Perfil</label><select id="emp_role" class="w-full border p-2 rounded flex-1 focus:ring-2 outline-none"><option value="liderado" ${emp.role==='liderado'?'selected':''}>Liderado</option><option value="lider" ${emp.role==='lider'?'selected':''}>Líder</option></select></div>
-                                                <div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button></div>
-                                            </form>
-                                        </div>
-                                    `);
-                                    document.getElementById('emp_form').onsubmit = (ev) => {
-                                        ev.preventDefault();
-                                        App.saveDoc('employees', {
-                                            id: document.getElementById('emp_id').value,
-                                            name: document.getElementById('emp_name').value.trim(),
-                                            sectorId: document.getElementById('emp_sector').value,
-                                            role: document.getElementById('emp_role').value
-                                        });
-                                    };
-                                }
-                                break;
-                            case 'showSectorForm':
-                                {
-                                    const sec = state.sectors.find(x => x.id === dataId) || { id: '', name: '', val_liderado: 0, val_lider: 0 };
-                                    App.openModal(`
-                                        <div class="p-6">
-                                            <h3 class="text-xl font-bold mb-4">${sec.id ? 'Editar' : 'Novo'} Setor</h3>
-                                            <form id="sec_form" class="space-y-4">
-                                                <input type="hidden" id="sec_id" value="${sec.id}">
-                                                <div><label class="block text-sm font-semibold mb-1">Nome do Setor</label><input type="text" id="sec_name" required value="${sec.name}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                <div class="flex space-x-4">
-                                                    <div><label class="block text-sm font-semibold mb-1">Base Liderado</label><input type="number" step="0.01" id="sec_liderado" required value="${sec.val_liderado}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                    <div><label class="block text-sm font-semibold mb-1">Base Líder</label><input type="number" step="0.01" id="sec_lider" required value="${sec.val_lider}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                </div>
-                                                <div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button></div>
-                                            </form>
-                                        </div>
-                                    `);
-                                    document.getElementById('sec_form').onsubmit = (ev) => {
-                                        ev.preventDefault();
-                                        App.saveDoc('sectors', {
-                                            id: document.getElementById('sec_id').value,
-                                            name: document.getElementById('sec_name').value.trim(),
-                                            val_liderado: parseFloat(document.getElementById('sec_liderado').value),
-                                            val_lider: parseFloat(document.getElementById('sec_lider').value)
-                                        });
-                                    };
-                                }
-                                break;
-                            case 'showRuleForm':
-                                {
-                                    const rule = state.rules.find(x => x.id === dataId) || { id: '', name: '', pct: 0.05, max: 1 };
-                                    App.openModal(`
-                                        <div class="p-6">
-                                            <h3 class="text-xl font-bold mb-4">${rule.id ? 'Editar' : 'Nova'} Regra</h3>
-                                            <form id="rule_form" class="space-y-4">
-                                                <input type="hidden" id="rule_id" value="${rule.id}">
-                                                ${rule.id === 'higiene' ? '<p class="text-sm text-blue-600 mb-2 font-medium">Você está editando a regra reservada de Higiene Pessoal.</p>' : ''}
-                                                <div><label class="block text-sm font-semibold mb-1">Descrição</label><input type="text" id="rule_name" ${rule.id==='higiene'?'readonly':''} required value="${rule.name}" class="w-full border p-2 rounded focus:ring-2 outline-none bg-gray-50"></div>
-                                                <div class="flex space-x-4">
-                                                    <div><label class="block text-sm font-semibold mb-1">Desconto (%)</label><input type="number" step="0.01" min="0" max="1" id="rule_pct" required value="${rule.pct}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                    <div><label class="block text-sm font-semibold mb-1">Máx Ocorrências</label><input type="number" step="1" id="rule_max" required value="${rule.max}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                </div>
-                                                <div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button></div>
-                                            </form>
-                                        </div>
-                                    `);
-                                    document.getElementById('rule_form').onsubmit = (ev) => {
-                                        ev.preventDefault();
-                                        App.saveDoc('rules', {
-                                            id: document.getElementById('rule_id').value || (dataId==='higiene'?'higiene':App.generateId()),
-                                            name: document.getElementById('rule_name').value.trim(),
-                                            pct: parseFloat(document.getElementById('rule_pct').value),
-                                            max: parseInt(document.getElementById('rule_max').value)
-                                        });
-                                    };
-                                }
-                                break;
-                            case 'showProrationForm':
-                                {
-                                    const opts = state.employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-                                    App.openModal(`
-                                        <div class="p-6">
-                                            <h3 class="text-xl font-bold mb-4">Novo Acerto Proporcional</h3>
-                                            <form id="pro_form" class="space-y-4">
-                                                <div><label class="block text-sm font-semibold mb-1">Mês Relativo</label><input type="month" id="pro_month" required value="${App.getMonthId(new Date())}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                <div><label class="block text-sm font-semibold mb-1">Colaborador</label><select id="pro_emp" required class="w-full border p-2 rounded focus:ring-2 outline-none"><option value="">Selecione...</option>${opts}</select></div>
-                                                <div class="flex space-x-4">
-                                                    <div><label class="block text-sm font-semibold mb-1">Dias do Mês/Base</label><input type="number" id="pro_total" required value="30" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                    <div><label class="block text-sm font-semibold mb-1">Dias Trabalhados</label><input type="number" id="pro_worked" required value="1" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                </div>
-                                                <div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button><button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded">Gravar Proporcional</button></div>
-                                            </form>
-                                        </div>
-                                    `);
-                                    document.getElementById('pro_form').onsubmit = (ev) => {
-                                        ev.preventDefault();
-                                        App.saveDoc('prorations', {
-                                            id: App.generateId(),
-                                            employeeId: document.getElementById('pro_emp').value,
-                                            monthId: document.getElementById('pro_month').value,
-                                            totalDays: parseInt(document.getElementById('pro_total').value),
-                                            daysWorked: parseInt(document.getElementById('pro_worked').value)
-                                        });
-                                    };
-                                }
-                                break;
-                            case 'showImportModal':
-                                App.openModal(`
-                                    <div class="p-6 text-center">
-                                        <h3 class="text-xl font-bold mb-4 text-gray-800"><i class="fa-solid fa-file-excel text-emerald-600 mr-2"></i> Importar Colaboradores</h3>
-                                        <p class="text-gray-600 mb-6 text-sm">Selecione um ficheiro Excel (.xlsx) para importar em massa. A primeira folha será lida. <br><br> As colunas esperadas são: <br><b>Nome</b> | <b>Setor</b> | <b>Perfil (liderado/lider)</b></p>
-                                        <div class="flex justify-center flex-col items-center">
-                                            <input type="file" id="import_file" accept=".xlsx, .xls" class="mb-6 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
-                                            <div class="flex space-x-3"><button type="button" data-action="closeModal" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg">Cancelar</button><button type="button" data-action="processExcel" class="px-6 py-2 bg-emerald-600 font-bold text-white rounded-lg shadow-sm">Iniciar Leitura</button></div>
-                                        </div>
-                                    </div>
-                                `);
-                                break;
-                            case 'processExcel':
-                                {
-                                    const fileInput = document.getElementById('import_file');
-                                    if(!fileInput || !fileInput.files[0]) {
-                                        App.toast("Selecione um ficheiro primeiro.", "error");
-                                        return;
-                                    }
-                                    const file = fileInput.files[0];
-                                    const reader = new FileReader();
-                                    reader.onload = async (e) => {
-                                        try {
-                                            const data = new Uint8Array(e.target.result);
-                                            const workbook = XLSX.read(data, {type: 'array'});
-                                            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                                            const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
-                                            
-                                            let added = 0;
-                                            App.toast("A processar e importar...", "info");
-                                            for (let i = 1; i < jsonData.length; i++) {
-                                                const row = jsonData[i];
-                                                if(!row || !row[0]) continue;
-                                                const nome = row[0];
-                                                const sName = row[1] ? String(row[1]).trim() : '';
-                                                const rName = String(row[2] || '').toLowerCase().includes('lider') ? 'lider' : 'liderado';
-                                                
-                                                let sectorId = '';
-                                                if (sName) {
-                                                    const existingSec = state.sectors.find(s => s.name.toLowerCase() === sName.toLowerCase());
-                                                    if(existingSec) sectorId = existingSec.id;
-                                                    else {
-                                                        const newSec = { id: App.generateId(), name: sName, val_liderado: 100, val_lider: 200 };
-                                                        await setDoc(doc(db, `users/${auth.currentUser.uid}/sectors`, newSec.id), newSec);
-                                                        state.sectors.push(newSec);
-                                                        sectorId = newSec.id;
-                                                    }
-                                                }
-                                                
-                                                await setDoc(doc(db, `users/${auth.currentUser.uid}/employees`, App.generateId()), { name: nome, role: rName, sectorId });
-                                                added++;
-                                            }
-                                            App.toast(`${added} colaboradores importados.`, "success");
-                                            App.closeModal();
-                                        } catch (err) {
-                                            App.toast("Erro ao processar: " + err.message, "error");
-                                        }
-                                    };
-                                    reader.readAsArrayBuffer(file);
-                                }
-                                break;
-                                
-                            case 'setLogTab':
-                                state.logTab = dataId;
-                                App.render();
-                                break;
-                            case 'setReportTab':
-                                state.reportTab = dataId;
-                                App.render();
-                                break;
-
-                            case 'print': window.print(); break;
-
-                            case 'delete_employees_now': App.deleteDoc('employees', dataId); break;
-                            case 'delete_sectors_now': App.deleteDoc('sectors', dataId); break;
-                            case 'delete_rules_now': App.deleteDoc('rules', dataId); break;
-                            case 'delete_logs_now': App.deleteDoc('logs', dataId); break;
-                            case 'delete_prorations_now': App.deleteDoc('prorations', dataId); break;
-                            case 'delete_hygieneChecks_now': App.deleteDoc('hygieneChecks', dataId); break;
-                            case 'delete_logo_now':
-                                setDoc(doc(db, `users/${auth.currentUser.uid}/settings`, 'global'), { logo: '' }, { merge: true }).then(() => {
-                                    state.settings.logo = '';
-                                    App.closeModal();
-                                    App.render();
-                                    App.toast("Logo removida", "success");
-                                });
-                                break;
-
-                            case 'confirmDeleteEmployee': App.confirmAction('Remover colaborador e todos os seus registos futuros associados?', 'delete_employees_now', dataId); break;
-                            case 'confirmDeleteSector': App.confirmAction('Aviso: Certifique-se que não há colaboradores neste setor!', 'delete_sectors_now', dataId); break;
-                            case 'confirmDeleteRule': App.confirmAction('Remover critério?', 'delete_rules_now', dataId); break;
-                            case 'confirmDeleteLog': App.confirmAction('Apagar este lançamento de desconto?', 'delete_logs_now', dataId); break;
-                            case 'confirmDeleteProration': App.confirmAction('Apagar cálculo proporcional?', 'delete_prorations_now', dataId); break;
-                            case 'confirmDeleteHygiene': App.confirmAction('Apagar falha de higiene?', 'delete_hygieneChecks_now', dataId); break;
-                            case 'confirmRemoveLogo': App.confirmAction('Remover logótipo da empresa?', 'delete_logo_now'); break;
-                        }
-                    }
-                });
-                
-                document.addEventListener('change', (e) => {
-                    const el = e.target;
-                    
-                    if (el.name === 'log_type') {
-                        if (el.value === 'setor') {
-                            document.getElementById('div_emp').classList.add('hidden');
-                            document.getElementById('div_sec').classList.remove('hidden');
-                            document.getElementById('log_emp').required = false;
-                            document.getElementById('log_sec').required = true;
-                        } else {
-                            document.getElementById('div_sec').classList.add('hidden');
-                            document.getElementById('div_emp').classList.remove('hidden');
-                            document.getElementById('log_emp').required = true;
-                            document.getElementById('log_sec').required = false;
-                        }
-                    }
-                    
-                    if (el.id === 'higiene_date') {
-                        App.render();
-                    }
-                    if (el.classList.contains('hygiene-checkbox')) {
-                        const isChecked = el.checked;
-                        const empid = el.dataset.empid;
-                        const dStr = el.dataset.date;
-                        if (isChecked) {
-                            App.render();
-                        } else {
-                            const hCheck = state.hygieneChecks.find(h => h.employeeId === empid && h.date === dStr);
-                            if (hCheck) {
-                                deleteDoc(doc(db, `users/${auth.currentUser.uid}/hygieneChecks`, hCheck.id));
-                            }
-                        }
-                    }
-                    if (el.id === 'report_month') {
-                        App.render();
-                    }
-                    if (el.id === 'logo_upload') {
-                        const file = el.files[0];
-                        if(file) {
-                            const reader = new FileReader();
-                            reader.onload = (ev) => {
-                                const b64 = ev.target.result;
-                                setDoc(doc(db, `users/${auth.currentUser.uid}/settings`, 'global'), { logo: b64 }, { merge: true }).then(() => {
-                                    state.settings.logo = b64;
-                                    App.render();
-                                    App.toast("Logo Atualizada!", "success");
-                                });
-                            };
-                            reader.readAsDataURL(file);
-                        }
-                    }
-                });
-
-                document.addEventListener('focusout', (e) => {
-                    const el = e.target;
-                    if (el.classList.contains('hygiene-obs-input')) {
-                        const empid = el.dataset.empid;
-                        const dStr = el.dataset.date;
-                        const obs = el.value.trim();
-                        const hCheck = state.hygieneChecks.find(h => h.employeeId === empid && h.date === dStr);
-                        if (hCheck) {
-                            if (hCheck.obs !== obs) {
-                                setDoc(doc(db, `users/${auth.currentUser.uid}/hygieneChecks`, hCheck.id), { obs }, {merge:true});
-                            }
-                        } else {
-                            const nid = App.generateId();
-                            setDoc(doc(db, `users/${auth.currentUser.uid}/hygieneChecks`, nid), {
-                                id: nid, employeeId: empid, date: dStr, obs: obs 
-                            });
-                        }
-                    }
-                });
-
-                document.addEventListener('input', (e) => {
-                    const el = e.target;
-                    if (el.id === 'search_higiene') {
-                        const term = el.value.toLowerCase();
-                        document.querySelectorAll('.higiene-emp-row').forEach(row => {
-                            if (row.dataset.name.includes(term)) row.classList.remove('hidden');
-                            else row.classList.add('hidden');
-                        });
-                        document.querySelectorAll('.sector-group').forEach(grp => {
-                            const shows = grp.querySelectorAll('.higiene-emp-row:not(.hidden)');
-                            if(shows.length === 0) grp.classList.add('hidden');
-                            else grp.classList.remove('hidden');
-                        });
-                    }
-                    if (el.id === 'log_emp_search') {
-                         const search = el.value.toLowerCase();
-                         Array.from(document.getElementById('log_emp').options).forEach(opt => {
-                             if(opt.value==="") return;
-                             if(opt.text.toLowerCase().includes(search)) opt.classList.remove('hidden');
-                             else opt.classList.add('hidden');
-                         });
-                    }
-                });
-
-                document.addEventListener('submit', (e) => {
-                    const el = e.target;
-                    if (el.id === 'log_form') {
-                        e.preventDefault();
-                        const data = {
-                            id: App.generateId(),
-                            date: document.getElementById('log_date').value,
-                            monthId: App.getMonthId(new Date(document.getElementById('log_date').value+'T12:00:00')),
-                            ruleId: document.getElementById('log_rule').value,
-                            obs: document.getElementById('log_obs').value.trim()
-                        };
-                        const typeOptions = Array.from(document.getElementsByName('log_type'));
-                        data.targetType = typeOptions.find(o=>o.checked).value;
-
-                        if (data.targetType === 'setor') data.sectorId = document.getElementById('log_sec').value;
-                        else data.employeeId = document.getElementById('log_emp').value;
-                        
-                        App.saveDoc('logs', data, 'lancamentos');
-                        document.getElementById('log_form').reset();
-                    }
-                    if (el.id === 'form-settings') {
-                        e.preventDefault();
-                        App.toast('Definições atualizadas!', 'success');
-                    }
-                });
             }
         };
 
-
-            // --- Helper de Eventos ---
-            filterColaboradores: () => {
-                const search = document.getElementById('search_colab');
-                const sort = document.getElementById('sort_colab');
-                if(!search || !sort) return;
-                
-                const updateList = () => {
-                    const term = search.value.toLowerCase();
-                    const sortVal = sort.value;
-                    let filtered = state.employees.filter(e => e.name.toLowerCase().includes(term));
-                    
-                    if (sortVal === 'name_asc') {
-                        filtered.sort((a,b) => a.name.localeCompare(b.name));
-                    } else if (sortVal === 'name_desc') {
-                        filtered.sort((a,b) => b.name.localeCompare(a.name));
-                    } else if (sortVal === 'sec_asc') {
-                        filtered.sort((a,b) => {
-                            const sa = state.sectors.find(s=>s.id===a.sectorId)?.name || '';
-                            const sb = state.sectors.find(s=>s.id===b.sectorId)?.name || '';
-                            const secCmp = sa.localeCompare(sb);
-                            return secCmp !== 0 ? secCmp : a.name.localeCompare(b.name);
-                        });
-                    }
-
-                    const tbody = document.getElementById('colab_tbody');
-                    if (filtered.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-gray-500">Nenhum colaborador encontrado.</td></tr>';
-                        return;
-                    }
-
-                    tbody.innerHTML = filtered.map(emp => {
-                        const sec = state.sectors.find(s => s.id === emp.sectorId);
-                        const roleDesc = emp.role === 'lider' ? 'Líder' : 'Liderado';
-                        const baseVal = emp.role === 'lider' ? sec?.val_lider : sec?.val_liderado;
-
-                        return `
-                            <tr class="border-b hover:bg-gray-50 transition-colors">
-                                <td class="px-4 py-3 font-medium text-gray-800">${emp.name}</td>
-                                <td class="px-4 py-3 text-gray-600">${sec ? sec.name : '<span class="text-red-400">Sem Setor</span>'}</td>
-                                <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs font-bold ${emp.role === 'lider' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}">${roleDesc}</span></td>
-                                <td class="px-4 py-3 font-semibold text-emerald-600">${App.formatBRL(baseVal || 0)}</td>
-                                <td class="px-4 py-3 text-right whitespace-nowrap min-w-[100px]">
-                                    <button data-action="showEmployeeForm" data-id="${emp.id}" class="text-blue-500 hover:text-blue-700 mx-1 p-2 rounded hover:bg-blue-50 transition-colors"><i class="fa-solid fa-pen"></i></button>
-                                    <button data-action="confirmDeleteEmployee" data-id="${emp.id}" class="text-red-500 hover:text-red-700 mx-1 p-2 rounded hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-                };
-
-                search.addEventListener('input', updateList);
-                sort.addEventListener('change', updateList);
-                updateList();
-            },
-
-            renderLogsHistoryList: () => {
-                const month = document.getElementById('hist_month')?.value;
-                const secId = document.getElementById('hist_sec')?.value;
-                const container = document.getElementById('log_history_container');
-                if(!container) return;
-
-                let logs = state.logs.filter(l => l.monthId === month);
-                let higienes = state.hygieneChecks.filter(h => App.getMonthId(new Date(h.date+'T12:00:00')) === month);
-
-                if (secId) {
-                    logs = logs.filter(l => state.employees.find(e => e.id === l.employeeId)?.sectorId === secId || (l.targetType === 'setor' && l.sectorId === secId));
-                    higienes = higienes.filter(h => state.employees.find(e => e.id === h.employeeId)?.sectorId === secId);
-                }
-
-                logs.sort((a,b) => new Date(b.date) - new Date(a.date));
-                higienes.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-                fetch('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css').then(()=>{}).catch(()=>{});
-
-                let htmlContent = '';
-
-                if (logs.length === 0 && higienes.length === 0) {
-                    htmlContent = '<div class="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500"><i class="fa-solid fa-folder-open text-4xl mb-3 text-gray-300"></i><p>Nenhum registo encontrado para este mês.</p></div>';
-                } else {
-                    const logsHtml = logs.map(l => {
-                        const rule = state.rules.find(r => r.id === l.ruleId);
-                        let targetDesc = '';
-                        if (l.targetType === 'setor') {
-                            const sec = state.sectors.find(s => s.id === l.sectorId);
-                            targetDesc = `<span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs font-bold mr-2">SETOR</span> ${sec?.name}`;
-                        } else {
-                            const emp = state.employees.find(e => e.id === l.employeeId);
-                            targetDesc = emp?.name || 'Desconhecido';
-                        }
-
-                        return `
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3"><span class="text-sm font-semibold">${new Date(l.date+'T12:00:00').toLocaleDateString('pt-PT')}</span></td>
-                                <td class="px-4 py-3">${targetDesc}</td>
-                                <td class="px-4 py-3"><span class="text-red-500 font-bold">-${App.formatPct(rule?.pct||0)}</span> <span class="text-sm text-gray-600">(${rule?.name})</span></td>
-                                <td class="px-4 py-3 text-sm text-gray-500 italic max-w-xs truncate" title="${l.obs||''}">${l.obs||'-'}</td>
-                                <td class="px-4 py-3 text-right">
-                                    <button data-action="confirmDeleteLog" data-id="${l.id}" class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-                    
-                    if (logsHtml) {
-                        htmlContent += `
-                            <h4 class="font-bold text-gray-700 mb-3 ml-1 mt-6">Regras e Faltas</h4>
-                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-                                <table class="w-full text-left">
-                                    <thead class="bg-gray-50 text-sm text-gray-500 border-b"><tr><th class="px-4 py-3">Data</th><th class="px-4 py-3">Alvo</th><th class="px-4 py-3">Desconto</th><th class="px-4 py-3">Obs</th><th class="px-4 py-3 text-right">Ação</th></tr></thead>
-                                    <tbody>${logsHtml}</tbody>
-                                </table>
-                            </div>
-                        `;
-                    }
-
-                    const higHtml = higienes.map(h => {
-                        const emp = state.employees.find(e => e.id === h.employeeId);
-                        const rule = state.rules.find(r => r.id === 'higiene');
-                        return `
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="px-4 py-3"><span class="text-sm font-semibold">${new Date(h.date+'T12:00:00').toLocaleDateString('pt-PT')}</span></td>
-                                <td class="px-4 py-3">${emp?.name || 'Desconhecido'}</td>
-                                <td class="px-4 py-3"><span class="text-red-500 font-bold">-${App.formatPct(rule?.pct||0.05)}</span></td>
-                                <td class="px-4 py-3 text-sm text-gray-500 italic max-w-xs truncate" title="${h.obs||''}">${h.obs||'-'}</td>
-                                <td class="px-4 py-3 text-right">
-                                    <button data-action="confirmDeleteHygiene" data-id="${h.id}" class="text-red-500 hover:text-red-700 p-2 rounded hover:bg-red-50"><i class="fa-solid fa-trash"></i></button>
-                                </td>
-                            </tr>
-                        `;
-                    }).join('');
-
-                    if (higHtml) {
-                        htmlContent += `
-                            <h4 class="font-bold text-gray-700 mb-3 ml-1 mt-6"><i class="fa-solid fa-hands-bubbles text-blue-500 mr-2"></i> Falhas de Higiene</h4>
-                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
-                                <table class="w-full text-left">
-                                    <thead class="bg-gray-50 text-sm text-gray-500 border-b"><tr><th class="px-4 py-3">Data</th><th class="px-4 py-3">Colaborador</th><th class="px-4 py-3">Desconto</th><th class="px-4 py-3">Obs</th><th class="px-4 py-3 text-right">Ação</th></tr></thead>
-                                    <tbody>${higHtml}</tbody>
-                                </table>
-                            </div>
-                        `;
-                    }
-                }
-
-                container.innerHTML = htmlContent;
-
-                document.getElementById('hist_month')?.addEventListener('change', App.renderLogsHistoryList);
-                document.getElementById('hist_sec')?.addEventListener('change', App.renderLogsHistoryList);
-            },
-
-            calculateMonthlyReport: (monthId) => {
-                return state.employees.map(emp => {
-                    const sector = state.sectors.find(s => s.id === emp.sectorId);
-                    const baseValue = emp.role === 'lider' ? sector?.val_lider : sector?.val_liderado;
-                    
-                    if (!baseValue) return null;
-
-                    let finalBase = baseValue;
-                    let proportionMsg = '-';
-                    const proration = state.prorations.find(p => p.employeeId === emp.id && p.monthId === monthId);
-                    
-                    if (proration) {
-                        finalBase = (baseValue / proration.totalDays) * proration.daysWorked;
-                        proportionMsg = `${proration.daysWorked}/${proration.totalDays}`;
-                    }
-
-                    const empLogs = state.logs.filter(l => l.monthId === monthId && l.employeeId === emp.id);
-                    const sectorLogs = state.logs.filter(l => l.monthId === monthId && l.targetType === 'setor' && l.sectorId === emp.sectorId);
-                    const higLogs = state.hygieneChecks.filter(h => App.getMonthId(new Date(h.date+'T12:00:00')) === monthId && h.employeeId === emp.id);
-
-                    const ruleCounts = {};
-                    let totalDeductionPct = 0;
-
-                    const addDeduction = (ruleId) => {
-                        const rule = state.rules.find(r => r.id === ruleId);
-                        if (!rule) return;
-                        if (!ruleCounts[ruleId]) ruleCounts[ruleId] = 0;
-                        if (ruleCounts[ruleId] < rule.max) {
-                            ruleCounts[ruleId]++;
-                            totalDeductionPct += rule.pct;
-                        }
-                    };
-
-                    empLogs.forEach(l => addDeduction(l.ruleId));
-                    sectorLogs.forEach(l => addDeduction(l.ruleId));
-                    
-                    const higRule = state.rules.find(r => r.id === 'higiene');
-                    if (higRule) {
-                        higLogs.forEach(() => {
-                            totalDeductionPct += higRule.pct; 
-                        });
-                    }
-
-                    if (totalDeductionPct > 1) totalDeductionPct = 1;
-
-                    const finalValue = Math.max(0, finalBase - (finalBase * totalDeductionPct));
-
-                    return {
-                        emp,
-                        sectorName: sector?.name || 'Sem Setor',
-                        baseValue,
-                        finalBase,
-                        proportionMsg,
-                        totalDeductionPct,
-                        finalValue
-                    };
-                }).filter(Boolean).sort((a,b) => a.sectorName.localeCompare(b.sectorName) || a.emp.name.localeCompare(b.emp.name));
-            },
-
-            generateErrorLogsReportHtml: (monthId) => {
-                let html = '';
-                [...state.sectors].sort((a,b)=>a.name.localeCompare(b.name)).forEach(sec => {
-                    const emps = state.employees.filter(e => e.sectorId === sec.id).sort((a,b)=>a.name.localeCompare(b.name));
-                    if (emps.length === 0) return;
-                    
-                    let secHtml = '';
-                    emps.forEach(emp => {
-                        const logs = state.logs.filter(l => l.monthId === monthId && l.employeeId === emp.id);
-                        const secLogs = state.logs.filter(l => l.monthId === monthId && l.targetType === 'setor' && l.sectorId === emp.sectorId);
-                        const higLogs = state.hygieneChecks.filter(h => App.getMonthId(new Date(h.date+'T12:00:00')) === monthId && h.employeeId === emp.id);
-                        
-                        const allLogs = [...logs, ...secLogs, ...higLogs].sort((a,b)=>new Date(a.date) - new Date(b.date));
-                        
-                        if (allLogs.length > 0) {
-                            secHtml += `<div class="mb-3 ml-4">
-                                <h5 class="font-bold text-gray-700 border-b border-gray-200 pb-1 mb-2">${emp.name}</h5>
-                                <ul class="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
-                                    ${allLogs.map(l => {
-                                        const date = new Date((l.date||l.date)+'T12:00:00').toLocaleDateString('pt-PT');
-                                        const rule = state.rules.find(r => r.id === (l.ruleId || 'higiene'));
-                                        const desc = l.targetType === 'setor' ? '(FALHA COLETIVA SETOR)' : '';
-                                        return `<li><b>${date}</b> - <span class="text-red-500 font-semibold">-${App.formatPct(rule?.pct||0)}</span> ${rule?.name} ${desc} <span class="italic text-gray-400"> ${l.obs||''}</span></li>`;
-                                    }).join('')}
-                                </ul>
-                            </div>`;
-                        }
-                    });
-
-                    if (secHtml) {
-                        html += `<div class="mb-6 page-break-avoid"><h4 class="bg-gray-100 px-4 py-2 font-bold text-gray-800 rounded-t-lg border-b-2 border-slate-300">${sec.name}</h4><div class="p-4 border border-t-0 border-gray-100 rounded-b-lg">${secHtml}</div></div>`;
-                    }
-                });
-                return html || '<p class="text-center text-gray-500 py-10">Não foram registadas ocorrências neste mês.</p>';
-            },
-
-            // --- Ações CRUD ---
-            saveDoc: async (coll, data, redirectView = null) => {
-                App.toast('A guardar...', 'info');
-                try {
-                    if(!auth?.currentUser) {
-                        App.toast('Sem permissão (faça login primeiro)', 'error');
-                        return;
-                    }
-                    if (!data.id) data.id = App.generateId();
-                    
-                    const uid = auth.currentUser.uid;
-                    // Scoped by uid
-                    await setDoc(doc(db, `users/${uid}/${coll}`, data.id), data);
-                    
-                    App.toast('Guardado com sucesso!', 'success');
-                    App.closeModal();
-                    if (redirectView) App.navigate(redirectView);
-                } catch(e) {
-                    console.error(e);
-                    App.toast('Erro ao guardar: ' + e.message, 'error');
-                }
-            },
-
-            deleteDoc: async (coll, id, confirmMsg = null) => {
-                if(!auth?.currentUser) return;
-                const processDelete = async () => {
-                    try {
-                        await deleteDoc(doc(db, `users/${auth.currentUser.uid}/${coll}`, id));
-                        App.toast('Removido com sucesso!', 'success');
-                        App.closeModal();
-                        if(state.view === 'lancamentos' && state.logTab === 'historico') App.renderLogsHistoryList();
-                    } catch(e) {
-                        console.error(e);
-                        App.toast('Erro ao remover: ' + e.message, 'error');
-                    }
-                };
-                if (confirmMsg) App.confirmAction(confirmMsg, `delete_${coll}_now`, id);
-                else processDelete();
-            },
-
-            // --- Eventos Globais (Delegação) ---
-            bindEvents: () => {
-                document.addEventListener('click', (e) => {
-                    const btn = e.target.closest('button, a, label');
-                    if (!btn) return;
-                    
-                    const action = btn.dataset.action;
-                    const nav = btn.dataset.nav;
-                    const dataId = btn.dataset.id;
-
-                    if (nav) {
-                        e.preventDefault();
-                        if (state.user) App.navigate(nav);
-                    }
-                    
-                    if (action) {
-                        e.preventDefault();
-                        
-                        switch(action) {
-                            case 'loginGoogle':
-                                signInWithPopup(auth, new GoogleAuthProvider()).catch(err => App.toast(err.message, 'error'));
-                                break;
-                            case 'loginAnon':
-                                signInAnonymously(auth).catch(err => App.toast(err.message, 'error'));
-                                break;
-                            case 'logout':
-                                signOut(auth).then(() => window.location.reload());
-                                break;
-                            case 'toggleMenu':
-                                document.getElementById('mobile-menu').classList.toggle('hidden');
-                                break;
-                            case 'closeModal':
-                                App.closeModal();
-                                break;
-                                
-                            // Modals Formulation
-                            case 'showEmployeeForm':
-                                {
-                                    const emp = state.employees.find(x => x.id === dataId) || { id: '', name: '', role: 'liderado', sectorId: '' };
-                                    const opts = state.sectors.map(s => `<option value="${s.id}" ${s.id === emp.sectorId ? 'selected':''}>${s.name}</option>`).join('');
-                                    App.openModal(`
-                                        <div class="p-6">
-                                            <h3 class="text-xl font-bold mb-4">${emp.id ? 'Editar' : 'Novo'} Colaborador</h3>
-                                            <form id="emp_form" class="space-y-4">
-                                                <input type="hidden" id="emp_id" value="${emp.id}">
-                                                <div><label class="block text-sm font-semibold mb-1">Nome Completo</label><input type="text" id="emp_name" required value="${emp.name}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                <div><label class="block text-sm font-semibold mb-1">Setor</label><select id="emp_sector" required class="w-full border p-2 rounded focus:ring-2 outline-none"><option value="">Selecione...</option>${opts}</select></div>
-                                                <div><label class="block text-sm font-semibold mb-1">Perfil</label><select id="emp_role" class="w-full border p-2 rounded flex-1 focus:ring-2 outline-none"><option value="liderado" ${emp.role==='liderado'?'selected':''}>Liderado</option><option value="lider" ${emp.role==='lider'?'selected':''}>Líder</option></select></div>
-                                                <div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button></div>
-                                            </form>
-                                        </div>
-                                    `);
-                                    document.getElementById('emp_form').onsubmit = (ev) => {
-                                        ev.preventDefault();
-                                        App.saveDoc('employees', {
-                                            id: document.getElementById('emp_id').value,
-                                            name: document.getElementById('emp_name').value.trim(),
-                                            sectorId: document.getElementById('emp_sector').value,
-                                            role: document.getElementById('emp_role').value
-                                        });
-                                    };
-                                }
-                                break;
-                            case 'showSectorForm':
-                                {
-                                    const sec = state.sectors.find(x => x.id === dataId) || { id: '', name: '', val_liderado: 0, val_lider: 0 };
-                                    App.openModal(`
-                                        <div class="p-6">
-                                            <h3 class="text-xl font-bold mb-4">${sec.id ? 'Editar' : 'Novo'} Setor</h3>
-                                            <form id="sec_form" class="space-y-4">
-                                                <input type="hidden" id="sec_id" value="${sec.id}">
-                                                <div><label class="block text-sm font-semibold mb-1">Nome do Setor</label><input type="text" id="sec_name" required value="${sec.name}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                <div class="flex space-x-4">
-                                                    <div><label class="block text-sm font-semibold mb-1">Base Liderado</label><input type="number" step="0.01" id="sec_liderado" required value="${sec.val_liderado}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                    <div><label class="block text-sm font-semibold mb-1">Base Líder</label><input type="number" step="0.01" id="sec_lider" required value="${sec.val_lider}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                </div>
-                                                <div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button></div>
-                                            </form>
-                                        </div>
-                                    `);
-                                    document.getElementById('sec_form').onsubmit = (ev) => {
-                                        ev.preventDefault();
-                                        App.saveDoc('sectors', {
-                                            id: document.getElementById('sec_id').value,
-                                            name: document.getElementById('sec_name').value.trim(),
-                                            val_liderado: parseFloat(document.getElementById('sec_liderado').value),
-                                            val_lider: parseFloat(document.getElementById('sec_lider').value)
-                                        });
-                                    };
-                                }
-                                break;
-                            case 'showRuleForm':
-                                {
-                                    const rule = state.rules.find(x => x.id === dataId) || { id: '', name: '', pct: 0.05, max: 1 };
-                                    App.openModal(`
-                                        <div class="p-6">
-                                            <h3 class="text-xl font-bold mb-4">${rule.id ? 'Editar' : 'Nova'} Regra</h3>
-                                            <form id="rule_form" class="space-y-4">
-                                                <input type="hidden" id="rule_id" value="${rule.id}">
-                                                ${rule.id === 'higiene' ? '<p class="text-sm text-blue-600 mb-2 font-medium">Você está editando a regra reservada de Higiene Pessoal.</p>' : ''}
-                                                <div><label class="block text-sm font-semibold mb-1">Descrição</label><input type="text" id="rule_name" ${rule.id==='higiene'?'readonly':''} required value="${rule.name}" class="w-full border p-2 rounded focus:ring-2 outline-none bg-gray-50"></div>
-                                                <div class="flex space-x-4">
-                                                    <div><label class="block text-sm font-semibold mb-1">Desconto (%)</label><input type="number" step="0.01" min="0" max="1" id="rule_pct" required value="${rule.pct}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                    <div><label class="block text-sm font-semibold mb-1">Máx Ocorrências</label><input type="number" step="1" id="rule_max" required value="${rule.max}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                </div>
-                                                <div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button></div>
-                                            </form>
-                                        </div>
-                                    `);
-                                    document.getElementById('rule_form').onsubmit = (ev) => {
-                                        ev.preventDefault();
-                                        App.saveDoc('rules', {
-                                            id: document.getElementById('rule_id').value || (dataId==='higiene'?'higiene':App.generateId()),
-                                            name: document.getElementById('rule_name').value.trim(),
-                                            pct: parseFloat(document.getElementById('rule_pct').value),
-                                            max: parseInt(document.getElementById('rule_max').value)
-                                        });
-                                    };
-                                }
-                                break;
-                            case 'showProrationForm':
-                                {
-                                    const opts = state.employees.map(e => `<option value="${e.id}">${e.name}</option>`).join('');
-                                    App.openModal(`
-                                        <div class="p-6">
-                                            <h3 class="text-xl font-bold mb-4">Novo Acerto Proporcional</h3>
-                                            <form id="pro_form" class="space-y-4">
-                                                <div><label class="block text-sm font-semibold mb-1">Mês Relativo</label><input type="month" id="pro_month" required value="${App.getMonthId(new Date())}" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                <div><label class="block text-sm font-semibold mb-1">Colaborador</label><select id="pro_emp" required class="w-full border p-2 rounded focus:ring-2 outline-none"><option value="">Selecione...</option>${opts}</select></div>
-                                                <div class="flex space-x-4">
-                                                    <div><label class="block text-sm font-semibold mb-1">Dias do Mês/Base</label><input type="number" id="pro_total" required value="30" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                    <div><label class="block text-sm font-semibold mb-1">Dias Trabalhados</label><input type="number" id="pro_worked" required value="1" class="w-full border p-2 rounded focus:ring-2 outline-none"></div>
-                                                </div>
-                                                <div class="pt-4 flex justify-end space-x-3"><button type="button" data-action="closeModal" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button><button type="submit" class="px-4 py-2 bg-emerald-600 text-white rounded">Gravar Proporcional</button></div>
-                                            </form>
-                                        </div>
-                                    `);
-                                    document.getElementById('pro_form').onsubmit = (ev) => {
-                                        ev.preventDefault();
-                                        App.saveDoc('prorations', {
-                                            id: App.generateId(),
-                                            employeeId: document.getElementById('pro_emp').value,
-                                            monthId: document.getElementById('pro_month').value,
-                                            totalDays: parseInt(document.getElementById('pro_total').value),
-                                            daysWorked: parseInt(document.getElementById('pro_worked').value)
-                                        });
-                                    };
-                                }
-                                break;
-                            case 'showImportModal':
-                                App.openModal(`
-                                    <div class="p-6 text-center">
-                                        <h3 class="text-xl font-bold mb-4 text-gray-800"><i class="fa-solid fa-file-excel text-emerald-600 mr-2"></i> Importar Colaboradores</h3>
-                                        <p class="text-gray-600 mb-6 text-sm">Selecione um ficheiro Excel (.xlsx) para importar em massa. A primeira folha será lida. <br><br> As colunas esperadas são: <br><b>Nome</b> | <b>Setor</b> | <b>Perfil (liderado/lider)</b></p>
-                                        <div class="flex justify-center flex-col items-center">
-                                            <input type="file" id="import_file" accept=".xlsx, .xls" class="mb-6 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
-                                            <div class="flex space-x-3"><button type="button" data-action="closeModal" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg">Cancelar</button><button type="button" data-action="processExcel" class="px-6 py-2 bg-emerald-600 font-bold text-white rounded-lg shadow-sm">Iniciar Leitura</button></div>
-                                        </div>
-                                    </div>
-                                `);
-                                break;
-                            case 'processExcel':
-                                {
-                                    const fileInput = document.getElementById('import_file');
-                                    if(!fileInput || !fileInput.files[0]) {
-                                        App.toast("Selecione um ficheiro primeiro.", "error");
-                                        return;
-                                    }
-                                    const file = fileInput.files[0];
-                                    const reader = new FileReader();
-                                    reader.onload = async (e) => {
-                                        try {
-                                            const data = new Uint8Array(e.target.result);
-                                            const workbook = XLSX.read(data, {type: 'array'});
-                                            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                                            const jsonData = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
-                                            
-                                            // Assume headers on row 0.
-                                            let added = 0;
-                                            App.toast("A processar e importar...", "info");
-                                            for (let i = 1; i < jsonData.length; i++) {
-                                                const row = jsonData[i];
-                                                if(!row || !row[0]) continue;
-                                                const nome = row[0];
-                                                const sName = row[1] ? String(row[1]).trim() : '';
-                                                const rName = String(row[2] || '').toLowerCase().includes('lider') ? 'lider' : 'liderado';
-                                                
-                                                let sectorId = '';
-                                                if (sName) {
-                                                    const existingSec = state.sectors.find(s => s.name.toLowerCase() === sName.toLowerCase());
-                                                    if(existingSec) sectorId = existingSec.id;
-                                                    else {
-                                                        const newSec = { id: App.generateId(), name: sName, val_liderado: 100, val_lider: 200 };
-                                                        await setDoc(doc(db, \`users/\${auth.currentUser.uid}/sectors\`, newSec.id), newSec);
-                                                        state.sectors.push(newSec);
-                                                        sectorId = newSec.id;
-                                                    }
-                                                }
-                                                
-                                                await setDoc(doc(db, \`users/\${auth.currentUser.uid}/employees\`, App.generateId()), { name: nome, role: rName, sectorId });
-                                                added++;
-                                            }
-                                            App.toast(\`\${added} colaboradores importados.\`, "success");
-                                            App.closeModal();
-                                        } catch (err) {
-                                            App.toast("Erro ao processar: " + err.message, "error");
-                                        }
-                                    };
-                                    reader.readAsArrayBuffer(file);
-                                }
-                                break;
-                                
-                            // Tabs
-                            case 'setLogTab':
-                                state.logTab = dataId;
-                                App.render();
-                                break;
-                            case 'setReportTab':
-                                state.reportTab = dataId;
-                                App.render();
-                                break;
-
-                            case 'print': window.print(); break;
-
-                            // Deletes Process (Route)
-                            case 'delete_employees_now': App.deleteDoc('employees', dataId); break;
-                            case 'delete_sectors_now': App.deleteDoc('sectors', dataId); break;
-                            case 'delete_rules_now': App.deleteDoc('rules', dataId); break;
-                            case 'delete_logs_now': App.deleteDoc('logs', dataId); break;
-                            case 'delete_prorations_now': App.deleteDoc('prorations', dataId); break;
-                            case 'delete_hygieneChecks_now': App.deleteDoc('hygieneChecks', dataId); break;
-                            case 'delete_logo_now':
-                                setDoc(doc(db, \`users/\${auth.currentUser.uid}/settings\`, 'global'), { logo: '' }, { merge: true }).then(() => {
-                                    state.settings.logo = '';
-                                    App.closeModal();
-                                    App.render();
-                                    App.toast("Logo removida", "success");
-                                });
-                                break;
-
-                            // Confirm Modal Triggerers
-                            case 'confirmDeleteEmployee': App.confirmAction('Remover colaborador e todos os seus registos futuros associados?', 'delete_employees_now', dataId); break;
-                            case 'confirmDeleteSector': App.confirmAction('Aviso: Certifique-se que não há colaboradores neste setor!', 'delete_sectors_now', dataId); break;
-                            case 'confirmDeleteRule': App.confirmAction('Remover critério?', 'delete_rules_now', dataId); break;
-                            case 'confirmDeleteLog': App.confirmAction('Apagar este lançamento de desconto?', 'delete_logs_now', dataId); break;
-                            case 'confirmDeleteProration': App.confirmAction('Apagar cálculo proporcional?', 'delete_prorations_now', dataId); break;
-                            case 'confirmDeleteHygiene': App.confirmAction('Apagar falha de higiene?', 'delete_hygieneChecks_now', dataId); break;
-                            case 'confirmRemoveLogo': App.confirmAction('Remover logótipo da empresa?', 'delete_logo_now'); break;
-                        }
-                    }
-                });
-                
-                // Trato Change events (Higiene Date & Checkboxes)
-                document.addEventListener('change', (e) => {
-                    const el = e.target;
-                    
-                    // Lancamento form Radio changes
-                    if (el.name === 'log_type') {
-                        if (el.value === 'setor') {
-                            document.getElementById('div_emp').classList.add('hidden');
-                            document.getElementById('div_sec').classList.remove('hidden');
-                            document.getElementById('log_emp').required = false;
-                            document.getElementById('log_sec').required = true;
-                        } else {
-                            document.getElementById('div_sec').classList.add('hidden');
-                            document.getElementById('div_emp').classList.remove('hidden');
-                            document.getElementById('log_emp').required = true;
-                            document.getElementById('log_sec').required = false;
-                        }
-                    }
-                    
-                    if (el.id === 'higiene_date') {
-                        App.render();
-                    }
-                    if (el.classList.contains('hygiene-checkbox')) {
-                        const isChecked = el.checked;
-                        const empid = el.dataset.empid;
-                        const dStr = el.dataset.date;
-                        if (isChecked) {
-                            App.render(); // force re-render showing the input
-                        } else {
-                            // Remover do banco de dados
-                            const hCheck = state.hygieneChecks.find(h => h.employeeId === empid && h.date === dStr);
-                            if (hCheck) {
-                                deleteDoc(doc(db, \`users/\${auth.currentUser.uid}/hygieneChecks\`, hCheck.id));
-                            }
-                        }
-                    }
-                    if (el.id === 'report_month') {
-                        App.render();
-                    }
-                    if (el.id === 'logo_upload') {
-                        const file = el.files[0];
-                        if(file) {
-                            const reader = new FileReader();
-                            reader.onload = (ev) => {
-                                const b64 = ev.target.result;
-                                setDoc(doc(db, \`users/\${auth.currentUser.uid}/settings\`, 'global'), { logo: b64 }, { merge: true }).then(() => {
-                                    state.settings.logo = b64;
-                                    App.render();
-                                    App.toast("Logo Atualizada!", "success");
-                                });
-                            };
-                            reader.readAsDataURL(file);
-                        }
-                    }
-                });
-
-                document.addEventListener('focusout', (e) => {
-                    const el = e.target;
-                    // Lógica para save/update automático do Higiene ao tirar o foco do input
-                    if (el.classList.contains('hygiene-obs-input')) {
-                        const empid = el.dataset.empid;
-                        const dStr = el.dataset.date;
-                        const obs = el.value.trim();
-                        const hCheck = state.hygieneChecks.find(h => h.employeeId === empid && h.date === dStr);
-                        if (hCheck) {
-                            if (hCheck.obs !== obs) {
-                                setDoc(doc(db, \`users/\${auth.currentUser.uid}/hygieneChecks\`, hCheck.id), { obs }, {merge:true});
-                            }
-                        } else {
-                            const nid = App.generateId();
-                            setDoc(doc(db, \`users/\${auth.currentUser.uid}/hygieneChecks\`, nid), {
-                                id: nid, employeeId: empid, date: dStr, obs: obs 
-                            });
-                        }
-                    }
-                });
-
-                document.addEventListener('input', (e) => {
-                    const el = e.target;
-                    if (el.id === 'search_higiene') {
-                        const term = el.value.toLowerCase();
-                        document.querySelectorAll('.higiene-emp-row').forEach(row => {
-                            if (row.dataset.name.includes(term)) row.classList.remove('hidden');
-                            else row.classList.add('hidden');
-                        });
-                        document.querySelectorAll('.sector-group').forEach(grp => {
-                            const shows = grp.querySelectorAll('.higiene-emp-row:not(.hidden)');
-                            if(shows.length === 0) grp.classList.add('hidden');
-                            else grp.classList.remove('hidden');
-                        });
-                    }
-                    if (el.id === 'log_emp_search') {
-                         const search = el.value.toLowerCase();
-                         Array.from(document.getElementById('log_emp').options).forEach(opt => {
-                             if(opt.value==="") return;
-                             if(opt.text.toLowerCase().includes(search)) opt.classList.remove('hidden');
-                             else opt.classList.add('hidden');
-                         });
-                    }
-                });
-
-                document.addEventListener('submit', (e) => {
-                    const el = e.target;
-                    if (el.id === 'log_form') {
-                        e.preventDefault();
-                        const data = {
-                            id: App.generateId(),
-                            date: document.getElementById('log_date').value,
-                            monthId: App.getMonthId(new Date(document.getElementById('log_date').value+'T12:00:00')),
-                            ruleId: document.getElementById('log_rule').value,
-                            obs: document.getElementById('log_obs').value.trim()
-                        };
-                        const typeOptions = Array.from(document.getElementsByName('log_type'));
-                        data.targetType = typeOptions.find(o=>o.checked).value;
-
-                        if (data.targetType === 'setor') data.sectorId = document.getElementById('log_sec').value;
-                        else data.employeeId = document.getElementById('log_emp').value;
-                        
-                        App.saveDoc('logs', data, 'lancamentos');
-                        document.getElementById('log_form').reset();
-                    }
-                    if (el.id === 'form-settings') {
-                        // Iniciar Firebase e Monitorar Autenticação
-        const initFirebase = async () => {
-            try {
-                const defaultFirebaseConfig = {
-                    apiKey: "AIzaSyAACkZnNeizzXIfH0cS1WZWCITD0scqpJY",
-                    authDomain: "gratificacao-2e6e8.firebaseapp.com",
-                    projectId: "gratificacao-2e6e8",
-                    storageBucket: "gratificacao-2e6e8.firebasestorage.app",
-                    messagingSenderId: "843644337269",
-                    appId: "1:843644337269:web:36c4bfb09a19f9f0a44c3c",
-                    measurementId: "G-66CCNYZEN0"
-                };
-
-                const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : defaultFirebaseConfig;
-                
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                App.bindEvents();
-
-                onAuthStateChanged(auth, (user) => {
-                    const overlay = document.getElementById('loading-overlay');
-                    if (overlay) overlay.remove();
-
-                    const loginScreen = document.getElementById('login-screen');
-                    const appLayout = document.getElementById('app-layout');
-
-                    if (user) {
-                        state.user = user;
-                        loginScreen.classList.add('hidden');
-                        loginScreen.classList.remove('flex');
-                        appLayout.classList.remove('hidden');
-                        subscribeData(user.uid);
-                        App.navigate('dashboard');
-                    } else {
-                        state.user = null;
-                        appLayout.classList.add('hidden');
-                        loginScreen.classList.remove('hidden');
-                        loginScreen.classList.add('flex');
-                        unsubscribeFuncs.forEach(fn => fn());
-                        unsubscribeFuncs = [];
-                    }
-                });
-            } catch (error) {
-                console.error("Firebase init error:", error);
-                const overlay = document.getElementById('loading-overlay');
-                if (overlay) overlay.remove();
-                alert("Erro crítico ao inicializar o Firebase. Verifique a configuração.");
+        // Event Listeners Genéricos (Click Delegation)
+        document.addEventListener('click', async (e) => {
+            const navBtn = e.target.closest('[data-nav]');
+            if (navBtn) {
+                e.preventDefault();
+                window.app.navigate(navBtn.dataset.nav);
+                return;
             }
-        };
 
-        const subscribeData = (uid) => {
-            const subSetup = (collName, propName) => {
-                const q = collection(db, `users/${uid}/${collName}`);
-                unsubscribeFuncs.push(onSnapshot(q, (snap) => {
-                    state[propName] = snap.docs.map(i => ({...i.data(), id: i.id}));
-                    App.render();
-                }));
-            };
+            const actionBtn = e.target.closest('[data-action]');
+            if (!actionBtn) return;
             
-            subSetup('employees', 'employees');
-            subSetup('sectors', 'sectors');
-            subSetup('rules', 'rules');
-            subSetup('logs', 'logs');
-            subSetup('prorations', 'prorations');
-            subSetup('hygieneChecks', 'hygieneChecks');
+            const action = actionBtn.dataset.action;
+            const id = actionBtn.dataset.id;
 
-            const rulesQ = collection(db, `users/${uid}/rules`);
-            onSnapshot(rulesQ, (snap) => {
-                state.rules = snap.docs.map(i => i.data());
-                if (!state.rules.find(r => r.id === 'higiene')) {
-                    const fallbackRule = { id: 'higiene', name: 'Falha de Higiene/Segurança', max: 99, pct: 0.05 };
-                    state.rules.push(fallbackRule);
-                    setDoc(doc(db, `users/${uid}/rules`, 'higiene'), fallbackRule);
+            try {
+                switch (action) {
+                    case 'toggleMenu':
+                        document.getElementById('mobile-menu').classList.toggle('hidden');
+                        break;
+                    case 'print': window.print(); break;
+                    case 'showImportModal': window.app.showImportModal(); break;
+                    case 'showEmployeeForm': window.app.showEmployeeForm(id); break;
+                    case 'showSectorForm': window.app.showSectorForm(id); break;
+                    case 'showRuleForm': window.app.showRuleForm(id); break;
+                    case 'showProrationForm': window.app.showProrationForm(); break;
+                    case 'closeModal': window.app.closeModal(); break;
+                    case 'setLogTab': window.app.setLogTab(id); break;
+                    case 'setReportTab': window.app.setReportTab(id); break;
+                    case 'loginGoogle': window.app.loginWithGoogle(); break;
+                    case 'loginAnon': window.app.loginAnonymously(); break;
+                    case 'logout': window.app.logout(); break;
+                    
+                    case 'deleteEmployee':
+                        window.app.confirmAction("Tem a certeza que deseja remover este colaborador?", "executeDeleteEmployee", id);
+                        break;
+                    case 'executeDeleteEmployee':
+                        if(db) await deleteDoc(doc(db, `artifacts/${appId}/public/data/employees`, id));
+                        window.app.toast("Colaborador removido.", "success");
+                        window.app.closeModal();
+                        break;
+                        
+                    case 'deleteSector':
+                        const empsInSector = state.employees.filter(emp => emp.sectorId === id);
+                        if (empsInSector.length > 0) return window.app.toast(`Não é possível excluir. Existem ${empsInSector.length} colaboradores neste setor.`, "error");
+                        window.app.confirmAction("Tem a certeza que deseja remover este setor?", "executeDeleteSector", id);
+                        break;
+                    case 'executeDeleteSector':
+                        if(db) await deleteDoc(doc(db, `artifacts/${appId}/public/data/sectors`, id));
+                        window.app.toast("Setor removido com sucesso.", "success");
+                        window.app.closeModal();
+                        break;
+
+                    case 'deleteRule':
+                        if (id === 'higiene') return window.app.toast("A regra de Higiene Pessoal é nativa e não pode ser excluída.", "error");
+                        window.app.confirmAction("Tem a certeza que deseja remover este critério?", "executeDeleteRule", id);
+                        break;
+                    case 'executeDeleteRule':
+                        if(db) await deleteDoc(doc(db, `artifacts/${appId}/public/data/rules`, id));
+                        window.app.toast("Regra removida.", "success");
+                        window.app.closeModal();
+                        break;
+
+                    case 'deleteLog':
+                        window.app.confirmAction("Excluir este registo de erro?", "executeDeleteLog", id);
+                        break;
+                    case 'executeDeleteLog':
+                        if(db) await deleteDoc(doc(db, `artifacts/${appId}/public/data/logs`, id));
+                        window.app.toast("Registo excluído.", "success");
+                        window.app.closeModal();
+                        break;
+
+                    case 'deleteHygieneRecord':
+                        window.app.confirmAction("Remover penalidade de higiene?", "executeDeleteHygieneRecord", id);
+                        break;
+                    case 'executeDeleteHygieneRecord':
+                        if(db) await deleteDoc(doc(db, `artifacts/${appId}/public/data/hygiene_checks`, id));
+                        window.app.toast("Penalidade removida.", "success");
+                        window.app.closeModal();
+                        break;
+
+                    case 'deleteProration':
+                    case 'confirmDeleteProration':
+                        window.app.confirmAction("Excluir este registo de Férias/Admissão?", "executeDeleteProration", id);
+                        break;
+                    case 'executeDeleteProration':
+                        if(db) await deleteDoc(doc(db, `artifacts/${appId}/public/data/prorations`, id));
+                        window.app.toast("Registo excluído.", "success");
+                        window.app.closeModal();
+                        break;
+
+                    case 'confirmRemoveLogo':
+                        window.app.confirmAction("Remover a logo atual?", "executeRemoveLogo");
+                        break;
+                    case 'executeRemoveLogo':
+                        if(db) await setDoc(doc(db, `artifacts/${appId}/public/data/settings`, 'main'), { logo: '' });
+                        window.app.toast("Logo removida.", "success");
+                        window.app.closeModal();
+                        break;
                 }
-            });
+            } catch (err) {
+                console.error("Action error:", err);
+                window.app.toast("Ocorreu um erro na operação.", "error");
+            }
+        });
 
-            onSnapshot(doc(db, `users/${uid}/settings`, 'global'), (docSnap) => {
-                if (docSnap.exists()) {
-                    state.settings = docSnap.data();
-                    App.render();
+        // Formulários Controlados Seguramente
+        document.addEventListener('submit', async (e) => {
+            const formId = e.target.id;
+            e.preventDefault();
+
+            try {
+                if (formId === 'form-employee') {
+                    const id = document.getElementById('emp_id').value || window.app.generateId();
+                    const customValInput = document.getElementById('emp_custom_val').value;
+                    const data = {
+                        name: document.getElementById('emp_name').value,
+                        sectorId: document.getElementById('emp_sector').value,
+                        role: document.getElementById('emp_role').value,
+                        customBaseValue: customValInput ? Number(customValInput) : null,
+                        active: true
+                    };
+                    if(db) await setDoc(doc(db, `artifacts/${appId}/public/data/employees`, id), data);
+                    window.app.toast("Colaborador salvo com sucesso.", "success");
+                    window.app.closeModal();
                 }
-            });
-        };
 
+                if (formId === 'form-sector') {
+                    const id = document.getElementById('sec_id').value || window.app.generateId();
+                    const data = {
+                        name: document.getElementById('sec_name').value,
+                        val_liderado: Number(document.getElementById('sec_val_liderado').value),
+                        val_lider: Number(document.getElementById('sec_val_lider').value),
+                    };
+                    if(db) await setDoc(doc(db, `artifacts/${appId}/public/data/sectors`, id), data);
+                    window.app.toast("Setor salvo com sucesso.", "success");
+                    window.app.closeModal();
+                }
+
+                if (formId === 'form-rule') {
+                    const id = document.getElementById('rule_id').value || window.app.generateId();
+                    const data = {
+                        name: document.getElementById('rule_name').value,
+                        pct: Number(document.getElementById('rule_pct').value) / 100,
+                        max: Number(document.getElementById('rule_max').value)
+                    };
+                    if(db) await setDoc(doc(db, `artifacts/${appId}/public/data/rules`, id), data);
+                    window.app.toast("Regra salva com sucesso.", "success");
+                    window.app.closeModal();
+                }
+
+                if (formId === 'form-proration') {
+                    const empId = document.getElementById('pro_emp').value;
+                    const monthId = document.getElementById('pro_month').value;
+                    const daysWorked = Number(document.getElementById('pro_days').value);
+                    const totalDays = Number(document.getElementById('pro_total').value);
+                    if(!empId || !monthId || !daysWorked || !totalDays) return;
+
+                    const id = `${empId}_${monthId}`;
+                    const data = { employeeId: empId, monthId, daysWorked, totalDays };
+                    
+                    if(db) await setDoc(doc(db, `artifacts/${appId}/public/data/prorations`, id), data);
+                    window.app.toast("Registo salvo com sucesso.", "success");
+                    window.app.closeModal();
+                }
+
+                if (formId === 'log_form') {
+                    const logType = document.querySelector('input[name="log_type"]:checked').value;
+                    const date = document.getElementById('log_date').value;
+                    const ruleId = document.getElementById('log_rule').value;
+                    const obs = document.getElementById('log_obs').value;
+                    
+                    if(!date || !ruleId) return window.app.toast("Preencha todos os campos obrigatórios.", "error");
+                    const monthId = window.app.getMonthId(new Date(date + 'T12:00:00'));
+                    
+                    if (logType === 'individual') {
+                        const empId = document.getElementById('log_emp').value;
+                        if(!empId) return window.app.toast("Selecione o colaborador.", "error");
+                        
+                        const id = window.app.generateId();
+                        const data = { employeeId: empId, date, ruleId, monthId, timestamp: Date.now(), obs: obs || '' };
+                        if(db) await setDoc(doc(db, `artifacts/${appId}/public/data/logs`, id), data);
+                        
+                        document.getElementById('log_form').reset();
+                        document.getElementById('log_date').value = date;
+                        if(document.getElementById('log_emp_search')) document.getElementById('log_emp_search').value = '';
+                        window.app.filterLogEmp(''); 
+                        window.app.toast("Erro registado com sucesso.", "success");
+                    } else {
+                        const secId = document.getElementById('log_sec').value;
+                        if(!secId) return window.app.toast("Selecione o setor.", "error");
+                        
+                        const emps = state.employees.filter(emp => emp.sectorId === secId);
+                        if(emps.length === 0) return window.app.toast("Nenhum colaborador encontrado neste setor.", "error");
+                        
+                        const safeObs = obs ? obs.replace(/'/g, "\\'").replace(/"/g, "&quot;") : '';
+                        
+                        if(confirm(`Esta ação aplicará o desconto a TODOS os ${emps.length} colaboradores do setor. Deseja confirmar?`)) {
+                            if(db) {
+                                await Promise.all(emps.map(emp => {
+                                    const id = window.app.generateId();
+                                    const data = { 
+                                        employeeId: emp.id, date, ruleId, monthId, timestamp: Date.now(), 
+                                        obs: (safeObs ? safeObs + ' (Penalidade do Setor)' : 'Penalidade aplicada a todo o Setor') 
+                                    };
+                                    return setDoc(doc(db, `artifacts/${appId}/public/data/logs`, id), data);
+                                }));
+                            }
+                            document.getElementById('log_form').reset();
+                            document.getElementById('log_date').value = date;
+                            if(document.getElementById('log_emp_search')) document.getElementById('log_emp_search').value = '';
+                            window.app.filterLogEmp('');
+                            window.app.toast("Erros registados para todo o setor.", "success");
+                        }
+                    }
+                }
+
+                if (formId === 'form-settings') {
+                    const fileInput = document.getElementById('logo_upload');
+                    if (fileInput.files && fileInput.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = async (event) => {
+                            const base64String = event.target.result;
+                            if(db) await setDoc(doc(db, `artifacts/${appId}/public/data/settings`, 'main'), { logo: base64String });
+                            window.app.toast("Logo atualizada com sucesso!", "success");
+                        };
+                        reader.readAsDataURL(fileInput.files[0]);
+                    } else {
+                        window.app.toast("Selecione uma imagem primeiro.", "error");
+                    }
+                }
+            } catch (err) {
+                console.error("Form error:", err);
+                window.app.toast("Erro ao guardar dados.", "error");
+            }
+        });
+
+        // Eventos Específicos
+        document.addEventListener('change', async (e) => {
+            if (e.target.classList.contains('hygiene-checkbox')) {
+                const empId = e.target.dataset.empid;
+                const date = e.target.dataset.date;
+                const isChecked = e.target.checked;
+                
+                const id = `${date}_${empId}`;
+                if (isChecked) {
+                    const monthId = window.app.getMonthId(new Date(date + 'T12:00:00'));
+                    const data = { employeeId: empId, date, monthId, timestamp: Date.now(), obs: '' };
+                    if(db) await setDoc(doc(db, `artifacts/${appId}/public/data/hygiene_checks`, id), data);
+                } else {
+                    if(db) await deleteDoc(doc(db, `artifacts/${appId}/public/data/hygiene_checks`, id));
+                }
+            }
+
+            if (e.target.id === 'sort_colab') window.app.filterColaboradores();
+            if (e.target.id === 'hist_month' || e.target.id === 'hist_sec') window.app.renderLogsHistoryList();
+            if (e.target.id === 'report_month' || e.target.id === 'higiene_date') window.app.render();
+            
+            if (e.target.name === 'log_type') {
+                if (e.target.value === 'individual') {
+                    document.getElementById('div_emp').classList.remove('hidden');
+                    document.getElementById('div_sec').classList.add('hidden');
+                } else {
+                    document.getElementById('div_emp').classList.add('hidden');
+                    document.getElementById('div_sec').classList.remove('hidden');
+                }
+            }
+
+            if (e.target.id === 'dropzone-file') window.app.handleFileUpload(e);
+        });
+
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'search_colab') window.app.filterColaboradores();
+            if (e.target.id === 'log_emp_search') window.app.filterLogEmp(e.target.value);
+            if (e.target.id === 'search_higiene') window.app.filterHigiene(e.target.value);
+        });
+
+        document.addEventListener('focusout', async (e) => {
+            if (e.target.classList.contains('hygiene-obs-input')) {
+                const empId = e.target.dataset.empid;
+                const date = e.target.dataset.date;
+                const obs = e.target.value;
+                const id = `${date}_${empId}`;
+                if(db) await setDoc(doc(db, `artifacts/${appId}/public/data/hygiene_checks`, id), { obs }, { merge: true });
+                window.app.toast("Observação guardada.", "success");
+            }
+        });
+
+        // Iniciar Firebase
         initFirebase();
     </script>
 </body>
