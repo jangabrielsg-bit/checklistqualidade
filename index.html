@@ -391,7 +391,9 @@
             const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
             const [editingQ, setEditingQ] = useState(null);
             const [isModalOpen, setIsModalOpen] = useState(false);
+            
             const [searchTerm, setSearchTerm] = useState('');
+            const [filterSector, setFilterSector] = useState(''); // NOVO ESTADO: Filtro por Setor
 
             const [isCloneModalOpen, setIsCloneModalOpen] = useState(false);
             const [cloneSourceSector, setCloneSourceSector] = useState('');
@@ -663,17 +665,17 @@
                 const newSectorName = cloneTargetSector.toUpperCase();
                 const sourceQuestions = questions.filter(q => q.setor === cloneSourceSector);
 
-                if (sourceQuestions.length === 0) { toast("O setor de origem não possui perguntas.", "error"); return; }
+                if (sourceQuestions.length === 0) { toast("O setor espelho não possui perguntas.", "error"); return; }
                 if (allSetors.includes(newSectorName)) { if (!confirm(`O setor ${newSectorName} já existe. Deseja adicionar as perguntas a ele mesmo assim?`)) return; }
 
-                toast("Clonando setor, aguarde...");
+                toast("Clonando setor espelho, aguarde...");
                 try {
                     for (let q of sourceQuestions) {
                         const newQ = { ...q, id: Date.now().toString() + Math.random().toString(36).substr(2, 6), setor: newSectorName };
                         await DB.saveQuestion(newQ);
                     }
                     setIsCloneModalOpen(false); setCloneSourceSector(''); setCloneTargetSector('');
-                    toast(`Setor ${newSectorName} criado com as perguntas!`, "success");
+                    toast(`Novo setor ${newSectorName} criado a partir do espelho!`, "success");
                 } catch (err) { console.error(err); toast("Erro ao clonar perguntas.", "error"); }
             };
 
@@ -1111,18 +1113,28 @@
                                 )}
                                 {settingsTab === 'questions' && (
                                     <div className="space-y-6">
-                                        <div className="flex flex-col md:flex-row gap-4">
-                                            <div className="relative flex-1">
+                                        <div className="flex flex-col md:flex-row gap-4 items-center">
+                                            <div className="relative flex-1 w-full">
                                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-stone-400"><Icons.Search /></div>
                                                 <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Buscar pergunta, setor ou grupo..." className="w-full pl-12 p-4 bg-white border border-stone-300 rounded-xl outline-none focus:border-yellow-500 shadow-sm" />
                                             </div>
-                                            <button onClick={() => setIsCloneModalOpen(true)} className="px-6 py-4 bg-stone-800 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-stone-700 shadow-sm transition-colors text-sm whitespace-nowrap">
-                                                <Icons.Copy /> Clonar Setor Inteiro
+                                            <div className="flex-1 w-full">
+                                                <select value={filterSector} onChange={(e) => setFilterSector(e.target.value)} className="w-full p-4 bg-white border border-stone-300 rounded-xl outline-none focus:border-yellow-500 shadow-sm text-stone-600 font-bold uppercase text-sm">
+                                                    <option value="">VER TODOS OS SETORES</option>
+                                                    {allSetors.map(s => <option key={s} value={s}>{s}</option>)}
+                                                </select>
+                                            </div>
+                                            <button onClick={() => setIsCloneModalOpen(true)} className="w-full md:w-auto px-6 py-4 bg-stone-800 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-stone-700 shadow-sm transition-colors text-sm whitespace-nowrap">
+                                                <Icons.Copy /> Usar Setor como Espelho
                                             </button>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {questions.filter(q => q.pergunta.toLowerCase().includes(searchTerm.toLowerCase()) || q.setor.toLowerCase().includes(searchTerm.toLowerCase())).map(q => (
+                                            {questions.filter(q => {
+                                                const matchSearch = q.pergunta.toLowerCase().includes(searchTerm.toLowerCase()) || q.setor.toLowerCase().includes(searchTerm.toLowerCase()) || q.grupo.toLowerCase().includes(searchTerm.toLowerCase());
+                                                const matchSector = filterSector === '' || q.setor === filterSector;
+                                                return matchSearch && matchSector;
+                                            }).map(q => (
                                                 <div key={q.id} className="bg-white p-5 rounded-xl shadow-sm border border-stone-200 flex justify-between items-start hover:border-yellow-300 transition-colors">
                                                     <div className="flex-1 pr-4">
                                                         <div className="flex gap-2 mb-2 flex-wrap">
@@ -1138,6 +1150,12 @@
                                                     </div>
                                                 </div>
                                             ))}
+                                            
+                                            {questions.filter(q => (filterSector === '' || q.setor === filterSector)).length === 0 && (
+                                                <div className="md:col-span-2 text-center py-10 text-stone-500 font-bold bg-white rounded-xl border border-dashed border-stone-300">
+                                                    Nenhuma pergunta encontrada {filterSector && `no setor ${filterSector}`}.
+                                                </div>
+                                            )}
                                         </div>
                                         <button onClick={() => { setEditingQ(null); setIsModalOpen(true); }} className="fixed bottom-8 right-8 bg-yellow-500 text-white h-16 w-16 rounded-full shadow-2xl flex items-center justify-center hover:bg-yellow-600 hover:scale-105 transition-all z-20"><Icons.Plus /></button>
                                     </div>
@@ -1526,7 +1544,7 @@
                         </div>
                     )}
 
-                    {/* MODAL DIDÁTICO: CLONAR SETOR */}
+                    {/* MODAL DIDÁTICO: CLONAR SETOR (USAR COMO ESPELHO) */}
                     {isCloneModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay backdrop-blur-sm">
                             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-fade-in">
@@ -1534,11 +1552,11 @@
                                     <div className="p-3 bg-yellow-100 text-yellow-700 rounded-lg"><Icons.Copy /></div>
                                     <h2 className="text-xl font-black uppercase">Clonar Setor Inteiro</h2>
                                 </div>
-                                <p className="text-sm text-stone-500 mb-8 leading-relaxed">Crie um novo setor do zero, copiando automaticamente **todas** as perguntas, categorias e pesos de um setor que já existe no sistema.</p>
+                                <p className="text-sm text-stone-500 mb-8 leading-relaxed">Crie um novo setor do zero, copiando automaticamente **todas** as perguntas, categorias e pesos de um setor que já existe no sistema (Setor Espelho).</p>
                                 
                                 <form onSubmit={handleCloneSector} className="space-y-6">
                                     <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase mb-2">1. Selecione o Setor de Origem (Copiar de...)</label>
+                                        <label className="block text-xs font-bold text-stone-500 uppercase mb-2">1. Setor Espelho (Copiar de...)</label>
                                         <select value={cloneSourceSector} onChange={e => setCloneSourceSector(e.target.value)} required className="w-full p-4 bg-stone-50 border border-stone-300 rounded-xl outline-none focus:ring-2 focus:ring-yellow-500 font-bold uppercase text-sm">
                                             <option value="">Clique para escolher...</option>
                                             {allSetors.map(s => <option key={s} value={s}>{s}</option>)}
