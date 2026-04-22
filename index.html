@@ -815,7 +815,7 @@
 
                                 if(sectorAnalysisData[insp.setor]) {
                                     sectorAnalysisData[insp.setor].totalNC += qty;
-                                    sectorAnalysisData[insp.setor].ncByCategory[grupo] = (sectorAnalysis[insp.setor].ncByCategory[grupo] || 0) + qty;
+                                    sectorAnalysisData[insp.setor].ncByCategory[grupo] = (sectorAnalysisData[insp.setor].ncByCategory[grupo] || 0) + qty;
                                     sectorAnalysisData[insp.setor].ncs.push({
                                         pergunta: question ? question.pergunta : 'Item removido',
                                         obs: insp.observacoes[qId],
