@@ -18,7 +18,7 @@
     <!-- Html2Pdf -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <!-- Firebase Compat SDKs (Para funcionamento perfeito em arquivo único) -->
+    <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
@@ -35,7 +35,6 @@
         
         .print-only { display: none; }
 
-        /* Toast Animations */
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .toast-enter { animation: slideIn 0.3s ease-out forwards; }
 
@@ -47,6 +46,7 @@
             .print-container { width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important; border: none !important; box-shadow: none !important; }
             .print-border { border: 1px solid #ccc !important; padding: 10px !important; border-radius: 6px; }
             .no-break, .print-nc-item, .print-table-container, .chart-item-print { page-break-inside: avoid !important; break-inside: avoid !important; }
+            .page-break-before { page-break-before: always !important; }
             .print-grid-2-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
             .print-nc-item { border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; margin-bottom: 0; background-color: #fff; }
             .print-header-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px; margin-bottom: 15px; align-items: center; page-break-inside: avoid !important; }
@@ -80,46 +80,32 @@
             measurementId: "G-T6QQ8ZNL37"
         };
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // --- ABSTRAÇÃO DO BANCO DE DADOS (Substituindo IndexedDB) ---
+        // --- ABSTRAÇÃO DO BANCO DE DADOS ---
         const DB = {
             getConfig: async (key) => {
                 const docRef = db.collection('config').doc('main');
                 const docSnap = await docRef.get();
-                if (docSnap.exists) {
-                    return docSnap.data()[key];
-                }
+                if (docSnap.exists) { return docSnap.data()[key]; }
                 return null;
             },
             setConfig: async (key, val) => {
                 const docRef = db.collection('config').doc('main');
                 await docRef.set({ [key]: val }, { merge: true });
             },
-            saveQuestion: async (q) => {
-                await db.collection('questions').doc(q.id).set(q);
-            },
-            deleteQuestion: async (id) => {
-                await db.collection('questions').doc(id).delete();
-            },
-            saveInspection: async (inspection) => {
-                await db.collection('inspections').doc(inspection.id).set(inspection);
-            },
-            deleteInspection: async (id) => {
-                await db.collection('inspections').doc(id).delete();
-            }
+            saveQuestion: async (q) => { await db.collection('questions').doc(q.id).set(q); },
+            deleteQuestion: async (id) => { await db.collection('questions').doc(id).delete(); },
+            saveInspection: async (inspection) => { await db.collection('inspections').doc(inspection.id).set(inspection); },
+            deleteInspection: async (id) => { await db.collection('inspections').doc(id).delete(); }
         };
 
-        // --- DADOS PADRÃO ---
         const STATIC_DB_PERGUNTAS = [
-            { id: "def_1", setor: "ESTOQUE", grupo: "MANIPULADOR", pergunta: "MANIPULADOR - Manipuladores com fardamento completo e conservado?", critical: false, weight: 1 },
-            { id: "def_2", setor: "ESTOQUE", grupo: "MANIPULADOR", pergunta: "MANIPULADOR - Higiene pessoal adequada (unhas curtas, barba feita)?", critical: false, weight: 1 },
-            { id: "def_3", setor: "ESTOQUE", grupo: "GERAL", pergunta: "SETOR GERAL - Setor limpo (piso/parede/teto/portas)?", critical: true, weight: 3 },
-            { id: "def_4", setor: "ESTOQUE", grupo: "GERAL", pergunta: "SETOR GERAL - Produtos organizados e identificados (PVPS)?", critical: true, weight: 3 }
+            { id: "def_1", setor: "ESTOQUE", grupo: "ORGANIZACAO", pergunta: "Produtos organizados e identificados (PVPS)?", critical: true, weight: 3 },
+            { id: "def_2", setor: "ESTOQUE", grupo: "LIMPEZA", pergunta: "Setor limpo (piso/parede/teto/portas)?", critical: true, weight: 3 },
+            { id: "def_3", setor: "ESTOQUE", grupo: "ESTRUTURAL", pergunta: "Paredes e pisos sem rachaduras e bem conservados?", critical: false, weight: 1 }
         ];
 
         // --- ÍCONES SVG ---
@@ -407,7 +393,6 @@
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [searchTerm, setSearchTerm] = useState('');
 
-            // Modal Didático de Clone de Setor
             const [isCloneModalOpen, setIsCloneModalOpen] = useState(false);
             const [cloneSourceSector, setCloneSourceSector] = useState('');
             const [cloneTargetSector, setCloneTargetSector] = useState('');
@@ -431,7 +416,6 @@
                     try {
                         setView('loading');
                         
-                        // SNAPSHOT PARA MULTIPLOS DISPOSITIVOS! Sincronização em Tempo Real das Perguntas
                         unsubQuestions = db.collection('questions').onSnapshot(snap => {
                             const qList = snap.docs.map(doc => doc.data());
                             if (qList.length === 0 && !window.hasSeededQuestions) {
@@ -442,7 +426,6 @@
                             }
                         });
 
-                        // SNAPSHOT PARA MULTIPLOS DISPOSITIVOS! Sincronização em Tempo Real das Inspeções
                         unsubInspections = db.collection('inspections').onSnapshot(snap => {
                             const iList = snap.docs.map(doc => doc.data());
                             setInspections(iList);
@@ -456,7 +439,6 @@
                         setLastBackup(b);
                         setWeekOffset(wo || 0);
 
-                        // Draft no LocalStorage (Mantém a inspeção salva em caso de fechamento do navegador)
                         const draftStr = localStorage.getItem('imac_current_draft');
                         if (draftStr) {
                             const draft = JSON.parse(draftStr);
@@ -487,15 +469,9 @@
                 };
                 
                 loadData();
-
-                // Cleanup function
-                return () => {
-                    if (unsubQuestions) unsubQuestions();
-                    if (unsubInspections) unsubInspections();
-                };
+                return () => { if (unsubQuestions) unsubQuestions(); if (unsubInspections) unsubInspections(); };
             }, [user, authLoaded]);
 
-            // Save Draft to LocalStorage
             useEffect(() => {
                 if (view !== 'inspection' || !selectedSetor) return;
                 const timer = setTimeout(() => {
@@ -557,30 +533,18 @@
                 };
             }, [answers, ncQtys, currentQuestions]);
 
-            const handleLogout = async () => {
-                await auth.signOut();
-                toast("Você saiu do sistema.");
-            }
+            const handleLogout = async () => { await auth.signOut(); toast("Você saiu do sistema."); }
 
             const handleStartInspection = (setor) => {
                 if (!responsavel) { toast("Informe o responsável para iniciar.", 'error'); return; }
                 setSelectedSetor(setor);
-                setAnswers({});
-                setNcQtys({});
-                setObs({});
-                setEvidences({});
-                setSignature(null);
-                setEditingInspectionId(null);
-                setInspectionSearch('');
+                setAnswers({}); setNcQtys({}); setObs({}); setEvidences({});
+                setSignature(null); setEditingInspectionId(null); setInspectionSearch('');
                 const now = new Date();
                 now.setDate(now.getDate() + (weekOffset * 7));
-                const localDate = getLocalDateString(now);
-                setInspectionDate(localDate);
+                setInspectionDate(getLocalDateString(now));
                 
-                const sortedInspections = inspections
-                    .filter(i => i.setor === setor)
-                    .sort((a, b) => new Date(b.data) - new Date(a.data));
-                
+                const sortedInspections = inspections.filter(i => i.setor === setor).sort((a, b) => new Date(b.data) - new Date(a.data));
                 const lastInsp = sortedInspections[0];
                 const prevNCsMap = {};
                 if (lastInsp) {
@@ -595,7 +559,6 @@
             const handleDeleteAudit = async (id) => {
                 if (!confirm("Tem certeza que deseja apagar este registro do sistema (Nuvem)?")) return;
                 await DB.deleteInspection(id);
-                // setInspections não é mais necessário aqui, o onSnapshot cuida da atualização em tempo real
                 toast("Inspeção apagada com sucesso.");
             };
 
@@ -607,10 +570,8 @@
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800; 
-                        const scaleSize = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scaleSize;
+                        const MAX_WIDTH = 800; const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize;
                         const ctx = canvas.getContext("2d");
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                         const compressedBase64 = canvas.toDataURL("image/jpeg", 0.6); 
@@ -633,10 +594,7 @@
                 });
             };
 
-            const handleSaveSignature = (sigData) => {
-                setSignature(sigData);
-                setIsSigning(false);
-            };
+            const handleSaveSignature = (sigData) => { setSignature(sigData); setIsSigning(false); };
 
             const handleSaveInspection = async () => {
                 try {
@@ -645,24 +603,14 @@
                     if (!signature && !confirm("Salvar sem assinatura?")) return;
 
                     toast("Sincronizando com a nuvem...", "success");
-
                     const targetWeekId = getWeekID(inspectionDate, 0); 
                     const dataIsoSalva = inspectionDate + 'T12:00:00.000Z';
 
                     const newInspection = {
                         id: editingInspectionId || Date.now().toString() + Math.random().toString(36).substr(2, 5),
-                        setor: selectedSetor,
-                        responsavel: responsavel,
-                        data: dataIsoSalva,
-                        weekId: targetWeekId,
-                        score: scores.real,
-                        bonusScore: scores.bonus,
-                        respostas: answers,
-                        ncQtys: ncQtys,
-                        observacoes: obs,
-                        evidencias: evidences,
-                        assinatura: signature,
-                        status: 'Concluído'
+                        setor: selectedSetor, responsavel: responsavel, data: dataIsoSalva, weekId: targetWeekId,
+                        score: scores.real, bonusScore: scores.bonus, respostas: answers, ncQtys: ncQtys,
+                        observacoes: obs, evidencias: evidences, assinatura: signature, status: 'Concluído'
                     };
 
                     await DB.saveInspection(newInspection);
@@ -678,14 +626,10 @@
                         }).join('\n');
                     }
                     setActionPlan(sugestao);
-
                     setReportInspection(newInspection);
                     setView('report');
                     toast("Inspeção salva com sucesso no Firebase!");
-                } catch (e) {
-                    console.error(e);
-                    toast("Erro ao salvar na nuvem. Verifique sua conexão.", 'error');
-                }
+                } catch (e) { console.error(e); toast("Erro ao salvar na nuvem.", 'error'); }
             };
 
             const handleCancelInspection = () => {
@@ -709,56 +653,33 @@
                 };
                 
                 await DB.saveQuestion(newQ);
-                setIsModalOpen(false);
-                setEditingQ(null);
+                setIsModalOpen(false); setEditingQ(null);
                 toast("Pergunta salva na Nuvem.");
             };
 
-            // LOGICA DIDÁTICA PARA CLONAR SETOR
             const handleCloneSector = async (e) => {
                 e.preventDefault();
-                if (!cloneSourceSector || !cloneTargetSector) {
-                    toast("Preencha os campos obrigatórios.", "error");
-                    return;
-                }
-
+                if (!cloneSourceSector || !cloneTargetSector) { toast("Preencha os campos obrigatórios.", "error"); return; }
                 const newSectorName = cloneTargetSector.toUpperCase();
                 const sourceQuestions = questions.filter(q => q.setor === cloneSourceSector);
 
-                if (sourceQuestions.length === 0) {
-                    toast("O setor de origem não possui perguntas.", "error");
-                    return;
-                }
-
-                if (allSetors.includes(newSectorName)) {
-                    if (!confirm(`O setor ${newSectorName} já existe. Deseja adicionar as perguntas a ele mesmo assim?`)) return;
-                }
+                if (sourceQuestions.length === 0) { toast("O setor de origem não possui perguntas.", "error"); return; }
+                if (allSetors.includes(newSectorName)) { if (!confirm(`O setor ${newSectorName} já existe. Deseja adicionar as perguntas a ele mesmo assim?`)) return; }
 
                 toast("Clonando setor, aguarde...");
-
                 try {
                     for (let q of sourceQuestions) {
-                        const newQ = {
-                            ...q,
-                            id: Date.now().toString() + Math.random().toString(36).substr(2, 6),
-                            setor: newSectorName
-                        };
+                        const newQ = { ...q, id: Date.now().toString() + Math.random().toString(36).substr(2, 6), setor: newSectorName };
                         await DB.saveQuestion(newQ);
                     }
-                    setIsCloneModalOpen(false);
-                    setCloneSourceSector('');
-                    setCloneTargetSector('');
+                    setIsCloneModalOpen(false); setCloneSourceSector(''); setCloneTargetSector('');
                     toast(`Setor ${newSectorName} criado com as perguntas!`, "success");
-                } catch (err) {
-                    console.error(err);
-                    toast("Erro ao clonar perguntas.", "error");
-                }
+                } catch (err) { console.error(err); toast("Erro ao clonar perguntas.", "error"); }
             };
 
             const handleDeleteQuestion = async (id) => {
                 if(confirm("Tem certeza que deseja apagar essa pergunta definitivamente?")) {
-                    await DB.deleteQuestion(id);
-                    toast("Pergunta apagada.");
+                    await DB.deleteQuestion(id); toast("Pergunta apagada.");
                 }
             };
 
@@ -771,42 +692,22 @@
                 }
             };
 
-            // LÓGICA DE MIGRAÇÃO DO BACKUP ANTIGO (JSON) PARA A NUVEM
             const handleRestoreBackup = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-                
                 const reader = new FileReader();
                 reader.onload = async (event) => {
                     try {
                         toast("Sincronizando dados com a nuvem... Isso pode levar alguns segundos.", "success");
                         const data = JSON.parse(event.target.result);
-                        
-                        // Envia as perguntas antigas para o Firebase
-                        if (data.questions && Array.isArray(data.questions)) {
-                            for (const q of data.questions) {
-                                await DB.saveQuestion(q);
-                            }
-                        }
-                        
-                        // Envia as inspeções antigas para o Firebase
-                        if (data.inspections && Array.isArray(data.inspections)) {
-                            for (const insp of data.inspections) {
-                                await DB.saveInspection(insp);
-                            }
-                        }
-
+                        if (data.questions && Array.isArray(data.questions)) { for (const q of data.questions) { await DB.saveQuestion(q); } }
+                        if (data.inspections && Array.isArray(data.inspections)) { for (const insp of data.inspections) { await DB.saveInspection(insp); } }
                         if (data.logo) { await DB.setConfig('logo', data.logo); setLogo(data.logo); }
                         if (data.weekOffset !== undefined) { await DB.setConfig('weekOffset', data.weekOffset); setWeekOffset(data.weekOffset); }
-                        
                         toast("Backup antigo migrado para a Nuvem com sucesso!", "success");
-                    } catch (err) {
-                        console.error(err);
-                        toast("Erro ao restaurar backup. Arquivo inválido.", 'error');
-                    }
+                    } catch (err) { console.error(err); toast("Erro ao restaurar backup. Arquivo inválido.", 'error'); }
                 };
-                reader.readAsText(file);
-                e.target.value = null; // Reseta o input de arquivo
+                reader.readAsText(file); e.target.value = null; 
             };
 
             const handleExportCSV = () => {
@@ -823,25 +724,18 @@
                         ]);
                     });
                 });
-
                 const csvContent = "data:text/csv;charset=utf-8," + headers.join(";") + "\n" + rows.map(e => e.join(";")).join("\n");
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                link.setAttribute("download", "imac_dados_brutos.csv");
-                document.body.appendChild(link);
-                link.click();
+                link.setAttribute("href", encodedUri); link.setAttribute("download", "imac_dados_brutos.csv");
+                document.body.appendChild(link); link.click();
             };
 
             const handleLogoUpload = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
-                reader.onloadend = async () => {
-                    await DB.setConfig('logo', reader.result);
-                    setLogo(reader.result);
-                    toast("Logo salva na nuvem.");
-                };
+                reader.onloadend = async () => { await DB.setConfig('logo', reader.result); setLogo(reader.result); toast("Logo salva na nuvem."); };
                 reader.readAsDataURL(file);
             };
 
@@ -862,6 +756,7 @@
                 return currentQuestions.filter(q => q.pergunta.toLowerCase().includes(lower) || q.grupo.toLowerCase().includes(lower));
             }, [currentQuestions, inspectionSearch]);
 
+            // --- ANALYTICS ENHANCEMENT FOR TABLET & LEADERS ---
             const analytics = useMemo(() => {
                 let filteredInspections = [];
                 if (analyticsTab === 'weekly') {
@@ -878,36 +773,70 @@
                 const avgBonusScore = filteredInspections.length ? Math.round(totalBonusScore / filteredInspections.length) : 0;
 
                 const grouped = {};
-                filteredInspections.forEach(i => {
-                    if(!grouped[i.setor]) grouped[i.setor] = { total: 0, count: 0 };
-                    grouped[i.setor].total += (i.bonusScore !== undefined ? i.bonusScore : i.score || 0);
-                    grouped[i.setor].count += 1;
+                const sectorAnalysisData = {}; // Novo mapeamento detalhado por setor e grupo
+
+                allSetors.forEach(s => {
+                    sectorAnalysisData[s] = {
+                        score: 0, bonusScore: 0, count: 0,
+                        ncByCategory: {}, totalNC: 0, ncs: []
+                    };
                 });
-                
-                let ranking = Object.entries(grouped).map(([setor, val]) => ({
-                    setor, score: Math.round(val.total / val.count), count: val.count
-                })).sort((a, b) => b.score - a.score);
 
                 const ncBySector = {};
                 const ncByCategory = {};
                 const auditorScores = {}; 
 
                 filteredInspections.forEach(insp => {
+                    if(!grouped[insp.setor]) grouped[insp.setor] = { total: 0, count: 0 };
+                    grouped[insp.setor].total += (insp.bonusScore !== undefined ? insp.bonusScore : insp.score || 0);
+                    grouped[insp.setor].count += 1;
+
                     if (!auditorScores[insp.responsavel]) auditorScores[insp.responsavel] = { total: 0, count: 0 };
                     auditorScores[insp.responsavel].total += (insp.bonusScore !== undefined ? insp.bonusScore : insp.score || 0);
                     auditorScores[insp.responsavel].count += 1;
+
+                    if(sectorAnalysisData[insp.setor]) {
+                        sectorAnalysisData[insp.setor].count += 1;
+                        sectorAnalysisData[insp.setor].score += (insp.score || 0);
+                        sectorAnalysisData[insp.setor].bonusScore += (insp.bonusScore !== undefined ? insp.bonusScore : insp.score || 0);
+                    }
 
                     if(insp.respostas) {
                         Object.entries(insp.respostas).forEach(([qId, resp]) => {
                             if (resp === 'NC') {
                                 const qty = (insp.ncQtys && insp.ncQtys[qId]) || 1;
-                                ncBySector[insp.setor] = (ncBySector[insp.setor] || 0) + qty;
                                 const question = questions.find(q => q.id === qId);
-                                if (question) { ncByCategory[question.grupo] = (ncByCategory[question.grupo] || 0) + qty; }
+                                const grupo = question ? question.grupo : 'GERAL';
+                                
+                                ncBySector[insp.setor] = (ncBySector[insp.setor] || 0) + qty;
+                                ncByCategory[grupo] = (ncByCategory[grupo] || 0) + qty;
+
+                                if(sectorAnalysisData[insp.setor]) {
+                                    sectorAnalysisData[insp.setor].totalNC += qty;
+                                    sectorAnalysisData[insp.setor].ncByCategory[grupo] = (sectorAnalysis[insp.setor].ncByCategory[grupo] || 0) + qty;
+                                    sectorAnalysisData[insp.setor].ncs.push({
+                                        pergunta: question ? question.pergunta : 'Item removido',
+                                        obs: insp.observacoes[qId],
+                                        qty: qty,
+                                        grupo: grupo
+                                    });
+                                }
                             }
                         });
                     }
                 });
+
+                Object.keys(sectorAnalysisData).forEach(s => {
+                    if(sectorAnalysisData[s].count > 0) {
+                        sectorAnalysisData[s].avgScore = Math.round(sectorAnalysisData[s].bonusScore / sectorAnalysisData[s].count);
+                    } else {
+                        sectorAnalysisData[s].avgScore = 0;
+                    }
+                });
+
+                let ranking = Object.entries(grouped).map(([setor, val]) => ({
+                    setor, score: Math.round(val.total / val.count), count: val.count
+                })).sort((a, b) => b.score - a.score);
 
                 const colors = ['#eab308', '#a8a29e', '#f59e0b', '#78716c', '#ef4444', '#84cc16', '#3b82f6', '#d946ef'];
                 const pieSector = Object.entries(ncBySector).map(([label, value], i) => ({ label, value, color: colors[i % colors.length] })).sort((a, b) => b.value - a.value); 
@@ -920,23 +849,32 @@
                 const mainIssue = pieCategory.length > 0 ? pieCategory[0].label : "Nenhum";
                 const summaryText = `Neste período (${analyticsTab === 'weekly' ? 'Semana' : 'Mês'}), foram realizadas ${totalInspections} inspeções, resultando em uma média global de ${avgScore}%. O setor com melhor desempenho foi "${bestSector}", enquanto "${worstSector}" apresentou os menores índices. A principal categoria de não conformidades foi "${mainIssue}".`;
 
-                return { avgScore, avgBonusScore, ranking, pieSector, pieCategory, auditorPerformance, summaryText, filteredInspections };
-            }, [inspections, questions, weekId, analyticsTab, selectedMonth, analyticsSelectedDate]);
+                return { avgScore, avgBonusScore, ranking, pieSector, pieCategory, auditorPerformance, summaryText, filteredInspections, sectorAnalysisData };
+            }, [inspections, questions, weekId, analyticsTab, selectedMonth, analyticsSelectedDate, allSetors]);
 
-            // EXPORT EXCEL LOGIC...
             const handleExportManagementExcel = () => {
                 if (!window.XLSX) { toast("Biblioteca XLSX não carregada.", "error"); return; }
                 const wb = XLSX.utils.book_new();
                 const periodoName = analyticsTab === 'weekly' ? 'Semanal' : 'Mensal';
                 
-                // Resumo Executivo
                 const wsResumoData = [ ["Relatório Gerencial - Gestão de Qualidade IMAC"], ["Data de Emissão", new Date().toLocaleDateString()], ["Período Analisado", analyticsTab === 'weekly' ? getWeekRangeFromDate(analyticsSelectedDate) : selectedMonth], [], ["MÉTRICAS GERAIS"], ["Média Geral", `${analytics.avgScore}%`], ["Média Gratificação", `${analytics.avgBonusScore}%`], ["Total de Inspeções", analytics.ranking.length], ["Maior Incidência (NC)", analytics.pieCategory.length > 0 ? analytics.pieCategory[0].label : "N/A"], [], ["RESUMO EXECUTIVO"], [analytics.summaryText] ];
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsResumoData), "Resumo");
 
-                // Ranking
                 const wsRankingData = [["Posição", "Setor", "Nota Média (Gratificação)"]];
                 analytics.ranking.forEach((r, idx) => { wsRankingData.push([idx + 1, r.setor, `${r.score}%`]); });
                 XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsRankingData), "Ranking Geral");
+
+                const wsDetalheSetor = [["Setor", "Nota", "Total NCs", "Grupo (Tipo de NC)", "Pergunta", "Observação", "Quantidade Penalidades"]];
+                Object.entries(analytics.sectorAnalysisData).forEach(([setor, data]) => {
+                    if (data.count > 0 && data.ncs.length > 0) {
+                        data.ncs.forEach(nc => {
+                            wsDetalheSetor.push([setor, `${data.avgScore}%`, data.totalNC, nc.grupo, nc.pergunta, nc.obs || "-", nc.qty]);
+                        });
+                    } else if (data.count > 0) {
+                        wsDetalheSetor.push([setor, `${data.avgScore}%`, 0, "N/A", "Nenhuma NC registrada.", "-", "-"]);
+                    }
+                });
+                XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(wsDetalheSetor), "Detalhamento por Setor");
 
                 XLSX.writeFile(wb, `Relatorio_Gerencial_${periodoName}_IMAC.xlsx`);
                 toast("Relatório Excel exportado!", "success");
@@ -946,57 +884,73 @@
             if (view === 'login') return <LoginScreen setUser={setUser} />;
 
             return (
-                <div className={view === 'management_report' || view === 'report' ? "min-h-screen bg-white" : "max-w-md mx-auto min-h-screen bg-stone-100 flex flex-col text-stone-900 shadow-2xl relative"}>
+                <div className={view === 'management_report' || view === 'report' ? "min-h-screen bg-white" : "max-w-5xl w-full mx-auto min-h-screen bg-stone-100 flex flex-col text-stone-900 shadow-2xl relative md:border-x border-stone-200"}>
                     
                     {view !== 'management_report' && view !== 'report' && <Lightbox src={lightboxImg} onClose={() => setLightboxImg(null)} />}
 
                     {/* DASHBOARD */}
                     {view === 'dashboard' && (
                         <>
-                            <header className="bg-gradient-to-b from-yellow-500 to-yellow-600 text-stone-900 p-6 rounded-b-3xl shadow-lg mb-6 relative border-b border-yellow-600/30">
+                            <header className="bg-gradient-to-b from-yellow-500 to-yellow-600 text-stone-900 p-6 md:p-8 rounded-b-3xl md:rounded-b-none md:rounded-bl-3xl shadow-lg mb-6 relative border-b border-yellow-600/30">
                                 <div className="absolute top-6 right-6 flex gap-2">
                                     <button onClick={() => { setSettingsTab('history'); setView('settings'); }} className="p-2 bg-white/30 rounded-full hover:bg-white/50 transition-colors" title="Histórico"><Icons.History /></button>
                                     <button onClick={() => setView('analytics')} className="p-2 bg-white/30 rounded-full hover:bg-white/50 transition-colors" title="Indicadores"><Icons.Chart /></button>
                                     <button onClick={() => setView('settings')} className="p-2 bg-white/30 rounded-full hover:bg-white/50 transition-colors" title="Configurações"><Icons.Gear /></button>
                                     <button onClick={handleLogout} className="p-2 bg-red-500/20 text-red-900 rounded-full hover:bg-red-500/40 transition-colors" title="Sair"><Icons.Logout /></button>
                                 </div>
-                                <div className="mb-4">
-                                    {logo ? <img src={logo} alt="Logo" className="h-16 object-contain mb-2 drop-shadow-md" /> : <h1 className="text-2xl font-bold text-stone-900">Checklist</h1>}
-                                    <p className="text-stone-800 text-sm font-medium">Controle de Qualidade</p>
+                                <div className="mb-4 flex flex-col md:flex-row md:items-center gap-4">
+                                    {logo ? <img src={logo} alt="Logo" className="h-16 object-contain drop-shadow-md" /> : <h1 className="text-3xl font-bold text-stone-900">Checklist</h1>}
+                                    <p className="text-stone-800 text-sm md:text-base font-medium">Controle de Qualidade</p>
                                 </div>
-                                <div className="bg-white/90 backdrop-blur-md p-4 rounded-xl border border-yellow-200 shadow-sm">
-                                    <div className="flex justify-between items-end mb-2"><span className="text-stone-600 text-sm font-bold">Progresso Semanal</span><span className="text-2xl font-bold text-yellow-600">{progress.pct}%</span></div>
+                                <div className="bg-white/90 backdrop-blur-md p-4 md:p-6 rounded-xl border border-yellow-200 shadow-sm max-w-xl">
+                                    <div className="flex justify-between items-end mb-2"><span className="text-stone-600 text-sm md:text-base font-bold">Progresso Semanal</span><span className="text-2xl font-bold text-yellow-600">{progress.pct}%</span></div>
                                     <div className="w-full bg-stone-200 rounded-full h-3 mb-2"><div className="bg-yellow-500 h-3 rounded-full transition-all duration-1000" style={{ width: `${progress.pct}%` }}></div></div>
-                                    <p className="text-xs text-stone-500 text-right font-medium">{progress.done}/{progress.total} setores verificados</p>
+                                    <p className="text-xs md:text-sm text-stone-500 text-right font-medium">{progress.done}/{progress.total} setores verificados</p>
                                 </div>
                             </header>
-                            <main className="flex-1 px-6 pb-20 animate-fade-in">
-                                <div className="mb-6"><label className="block text-sm font-bold text-stone-700 mb-2">Responsável</label><input type="text" value={responsavel} onChange={(e) => setResponsavel(e.target.value)} placeholder="Digite seu nome..." className="w-full p-3 rounded-xl bg-white border border-stone-300 text-stone-900 shadow-sm outline-none focus:ring-2 focus:ring-yellow-500 transition-all" /></div>
+                            <main className="flex-1 px-6 md:px-8 pb-20 animate-fade-in">
+                                <div className="mb-6 max-w-xl">
+                                    <label className="block text-sm font-bold text-stone-700 mb-2">Auditor Responsável</label>
+                                    <input type="text" value={responsavel} onChange={(e) => setResponsavel(e.target.value)} placeholder="Digite seu nome..." className="w-full p-4 rounded-xl bg-white border border-stone-300 text-stone-900 shadow-sm outline-none focus:ring-2 focus:ring-yellow-500 transition-all text-lg" />
+                                </div>
                                 
                                 {progress.pct === 100 && (
-                                    <div className="mb-6 p-5 bg-green-50 rounded-xl border border-green-200 text-center animate-fade-in shadow-sm">
-                                        <h3 className="text-green-700 font-bold text-lg mb-2">🎉 Semana Concluída!</h3>
-                                        <p className="text-green-800 text-xs mb-4">Todos os setores foram verificados.</p>
-                                        <div className="flex flex-col gap-2">
-                                            <button onClick={() => setView('management_report')} className="w-full py-3 bg-green-600 text-white font-bold rounded-lg shadow hover:bg-green-500 transition-all flex items-center justify-center gap-2"><Icons.FileText /> Ver Relatório Semanal</button>
-                                            <button onClick={handleNextWeek} className="w-full py-3 bg-white border border-green-600 text-green-700 font-bold rounded-lg hover:bg-green-50 transition-all flex items-center justify-center gap-2 text-xs"><Icons.ArrowRight /> Iniciar Próxima Semana</button>
+                                    <div className="mb-8 p-6 bg-green-50 rounded-xl border border-green-200 text-center animate-fade-in shadow-sm flex flex-col md:flex-row items-center gap-6">
+                                        <div className="flex-1 text-left">
+                                            <h3 className="text-green-700 font-bold text-xl mb-2">🎉 Semana Concluída!</h3>
+                                            <p className="text-green-800 text-sm">Todos os setores foram verificados com sucesso. Ótimo trabalho!</p>
+                                        </div>
+                                        <div className="flex flex-col gap-3 w-full md:w-auto">
+                                            <button onClick={() => setView('management_report')} className="w-full md:w-64 py-3 bg-green-600 text-white font-bold rounded-lg shadow hover:bg-green-500 transition-all flex items-center justify-center gap-2"><Icons.FileText /> Relatório Semanal</button>
+                                            <button onClick={handleNextWeek} className="w-full md:w-64 py-3 bg-white border border-green-600 text-green-700 font-bold rounded-lg hover:bg-green-50 transition-all flex items-center justify-center gap-2 text-sm"><Icons.ArrowRight /> Iniciar Próxima Semana</button>
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="space-y-3">
+                                {/* LAYOUT GRID PARA TABLET/DESKTOP */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     {allSetors.map(setor => {
                                         const isDone = setoresConcluidos.has(setor);
                                         const insp = inspectionsThisWeek.find(i => i.setor === setor);
                                         const displayScore = insp ? (insp.bonusScore !== undefined ? insp.bonusScore : insp.score) : 0;
                                         
                                         return (
-                                            <button key={setor} onClick={() => isDone ? (setReportInspection(insp), setView('report')) : handleStartInspection(setor)} className={`w-full p-4 rounded-xl flex items-center justify-between card-shadow transition-all active:scale-95 border ${isDone ? 'bg-white border-yellow-500 shadow-md' : 'bg-white border-stone-200 hover:border-stone-400'}`}>
-                                                <div className="flex items-center gap-3">
-                                                    <div className={`h-10 w-10 rounded-full flex items-center justify-center ${isDone ? 'bg-yellow-100 text-yellow-700' : 'bg-stone-100 text-stone-500'}`}>{isDone ? <Icons.Check /> : <Icons.List />}</div>
-                                                    <div className="text-left"><p className={`font-bold ${isDone ? 'text-stone-900' : 'text-stone-700'}`}>{setor}</p>{isDone && <div className="flex gap-2 items-center"><p className={`text-xs font-bold ${displayScore >= 85 ? 'text-green-600' : 'text-red-600'}`}>Nota: {displayScore}%</p><StarRating score={displayScore} /></div>}</div>
+                                            <button key={setor} onClick={() => isDone ? (setReportInspection(insp), setView('report')) : handleStartInspection(setor)} className={`w-full p-5 rounded-xl flex flex-col items-start justify-between card-shadow transition-all active:scale-95 border ${isDone ? 'bg-white border-yellow-500 shadow-md' : 'bg-white border-stone-200 hover:border-stone-400'}`}>
+                                                <div className="flex items-center gap-3 w-full mb-4">
+                                                    <div className={`h-12 w-12 shrink-0 rounded-full flex items-center justify-center ${isDone ? 'bg-yellow-100 text-yellow-700' : 'bg-stone-100 text-stone-500'}`}>{isDone ? <Icons.Check /> : <Icons.List />}</div>
+                                                    <div className="text-left flex-1"><p className={`font-bold text-lg md:text-base ${isDone ? 'text-stone-900' : 'text-stone-700'}`}>{setor}</p></div>
                                                 </div>
-                                                {isDone ? <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-bold border border-yellow-200">RELATÓRIO</span> : <span className="h-8 w-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center hover:bg-stone-200 transition-colors">→</span>}
+                                                <div className="w-full flex justify-between items-end border-t border-stone-100 pt-3">
+                                                    {isDone ? (
+                                                        <div className="flex flex-col gap-1 text-left">
+                                                            <p className={`text-sm font-bold ${displayScore >= 85 ? 'text-green-600' : 'text-red-600'}`}>Nota: {displayScore}%</p>
+                                                            <StarRating score={displayScore} />
+                                                        </div>
+                                                    ) : (
+                                                        <span className="text-sm font-medium text-stone-400 italic">Pendente</span>
+                                                    )}
+                                                    {isDone ? <span className="text-[10px] bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-bold border border-yellow-200">VER PDF</span> : <span className="h-8 w-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center hover:bg-yellow-500 hover:text-white transition-colors">→</span>}
+                                                </div>
                                             </button>
                                         );
                                     })}
@@ -1007,88 +961,104 @@
 
                     {/* VIEW INSPECTION */}
                     {view === 'inspection' && (
-                        <div className="flex flex-col h-screen">
-                            <header className="sticky top-0 z-20 bg-white border-b border-stone-200 px-6 py-4 shadow-md">
-                                <div className="flex justify-between items-start mb-2">
-                                    <div><h2 className="text-lg font-bold text-stone-800">{selectedSetor}</h2><p className="text-xs text-stone-500">Resp: {responsavel}</p></div>
+                        <div className="flex flex-col h-screen relative">
+                            <header className="sticky top-0 z-20 bg-white border-b border-stone-200 px-6 md:px-10 py-4 shadow-md flex justify-between items-center">
+                                <div>
+                                    <h2 className="text-xl md:text-2xl font-bold text-stone-800">{selectedSetor}</h2>
+                                    <p className="text-sm text-stone-500">Auditor: {responsavel}</p>
+                                </div>
+                                <div className="flex items-center gap-6">
+                                    <div className="text-right hidden md:block">
+                                        <span className="text-[10px] font-bold text-stone-400 block uppercase">Real</span>
+                                        <span className={`text-2xl font-black ${scores.real >= 85 ? 'text-green-600' : 'text-red-600'}`}>{scores.real}%</span>
+                                    </div>
+                                    <div className="text-right hidden md:block border-l pl-6 border-stone-200">
+                                        <span className="text-[10px] font-bold text-yellow-700 block uppercase">Gratificação</span>
+                                        <span className="text-3xl font-black text-yellow-600">{scores.bonus}%</span>
+                                    </div>
                                     <div className="text-right flex flex-col items-end">
                                         <label className="text-[10px] text-stone-400 font-bold uppercase">Data</label>
-                                        <input type="date" value={inspectionDate} onChange={(e) => setInspectionDate(e.target.value)} className="bg-transparent text-stone-600 text-sm font-bold text-right outline-none" />
+                                        <input type="date" value={inspectionDate} onChange={(e) => setInspectionDate(e.target.value)} className="bg-transparent text-stone-600 text-sm md:text-base font-bold text-right outline-none" />
                                     </div>
-                                </div>
-                                <div className="flex justify-between items-center pt-2 border-t border-stone-200 mt-2">
-                                    <div className="text-center w-1/2 border-r border-stone-200"><span className={`text-2xl font-black ${scores.real >= 85 ? 'text-green-600' : 'text-red-600'}`}>{scores.real}%</span><span className="text-[10px] font-bold text-stone-400 block uppercase">Real</span></div>
-                                    <div className="text-center w-1/2"><span className="text-xl font-bold text-yellow-600">{scores.bonus}%</span><span className="text-[10px] font-bold text-yellow-700 block uppercase">Bônus</span></div>
                                 </div>
                             </header>
                             
-                            <div className="bg-stone-100 p-4 pb-2 sticky top-[130px] z-10">
-                                <div className="relative shadow-sm">
+                            {/* SCORES PARA MOBILE */}
+                            <div className="flex md:hidden justify-between items-center bg-white px-6 py-2 border-b border-stone-200">
+                                <div className="text-center w-1/2 border-r border-stone-200"><span className={`text-2xl font-black ${scores.real >= 85 ? 'text-green-600' : 'text-red-600'}`}>{scores.real}%</span><span className="text-[10px] font-bold text-stone-400 block uppercase">Real</span></div>
+                                <div className="text-center w-1/2"><span className="text-xl font-bold text-yellow-600">{scores.bonus}%</span><span className="text-[10px] font-bold text-yellow-700 block uppercase">Bônus</span></div>
+                            </div>
+
+                            <div className="bg-stone-100 px-6 py-4 sticky md:top-[90px] top-[130px] z-10 border-b border-stone-200">
+                                <div className="relative shadow-sm max-w-2xl mx-auto md:mx-0">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400"><Icons.Search /></div>
-                                    <input type="text" value={inspectionSearch} onChange={(e) => setInspectionSearch(e.target.value)} placeholder="Busca rápida..." className="w-full pl-10 p-3 bg-white border border-stone-300 rounded-xl text-stone-800 outline-none focus:border-yellow-500" />
+                                    <input type="text" value={inspectionSearch} onChange={(e) => setInspectionSearch(e.target.value)} placeholder="Busca rápida por palavra (ex: limpeza)..." className="w-full pl-10 p-4 bg-white border border-stone-300 rounded-xl text-stone-800 outline-none focus:border-yellow-500 shadow-sm" />
                                 </div>
                             </div>
 
-                            <main className="flex-1 p-6 pt-2 space-y-6 overflow-y-auto pb-24">
-                                {filteredInspectionQuestions.map((q, idx) => {
-                                    const prevNC = previousNCs[q.id];
-                                    return (
-                                    <div key={q.id} className="animate-fade-in bg-white p-4 rounded-xl shadow-sm border border-stone-100">
-                                        <div className="mb-2">
-                                            <div className="flex gap-2">
-                                                <span className="text-[10px] font-bold text-yellow-700 bg-yellow-100 border border-yellow-200 px-2 py-1 rounded uppercase">{q.grupo}</span>
-                                                {q.critical && <span className="text-[10px] font-bold text-white bg-red-600 px-2 py-1 rounded uppercase flex items-center gap-1"><Icons.Alert /> CRÍTICO</span>}
-                                                <span className="text-[10px] font-bold text-stone-600 bg-stone-200 px-2 py-1 rounded uppercase">Peso: {q.weight || 1}</span>
+                            <main className="flex-1 px-6 md:px-10 py-6 overflow-y-auto pb-32 bg-stone-100">
+                                {/* LISTA DE PERGUNTAS GRID PARA TABLET */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                                    {filteredInspectionQuestions.map((q, idx) => {
+                                        const prevNC = previousNCs[q.id];
+                                        return (
+                                        <div key={q.id} className="animate-fade-in bg-white p-5 rounded-xl shadow-sm border border-stone-200 hover:border-yellow-400 transition-colors">
+                                            <div className="mb-4">
+                                                <div className="flex gap-2 mb-2 flex-wrap">
+                                                    <span className="text-[10px] font-bold text-yellow-700 bg-yellow-100 border border-yellow-200 px-2 py-1 rounded uppercase tracking-wider">{q.grupo}</span>
+                                                    {q.critical && <span className="text-[10px] font-bold text-white bg-red-600 px-2 py-1 rounded uppercase flex items-center gap-1"><Icons.Alert /> CRÍTICO</span>}
+                                                    <span className="text-[10px] font-bold text-stone-600 bg-stone-200 px-2 py-1 rounded uppercase border border-stone-300">Peso {q.weight || 1}</span>
+                                                </div>
+                                                <p className="text-stone-800 font-medium leading-relaxed text-sm md:text-base">{q.pergunta}</p>
                                             </div>
-                                            <p className="mt-2 text-stone-800 font-medium leading-snug">{q.pergunta}</p>
-                                        </div>
-                                        {prevNC && <div className="mb-3 p-2 bg-yellow-50 border-l-2 border-yellow-400 rounded-r text-xs text-yellow-800 flex gap-2"><Icons.Alert /><div><span className="font-bold">Recorrente:</span> "{prevNC}"</div></div>}
-                                        <div className="flex gap-2">
-                                            {['C', 'NC', 'NA'].map(opt => (
-                                                <button key={opt} onClick={() => setAnswers(p => ({...p, [q.id]: opt}))} className={`flex-1 py-3 rounded-lg font-bold text-sm shadow-sm ${answers[q.id] === opt ? (opt === 'C' ? 'bg-green-600 text-white' : opt === 'NC' ? 'bg-red-600 text-white' : 'bg-stone-500 text-white') : 'bg-white border border-stone-300 text-stone-500'}`}>{opt}</button>
-                                            ))}
-                                        </div>
-                                        {answers[q.id] === 'NC' && (
-                                            <div className="mt-2 space-y-2 animate-fade-in">
-                                                <div className="flex items-center justify-between bg-red-50 p-3 rounded-lg border border-red-200">
-                                                    <div className="flex items-center gap-2"><Icons.Alert /><span className="text-xs font-bold text-red-800">Qtd Penalidades:</span></div>
-                                                    <div className="flex items-center">
-                                                        <button onClick={() => setNcQtys(p => ({...p, [q.id]: Math.max(1, (p[q.id] || 1) - 1)}))} className="w-8 h-8 bg-red-200 text-red-800 font-bold">-</button>
-                                                        <input type="number" min="1" value={ncQtys[q.id] || 1} onChange={(e) => setNcQtys(p => ({...p, [q.id]: Math.max(1, parseInt(e.target.value) || 1)}))} className="w-12 h-8 text-center border-y border-red-200 text-red-800 font-bold outline-none" />
-                                                        <button onClick={() => setNcQtys(p => ({...p, [q.id]: (p[q.id] || 1) + 1}))} className="w-8 h-8 bg-red-200 text-red-800 font-bold">+</button>
+                                            {prevNC && <div className="mb-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded-r text-xs md:text-sm text-yellow-800 flex gap-3 items-start"><Icons.Alert /><div><span className="font-bold block text-yellow-700 mb-1">Atenção (Problema Recorrente):</span> "{prevNC}"</div></div>}
+                                            <div className="flex gap-3">
+                                                {['C', 'NC', 'NA'].map(opt => (
+                                                    <button key={opt} onClick={() => setAnswers(p => ({...p, [q.id]: opt}))} className={`flex-1 py-4 rounded-lg font-bold text-sm md:text-base shadow-sm transition-all active:scale-95 ${answers[q.id] === opt ? (opt === 'C' ? 'bg-green-600 text-white shadow-md border-transparent' : opt === 'NC' ? 'bg-red-600 text-white shadow-md border-transparent' : 'bg-stone-600 text-white border-transparent') : 'bg-stone-50 border border-stone-300 text-stone-500 hover:bg-stone-100'}`}>{opt === 'C' ? 'Conforme' : opt === 'NC' ? 'Não Conforme' : 'N/A'}</button>
+                                                ))}
+                                            </div>
+                                            {answers[q.id] === 'NC' && (
+                                                <div className="mt-4 space-y-3 animate-fade-in p-4 bg-red-50 border border-red-100 rounded-xl">
+                                                    <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-red-200 shadow-sm">
+                                                        <div className="flex items-center gap-2"><Icons.Alert /><span className="text-xs md:text-sm font-bold text-red-800">Qtd de Penalidades (x):</span></div>
+                                                        <div className="flex items-center">
+                                                            <button onClick={() => setNcQtys(p => ({...p, [q.id]: Math.max(1, (p[q.id] || 1) - 1)}))} className="w-10 h-10 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-l transition-colors">-</button>
+                                                            <input type="number" min="1" value={ncQtys[q.id] || 1} onChange={(e) => setNcQtys(p => ({...p, [q.id]: Math.max(1, parseInt(e.target.value) || 1)}))} className="w-14 h-10 text-center border-y border-red-200 text-red-800 font-bold outline-none bg-white" />
+                                                            <button onClick={() => setNcQtys(p => ({...p, [q.id]: (p[q.id] || 1) + 1}))} className="w-10 h-10 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-r transition-colors">+</button>
+                                                        </div>
+                                                    </div>
+                                                    <textarea placeholder="Descreva o problema detalhadamente..." value={obs[q.id] || ''} onChange={(e) => setObs(p => ({...p, [q.id]: e.target.value}))} className="w-full text-sm md:text-base p-4 bg-white border border-red-200 rounded-lg text-red-800 focus:border-red-400 outline-none shadow-sm h-24 resize-none" />
+                                                    {evidences[q.id] && evidences[q.id].length > 0 && (
+                                                        <div className="flex gap-3 overflow-x-auto py-2">
+                                                            {evidences[q.id].map((img, i) => (
+                                                                <div key={i} className="relative w-20 h-20 md:w-24 md:h-24 shrink-0 cursor-pointer group" onClick={() => setLightboxImg(img)}>
+                                                                    <img src={img} className="w-full h-full object-cover rounded-lg border border-stone-300 shadow-sm" />
+                                                                    <button onClick={(e) => {e.stopPropagation(); removePhoto(q.id, i)}} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-md hover:bg-red-600 transition-colors">✕</button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    <div className="flex gap-3">
+                                                        <label className="flex-1 flex flex-col md:flex-row items-center justify-center gap-2 py-4 rounded-lg border-2 border-dashed border-red-300 text-red-700 bg-white hover:bg-red-50 cursor-pointer shadow-sm transition-colors"><input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handlePhotoUpload(q.id, e)} /><Icons.Camera /> <span className="text-xs md:text-sm font-bold">Tirar Foto</span></label>
+                                                        <label className="flex-1 flex flex-col md:flex-row items-center justify-center gap-2 py-4 rounded-lg border-2 border-dashed border-red-300 text-red-700 bg-white hover:bg-red-50 cursor-pointer shadow-sm transition-colors"><input type="file" accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(q.id, e)} /><Icons.Image /> <span className="text-xs md:text-sm font-bold">Galeria</span></label>
                                                     </div>
                                                 </div>
-                                                <input type="text" placeholder="Descreva o problema..." value={obs[q.id] || ''} onChange={(e) => setObs(p => ({...p, [q.id]: e.target.value}))} className="w-full text-sm p-3 bg-red-50 border-red-200 rounded-lg text-red-800 focus:border-red-400 outline-none border" />
-                                                {evidences[q.id] && evidences[q.id].length > 0 && (
-                                                    <div className="flex gap-2 overflow-x-auto py-2">
-                                                        {evidences[q.id].map((img, i) => (
-                                                            <div key={i} className="relative w-16 h-16 shrink-0 cursor-pointer" onClick={() => setLightboxImg(img)}>
-                                                                <img src={img} className="w-full h-full object-cover rounded border border-stone-300" />
-                                                                <button onClick={(e) => {e.stopPropagation(); removePhoto(q.id, i)}} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 shadow-md w-5 h-5 font-bold">x</button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                                <div className="flex gap-2">
-                                                    <label className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border border-dashed border-stone-400 text-stone-600 bg-white hover:bg-stone-50 cursor-pointer shadow-sm"><input type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => handlePhotoUpload(q.id, e)} /><Icons.Camera /> <span className="text-xs font-bold">Câmera</span></label>
-                                                    <label className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border border-dashed border-stone-400 text-stone-600 bg-white hover:bg-stone-50 cursor-pointer shadow-sm"><input type="file" accept="image/*" className="hidden" onChange={(e) => handlePhotoUpload(q.id, e)} /><Icons.Image /> <span className="text-xs font-bold">Galeria</span></label>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                    );})
-                                }
-                                <div className="mt-8 border-t border-stone-300 pt-6 bg-white p-4 rounded-xl">
-                                    <h3 className="text-sm font-bold text-stone-700 mb-2 flex items-center gap-2"><Icons.Pen /> Assinatura</h3>
-                                    <button type="button" onClick={() => setIsSigning(true)} className={`w-full py-3 rounded-lg border flex items-center justify-center gap-2 ${signature ? 'bg-green-50 text-green-600 border-green-500' : 'bg-white text-stone-600 border-stone-300 hover:bg-stone-50'}`}>
-                                        {signature ? <><Icons.Check /> Assinatura Registrada</> : <><Icons.Pen /> Assinar</>}
+                                            )}
+                                        </div>
+                                        );})
+                                    }
+                                </div>
+                                <div className="mt-8 pt-8 max-w-2xl mx-auto">
+                                    <h3 className="text-sm md:text-base font-bold text-stone-700 mb-4 flex items-center gap-2"><Icons.Pen /> Assinatura do Líder/Responsável</h3>
+                                    <button type="button" onClick={() => setIsSigning(true)} className={`w-full py-5 rounded-xl border-2 flex items-center justify-center gap-3 transition-all ${signature ? 'bg-green-50 text-green-700 border-green-500 shadow-sm' : 'bg-white text-stone-600 border-stone-300 hover:bg-stone-50 hover:border-stone-400'}`}>
+                                        {signature ? <><Icons.Check /> Assinatura Registrada</> : <><Icons.Pen /> Toque para Assinar</>}
                                     </button>
-                                    {signature && <img src={signature} className="mt-2 h-12 object-contain opacity-70" />}
+                                    {signature && <div className="mt-4 bg-white p-4 rounded-lg border border-stone-200"><img src={signature} className="h-20 md:h-24 mx-auto object-contain" /></div>}
                                 </div>
                             </main>
-                            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-stone-200 flex gap-3 max-w-md mx-auto shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-30">
-                                <button onClick={handleCancelInspection} className="px-6 py-3 rounded-xl border border-stone-300 font-bold text-stone-500 hover:bg-stone-50">Cancelar</button>
-                                <button onClick={handleSaveInspection} className="flex-1 bg-yellow-500 text-white rounded-xl font-bold shadow-lg hover:bg-yellow-600">Salvar na Nuvem</button>
+                            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-white/90 backdrop-blur-md border-t border-stone-200 flex gap-4 max-w-5xl mx-auto shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.1)] z-30">
+                                <button onClick={handleCancelInspection} className="px-6 md:px-10 py-4 rounded-xl border-2 border-stone-300 font-bold text-stone-600 hover:bg-stone-100 transition-colors">Cancelar</button>
+                                <button onClick={handleSaveInspection} className="flex-1 bg-yellow-500 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-yellow-600 hover:shadow-xl transition-all">Salvar Inspeção na Nuvem</button>
                             </div>
                         </div>
                     )}
@@ -1096,24 +1066,23 @@
                     {/* SETTINGS */}
                     {view === 'settings' && (
                         <div className="min-h-screen bg-stone-100 flex flex-col">
-                            <header className="bg-white p-4 flex items-center justify-between sticky top-0 z-10 shadow-md border-b border-stone-200">
-                                <button onClick={() => setView('dashboard')} className="text-sm font-bold text-stone-500 hover:text-yellow-600">← Voltar</button>
-                                <h1 className="font-bold text-yellow-600">Configurações</h1>
-                                <div className="w-10"></div>
+                            <header className="bg-white p-6 flex items-center justify-between sticky top-0 z-10 shadow-md border-b border-stone-200">
+                                <button onClick={() => setView('dashboard')} className="text-sm font-bold text-stone-500 hover:text-yellow-600">← Voltar para Dashboard</button>
+                                <h1 className="font-bold text-xl text-yellow-600">Configurações do Sistema</h1>
+                                <div className="w-20"></div>
                             </header>
-                            <div className="flex border-b border-stone-200 bg-white sticky top-[60px] z-10">
-                                <button onClick={() => setSettingsTab('history')} className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${settingsTab === 'history' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-stone-500'}`}>Histórico</button>
-                                <button onClick={() => setSettingsTab('questions')} className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${settingsTab === 'questions' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-stone-500'}`}>Perguntas</button>
-                                <button onClick={() => setSettingsTab('system')} className={`flex-1 py-3 text-sm font-bold border-b-2 transition-colors ${settingsTab === 'system' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-stone-500'}`}>Sistema</button>
+                            <div className="flex border-b border-stone-200 bg-white sticky top-[76px] z-10 px-4 md:px-8">
+                                <button onClick={() => setSettingsTab('history')} className={`flex-1 py-4 text-sm md:text-base font-bold border-b-4 transition-colors ${settingsTab === 'history' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-stone-500 hover:text-stone-700'}`}>Histórico de Auditorias</button>
+                                <button onClick={() => setSettingsTab('questions')} className={`flex-1 py-4 text-sm md:text-base font-bold border-b-4 transition-colors ${settingsTab === 'questions' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-stone-500 hover:text-stone-700'}`}>Banco de Perguntas</button>
+                                <button onClick={() => setSettingsTab('system')} className={`flex-1 py-4 text-sm md:text-base font-bold border-b-4 transition-colors ${settingsTab === 'system' ? 'border-yellow-500 text-yellow-600' : 'border-transparent text-stone-500 hover:text-stone-700'}`}>Sistema & Dados</button>
                             </div>
-                            <main className="flex-1 p-6 pb-24 space-y-4">
+                            <main className="flex-1 p-6 md:p-8 pb-24 space-y-6">
                                 {settingsTab === 'system' && (
-                                    <div className="space-y-6 animate-fade-in">
-                                        
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
                                         <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
                                             <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Icons.Upload /> Migrar Backup Antigo (JSON)</h2>
-                                            <p className="text-xs text-stone-500 mb-4">Selecione o arquivo de backup (.json) da versão anterior para enviar todas as suas inspeções e perguntas antigas para a nuvem.</p>
-                                            <label className="w-full py-3 bg-stone-800 text-white font-bold rounded-lg shadow hover:bg-stone-700 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95">
+                                            <p className="text-sm text-stone-500 mb-6 leading-relaxed">Selecione o arquivo de backup (.json) da versão anterior para enviar todas as suas inspeções e perguntas antigas para o Firebase.</p>
+                                            <label className="w-full py-4 bg-stone-800 text-white font-bold rounded-lg shadow hover:bg-stone-700 flex items-center justify-center gap-3 cursor-pointer transition-all active:scale-95">
                                                 <Icons.Upload /> Selecionar Arquivo JSON
                                                 <input type="file" accept=".json" className="hidden" onChange={handleRestoreBackup} />
                                             </label>
@@ -1121,68 +1090,75 @@
 
                                         <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
                                             <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Icons.Database /> Banco em Nuvem Ativo</h2>
-                                            <p className="text-xs text-stone-500">Seus dados estão protegidos e sendo salvos e sincronizados no Firebase do IMAC em tempo real.</p>
+                                            <p className="text-sm text-stone-500 leading-relaxed mb-4">Seus dados estão protegidos. Salvamento e sincronização no Firebase do IMAC ocorrem em tempo real.</p>
+                                            <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm font-bold flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div> Conectado
+                                            </div>
                                         </div>
-                                        <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
-                                            <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Icons.Excel /> Exportação de Dados</h2>
-                                            <button onClick={handleExportCSV} className="w-full py-3 bg-green-600 text-white font-bold rounded-lg shadow hover:bg-green-700 flex items-center justify-center gap-2"><Icons.Download /> Baixar CSV / Excel</button>
+                                        <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200 md:col-span-2 lg:col-span-1">
+                                            <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Icons.Excel /> Exportação de Dados Brutos</h2>
+                                            <p className="text-sm text-stone-500 leading-relaxed mb-6">Baixe uma planilha detalhada com todas as respostas para cruzar dados livremente no Excel.</p>
+                                            <button onClick={handleExportCSV} className="w-full py-4 bg-green-600 text-white font-bold rounded-lg shadow hover:bg-green-700 flex items-center justify-center gap-3 transition-colors"><Icons.Download /> Baixar CSV / Excel</button>
                                         </div>
-                                        <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
-                                            <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Icons.Image /> Logo</h2>
-                                            <label className="block w-full p-4 border-2 border-dashed border-stone-300 rounded-lg text-center cursor-pointer hover:bg-stone-50">
+                                        <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200 md:col-span-2 lg:col-span-1">
+                                            <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Icons.Image /> Logo da Empresa (Relatórios)</h2>
+                                            <label className="block w-full p-6 border-2 border-dashed border-stone-300 rounded-xl text-center cursor-pointer hover:bg-stone-50 transition-colors">
                                                 <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
-                                                {logo ? <img src={logo} className="h-12 mx-auto object-contain" /> : <span className="text-stone-400 text-xs font-bold">Clique para enviar logo</span>}
+                                                {logo ? <img src={logo} className="h-16 mx-auto object-contain" /> : <div className="text-stone-400 flex flex-col items-center gap-2"><Icons.Upload /><span className="text-sm font-bold">Clique para enviar logo</span></div>}
                                             </label>
                                         </div>
                                     </div>
                                 )}
                                 {settingsTab === 'questions' && (
-                                    <div className="space-y-4">
-                                        <div className="flex gap-2">
+                                    <div className="space-y-6">
+                                        <div className="flex flex-col md:flex-row gap-4">
                                             <div className="relative flex-1">
-                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400"><Icons.Search /></div>
-                                                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Buscar pergunta..." className="w-full pl-10 p-3 bg-white border border-stone-300 rounded-xl outline-none focus:border-yellow-500" />
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-stone-400"><Icons.Search /></div>
+                                                <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Buscar pergunta, setor ou grupo..." className="w-full pl-12 p-4 bg-white border border-stone-300 rounded-xl outline-none focus:border-yellow-500 shadow-sm" />
                                             </div>
-                                            <button onClick={() => setIsCloneModalOpen(true)} className="px-4 bg-stone-800 text-white font-bold rounded-xl flex items-center gap-2 hover:bg-stone-700 shadow-sm transition-colors text-xs" title="Copiar perguntas de um setor para outro">
-                                                <Icons.Copy /> Clonar
+                                            <button onClick={() => setIsCloneModalOpen(true)} className="px-6 py-4 bg-stone-800 text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-stone-700 shadow-sm transition-colors text-sm whitespace-nowrap">
+                                                <Icons.Copy /> Clonar Setor Inteiro
                                             </button>
                                         </div>
 
-                                        <div className="space-y-3">
-                                            {questions.filter(q => q.pergunta.toLowerCase().includes(searchTerm.toLowerCase())).map(q => (
-                                                <div key={q.id} className="bg-white p-4 rounded-xl shadow-sm border border-stone-200 flex justify-between items-start">
-                                                    <div className="flex-1 pr-2">
-                                                        <div className="flex gap-2 mb-1">
-                                                            <span className="text-[10px] bg-stone-100 px-2 rounded border">{q.setor}</span>
-                                                            {q.critical && <span className="text-[10px] bg-red-600 text-white px-2 rounded">CRÍTICO</span>}
-                                                            {(q.weight > 1) && <span className="text-[10px] bg-blue-100 text-blue-800 px-2 rounded border border-blue-200">Peso {q.weight}</span>}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {questions.filter(q => q.pergunta.toLowerCase().includes(searchTerm.toLowerCase()) || q.setor.toLowerCase().includes(searchTerm.toLowerCase())).map(q => (
+                                                <div key={q.id} className="bg-white p-5 rounded-xl shadow-sm border border-stone-200 flex justify-between items-start hover:border-yellow-300 transition-colors">
+                                                    <div className="flex-1 pr-4">
+                                                        <div className="flex gap-2 mb-2 flex-wrap">
+                                                            <span className="text-[10px] bg-stone-100 text-stone-600 px-2 py-1 rounded font-bold uppercase tracking-wider">{q.setor}</span>
+                                                            <span className="text-[10px] bg-yellow-100 text-yellow-800 px-2 py-1 rounded font-bold uppercase tracking-wider">{q.grupo}</span>
+                                                            {q.critical && <span className="text-[10px] bg-red-600 text-white px-2 py-1 rounded font-bold uppercase">CRÍTICO</span>}
                                                         </div>
-                                                        <p className="text-sm font-medium">{q.pergunta}</p>
+                                                        <p className="text-sm font-medium leading-snug">{q.pergunta}</p>
                                                     </div>
-                                                    <div className="flex flex-col gap-2">
-                                                        <button onClick={() => { setEditingQ(q); setIsModalOpen(true); }} className="p-2 bg-stone-100 rounded text-stone-500"><Icons.Edit /></button>
-                                                        <button onClick={() => handleDeleteQuestion(q.id)} className="p-2 bg-red-50 rounded text-red-500"><Icons.Trash /></button>
+                                                    <div className="flex flex-col gap-2 shrink-0">
+                                                        <button onClick={() => { setEditingQ(q); setIsModalOpen(true); }} className="p-3 bg-stone-100 rounded-lg text-stone-500 hover:bg-yellow-100 hover:text-yellow-600 transition-colors"><Icons.Edit /></button>
+                                                        <button onClick={() => handleDeleteQuestion(q.id)} className="p-3 bg-red-50 rounded-lg text-red-500 hover:bg-red-100 hover:text-red-700 transition-colors"><Icons.Trash /></button>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
-                                        <button onClick={() => { setEditingQ(null); setIsModalOpen(true); }} className="fixed bottom-6 right-6 bg-yellow-500 text-white h-14 w-14 rounded-full shadow-lg flex items-center justify-center hover:bg-yellow-600 z-20"><Icons.Plus /></button>
+                                        <button onClick={() => { setEditingQ(null); setIsModalOpen(true); }} className="fixed bottom-8 right-8 bg-yellow-500 text-white h-16 w-16 rounded-full shadow-2xl flex items-center justify-center hover:bg-yellow-600 hover:scale-105 transition-all z-20"><Icons.Plus /></button>
                                     </div>
                                 )}
                                 {settingsTab === 'history' && (
-                                    <div className="space-y-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {inspections.sort((a,b) => new Date(b.data) - new Date(a.data)).map(insp => {
                                             const historyScore = insp.bonusScore !== undefined ? insp.bonusScore : insp.score;
                                             return (
-                                            <div key={insp.id} className="bg-white p-4 rounded-xl shadow-sm border border-stone-200 flex justify-between items-center">
-                                                <div>
-                                                    <div className="font-bold">{insp.setor}</div>
-                                                    <div className="text-xs text-stone-500">{new Date(insp.data).toLocaleDateString()} • {insp.responsavel}</div>
+                                            <div key={insp.id} className="bg-white p-5 rounded-xl shadow-sm border border-stone-200 flex flex-col justify-between hover:border-yellow-300 transition-colors">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div>
+                                                        <div className="font-bold text-lg mb-1">{insp.setor}</div>
+                                                        <div className="text-sm text-stone-500">{new Date(insp.data).toLocaleDateString()}</div>
+                                                        <div className="text-sm text-stone-500">Auditor: {insp.responsavel}</div>
+                                                    </div>
+                                                    <span className={`text-2xl font-black ${historyScore >= 85 ? 'text-green-600' : 'text-red-600'}`}>{historyScore}%</span>
                                                 </div>
-                                                <div className="flex gap-2 items-center">
-                                                    <span className={`font-bold ${historyScore >= 85 ? 'text-green-600' : 'text-red-600'}`}>{historyScore}%</span>
-                                                    <button onClick={() => handleDeleteAudit(insp.id)} className="p-2 bg-stone-100 rounded text-red-500"><Icons.Trash /></button>
-                                                    <button onClick={() => { setReportInspection(insp); setView('report'); }} className="p-2 bg-stone-100 rounded text-stone-500"><Icons.FileText /></button>
+                                                <div className="flex gap-2 w-full pt-4 border-t border-stone-100">
+                                                    <button onClick={() => { setReportInspection(insp); setView('report'); }} className="flex-1 py-2 bg-stone-100 rounded text-stone-700 font-bold text-sm hover:bg-stone-200 flex justify-center items-center gap-2"><Icons.FileText /> Abrir PDF</button>
+                                                    <button onClick={() => handleDeleteAudit(insp.id)} className="px-4 bg-red-50 rounded text-red-600 hover:bg-red-100 transition-colors"><Icons.Trash /></button>
                                                 </div>
                                             </div>
                                         )})}
@@ -1192,83 +1168,359 @@
                         </div>
                     )}
 
-                    {/* OUTRAS TELAS (Analytics, Relatórios) */}
+                    {/* VIEW: ANALYTICS */}
                     {view === 'analytics' && (
-                        <div className="max-w-md mx-auto min-h-screen bg-stone-100 flex flex-col text-stone-900">
-                             <header className="bg-white p-4 flex items-center justify-between sticky top-0 shadow-md">
-                                <button onClick={() => setView('dashboard')} className="text-sm font-bold text-stone-500">← Voltar</button>
-                                <h1 className="font-bold text-yellow-600">Indicadores</h1><div className="w-10"></div>
+                        <div className="min-h-screen bg-stone-100 flex flex-col animate-fade-in text-stone-900">
+                            <header className="bg-white p-6 flex items-center justify-between sticky top-0 z-10 shadow-md border-b border-stone-200">
+                                <button onClick={() => setView('dashboard')} className="text-sm font-bold text-stone-500 hover:text-yellow-600 transition-colors">← Voltar</button>
+                                <h1 className="font-bold text-xl text-yellow-600">Indicadores de Qualidade</h1>
+                                <div className="w-16"></div>
                             </header>
-                            <div className="flex bg-white p-2 gap-2 sticky top-[60px]"><button onClick={() => setAnalyticsTab('weekly')} className={`flex-1 py-2 text-xs font-bold rounded-lg ${analyticsTab === 'weekly' ? 'bg-yellow-500 text-white' : 'bg-stone-100 text-stone-500'}`}>Semanal</button><button onClick={() => setAnalyticsTab('monthly')} className={`flex-1 py-2 text-xs font-bold rounded-lg ${analyticsTab === 'monthly' ? 'bg-yellow-500 text-white' : 'bg-stone-100 text-stone-500'}`}>Mensal</button></div>
-                            <main className="flex-1 p-6 space-y-6">
-                                <button onClick={() => setView('management_report')} className="w-full py-3 bg-yellow-500 text-white font-bold rounded-lg flex justify-center items-center gap-2"><Icons.FileText /> Gerar Relatório</button>
-                                <div className="bg-white rounded-xl p-6 border text-center shadow-sm">
-                                    <h3 className="text-xs font-bold text-stone-500 uppercase">{analyticsTab === 'weekly' ? 'Média Semanal' : 'Média Mensal'}</h3>
-                                    <div className="text-5xl font-black mt-2 text-yellow-600">{analytics.avgScore}%</div>
+
+                            <div className="flex border-b border-stone-200 bg-white p-4 gap-4 sticky top-[76px] z-10 justify-center">
+                                <button onClick={() => setAnalyticsTab('weekly')} className={`w-40 py-3 text-sm font-bold rounded-lg transition-colors ${analyticsTab === 'weekly' ? 'bg-yellow-500 text-white shadow-md' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}>Visão Semanal</button>
+                                <button onClick={() => setAnalyticsTab('monthly')} className={`w-40 py-3 text-sm font-bold rounded-lg transition-colors ${analyticsTab === 'monthly' ? 'bg-yellow-500 text-white shadow-md' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}>Visão Mensal</button>
+                            </div>
+
+                            {analyticsTab === 'monthly' && (
+                                <div className="px-8 pt-6 max-w-sm mx-auto w-full">
+                                    <label className="text-sm font-bold text-stone-600 uppercase flex items-center gap-2 mb-2"><Icons.Calendar /> Filtrar Mês Referência</label>
+                                    <input type="month" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="w-full p-3 bg-white border border-stone-300 rounded-lg text-stone-800 outline-none focus:ring-2 focus:ring-yellow-500 transition-all shadow-sm" />
+                                </div>
+                            )}
+
+                            <main className="flex-1 p-6 md:p-8 space-y-8 pb-24">
+                                <div className="max-w-2xl mx-auto">
+                                    <button onClick={() => setView('management_report')} className="w-full py-4 bg-stone-900 text-white font-bold rounded-xl shadow-xl flex items-center justify-center gap-3 hover:bg-stone-800 hover:scale-[1.02] transition-all text-lg">
+                                        <Icons.FileText /> GERAR RELATÓRIO GERENCIAL (PDF/Excel)
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div className="bg-white rounded-2xl p-8 border border-stone-200 text-center relative overflow-hidden shadow-sm md:col-span-3 lg:col-span-1">
+                                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400"></div>
+                                        <h3 className="text-sm font-bold text-stone-500 uppercase tracking-widest mb-4">Média Geral do Período</h3>
+                                        <div className="text-6xl font-black text-yellow-600 mb-2">{analytics.avgScore}%</div>
+                                        <p className="text-xs text-stone-400">Baseado em {analytics.ranking.length} inspeções</p>
+                                    </div>
+
+                                    <div className="md:col-span-3 lg:col-span-2 bg-white rounded-2xl p-6 border border-stone-200 shadow-sm flex flex-col">
+                                        <h3 className="text-sm font-bold text-stone-700 mb-4 flex items-center gap-2 uppercase"><Icons.Chart /> Ranking Geral</h3>
+                                        {analytics.ranking.length === 0 ? <div className="flex-1 flex items-center justify-center text-stone-400 text-sm">Sem dados no período.</div> : (
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left border-collapse">
+                                                    <thead>
+                                                        <tr className="bg-stone-50 text-xs text-stone-500 uppercase border-y border-stone-200">
+                                                            <th className="p-3 font-bold w-12 text-center">Pos.</th>
+                                                            <th className="p-3 font-bold">Setor</th>
+                                                            <th className="p-3 font-bold text-right">Média</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="text-sm text-stone-700">
+                                                        {analytics.ranking.slice(0,5).map((insp, index) => (
+                                                            <tr key={insp.setor} className="border-b border-stone-100 hover:bg-stone-50">
+                                                                <td className="p-3 font-mono font-bold text-stone-400 text-center">{index + 1}º</td>
+                                                                <td className="p-3 font-bold text-stone-800">{insp.setor}</td>
+                                                                <td className={`p-3 text-right font-black ${insp.score >= 85 ? 'text-green-600' : 'text-red-600'}`}>{insp.score}%</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </main>
                         </div>
                     )}
 
+                    {/* VIEW: REPORT (PDF INDIVIDUAL) FALLBACK */}
+                    {view === 'report' && !reportInspection && (
+                        <div className="flex h-screen items-center justify-center bg-white">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-yellow-500 mx-auto mb-4"></div>
+                                <p className="text-gray-500 font-bold">Processando relatório...</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* VIEW: REPORT (PDF INDIVIDUAL DO SETOR) */}
                     {view === 'report' && reportInspection && (
-                        <div className="min-h-screen bg-white text-black p-8 max-w-4xl mx-auto print-container">
-                            <div className="flex justify-between items-center mb-6 no-print">
-                                <button onClick={() => setView('dashboard')} className="bg-stone-200 px-4 py-2 rounded font-bold">Voltar</button>
-                                <button onClick={() => handleDownloadPDF('inspection-report-content', `Relatorio_${reportInspection.setor}.pdf`)} className="bg-yellow-500 text-white px-4 py-2 rounded font-bold">Baixar PDF</button>
+                        <div className="min-h-screen bg-white text-black p-4 md:p-8 w-full max-w-4xl mx-auto print-container md:shadow-lg md:my-8 border border-gray-200">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 no-print bg-gray-50 p-4 rounded-lg border">
+                                <button onClick={() => setView('dashboard')} className="w-full md:w-auto bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors">← Voltar</button>
+                                <button onClick={() => handleDownloadPDF('inspection-report-content', `Relatorio_${reportInspection.setor}_${reportInspection.data.split('T')[0]}.pdf`, false)} className="w-full md:w-auto bg-yellow-500 text-white font-bold px-6 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-yellow-600 transition-colors shadow-md"><Icons.Download /> Gerar Arquivo PDF</button>
                             </div>
-                            <div id="inspection-report-content" className="border border-gray-300 p-8 print-border">
-                                <h1 className="text-2xl font-bold uppercase mb-4 border-b-2 border-black pb-2">Relatório de Inspeção</h1>
-                                <div className="grid grid-cols-2 gap-4 mb-8">
-                                    <div><strong>Setor:</strong> {reportInspection.setor}</div>
-                                    <div><strong>Auditor:</strong> {reportInspection.responsavel}</div>
-                                    <div><strong>Data:</strong> {new Date(reportInspection.data).toLocaleDateString()}</div>
-                                    <div className="text-xl font-bold text-yellow-600">Nota: {reportInspection.score}%</div>
+                            <div id="inspection-report-content" className="relative bg-white print-border p-2 md:p-8">
+                                <div className="relative z-10 flex justify-between items-end border-b-4 border-black pb-4 mb-8">
+                                    <div>
+                                        <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight">Inspeção de Qualidade</h1>
+                                        <p className="text-sm md:text-base text-gray-600 font-bold mt-1">Checklist Setorial - IMAC</p>
+                                    </div>
+                                    {logo && <img src={logo} className="h-14 md:h-16 object-contain print-img-small" />}
                                 </div>
-                                <h3 className="font-bold border-b mb-4">Não Conformidades</h3>
-                                <div className="space-y-4">
-                                    {Object.entries(reportInspection.respostas).filter(([_, v]) => v === 'NC').map(([qid, _]) => {
-                                        const q = questions.find(qu => qu.id === qid);
-                                        return (
-                                            <div key={qid} className="border border-red-100 bg-red-50 p-3 rounded">
-                                                <p className="font-bold text-red-700">{q?.pergunta}</p>
-                                                <p className="text-sm mt-1 text-gray-800">Obs: {reportInspection.observacoes[qid]}</p>
-                                            </div>
-                                        );
-                                    })}
+                                
+                                <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 border border-gray-200 rounded-lg p-4 md:p-6 mb-8 print-header-grid">
+                                    <div><span className="font-bold block text-xs uppercase text-gray-500 mb-1">Setor Auditado</span><span className="text-lg md:text-xl font-black text-gray-800">{reportInspection.setor}</span></div>
+                                    <div><span className="font-bold block text-xs uppercase text-gray-500 mb-1">Data da Inspeção</span><span className="font-bold text-gray-800">{formatDateDisplay(reportInspection.data)}</span></div>
+                                    <div><span className="font-bold block text-xs uppercase text-gray-500 mb-1">Auditor Resp.</span><span className="font-bold text-gray-800">{reportInspection.responsavel}</span></div>
+                                    <div className="col-span-2 md:col-span-1 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-4">
+                                        <span className="font-bold block text-xs uppercase text-gray-500 mb-1">Pontuação Final</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={(reportInspection.bonusScore !== undefined ? reportInspection.bonusScore : reportInspection.score) >= 85 ? 'text-green-700 font-black text-2xl' : 'text-red-700 font-black text-2xl'}>
+                                                {reportInspection.bonusScore !== undefined ? reportInspection.bonusScore : reportInspection.score}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="relative z-10 mb-8 bg-white p-2">
+                                    <h3 className="text-lg font-black border-b-2 border-gray-200 mb-6 pb-2 uppercase text-gray-800 flex items-center gap-2"><Icons.Alert /> Registro de Não Conformidades</h3>
+                                    <div className="space-y-6 print-grid-2-cols">
+                                        {Object.entries(reportInspection.respostas).filter(([_, v]) => v === 'NC').map(([qid, _]) => {
+                                            const q = questions.find(qu => qu.id === qid);
+                                            const qty = (reportInspection.ncQtys && reportInspection.ncQtys[qid]) || 1;
+                                            return (
+                                                <div key={qid} className="print-nc-item border-l-4 border-red-500 bg-gray-50 p-4 md:p-5 rounded-r-lg shadow-sm no-break">
+                                                    <div className="flex gap-2 mb-2">
+                                                        <span className="text-[10px] font-bold text-gray-600 bg-gray-200 px-2 py-1 rounded uppercase">{q?.grupo || 'GERAL'}</span>
+                                                        {qty > 1 && <span className="text-[10px] font-black text-red-800 bg-red-200 px-2 py-1 rounded uppercase">x{qty} Ocorrências</span>}
+                                                    </div>
+                                                    <p className="font-bold text-sm md:text-base text-gray-900 leading-snug">{q?.pergunta}</p>
+                                                    <div className="mt-3 bg-white p-3 border border-gray-200 rounded text-sm text-gray-700">
+                                                        <span className="font-bold text-red-700 block mb-1">Observação do Auditor:</span> 
+                                                        {reportInspection.observacoes[qid] || 'Nenhuma observação detalhada.'}
+                                                    </div>
+                                                    {reportInspection.evidencias && reportInspection.evidencias[qid] && (
+                                                        <div className="mt-4 flex gap-2 flex-wrap">
+                                                            {(Array.isArray(reportInspection.evidencias[qid]) ? reportInspection.evidencias[qid] : [reportInspection.evidencias[qid]]).map((img, i) => (
+                                                                <img key={i} src={img} className="h-24 md:h-32 border border-gray-300 rounded shadow-sm bg-white object-cover print-img-evidence" />
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    {Object.values(reportInspection.respostas).every(v => v !== 'NC') && (
+                                        <div className="bg-green-50 border border-green-200 p-6 rounded-lg text-center">
+                                            <p className="font-bold text-green-700 text-lg">Excelente! Setor 100% Conforme.</p>
+                                            <p className="text-green-600 text-sm mt-1">Nenhum problema foi registrado durante a auditoria.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="relative z-10 mt-16 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-around items-end gap-12 no-break bg-white p-2">
+                                    <div className="text-center w-full md:w-1/3">
+                                        <p className="font-bold text-sm mb-12">{reportInspection.responsavel}</p>
+                                        <div className="border-t-2 border-black pt-2 text-xs font-bold uppercase tracking-widest text-gray-500">Assinatura do Auditor</div>
+                                    </div>
+                                    <div className="text-center w-full md:w-1/3">
+                                        <div className="h-16 flex items-end justify-center mb-2">
+                                            {reportInspection.assinatura && <img src={reportInspection.assinatura} className="h-16 object-contain print-img-small" />}
+                                        </div>
+                                        <div className="border-t-2 border-black pt-2 text-xs font-bold uppercase tracking-widest text-gray-500">Assinatura Líder do Setor</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     )}
 
+                    {/* VIEW: MANAGEMENT REPORT (RELATÓRIO GERENCIAL COM TIPOS DE PERGUNTA) */}
                     {view === 'management_report' && (
-                        <div className="min-h-screen bg-white text-black p-8 max-w-4xl mx-auto print-container">
-                            <div className="flex justify-between mb-6 no-print">
-                                <button onClick={() => setView('analytics')} className="bg-stone-200 px-4 py-2 rounded font-bold">Voltar</button>
-                                <button onClick={handleExportManagementExcel} className="bg-green-600 text-white px-4 py-2 rounded font-bold flex items-center gap-2"><Icons.Excel /> Excel</button>
+                        <div className="min-h-screen bg-white text-black p-4 md:p-8 w-full max-w-5xl mx-auto print-container md:shadow-xl md:my-8 border border-gray-200">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 no-print bg-gray-50 p-4 rounded-lg border">
+                                <button onClick={() => setView('analytics')} className="w-full md:w-auto bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors">← Voltar</button>
+                                <div className="flex w-full md:w-auto flex-col md:flex-row gap-3">
+                                    <button onClick={handleExportManagementExcel} className="bg-green-600 text-white font-bold px-6 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-green-700 transition-colors shadow-md"><Icons.Excel /> Extrair p/ Excel</button>
+                                    <button onClick={() => handleDownloadPDF('management-report-content', `Relatorio_Gerencial_IMAC.pdf`, false)} className="bg-blue-600 text-white font-bold px-6 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors shadow-md"><Icons.Download /> Gerar Livro PDF</button>
+                                </div>
                             </div>
-                            <div id="management-report-content" className="p-8 border shadow-sm">
-                                <h1 className="text-3xl font-bold uppercase tracking-tight">Relatório Gerencial</h1>
-                                <div className="mt-8 text-3xl font-black">{analytics.avgScore}% <span className="text-sm font-normal text-gray-500 block uppercase">Média Geral</span></div>
-                                <h2 className="text-lg font-bold border-b mt-8 mb-4 uppercase">Ranking</h2>
-                                {analytics.ranking.map((r, i) => <div key={i} className="flex justify-between border-b py-2 font-bold"><span className="text-gray-500">{i+1}º</span> <span>{r.setor}</span> <span className="text-yellow-600">{r.score}%</span></div>)}
+
+                            <div id="management-report-content" className="relative bg-white print-scale-down">
+                                {/* CAPA / CABEÇALHO */}
+                                <div className="p-4 md:p-8 border border-gray-300 print:border-none print:p-0 mb-8 page-break-after">
+                                    <div className="flex justify-between items-end border-b-4 border-black pb-4 mb-8">
+                                        <div>
+                                            <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight">Dossiê de Qualidade</h1>
+                                            <p className="text-base font-bold text-gray-500 uppercase tracking-widest mt-2">Relatório Gerencial - Nível Diretoria</p>
+                                        </div>
+                                        {logo && <img src={logo} className="h-16 md:h-20 object-contain" />}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                                        <div><span className="block text-xs uppercase font-bold text-gray-400 mb-1">Período de Análise</span><span className="text-lg font-bold text-gray-800">{analyticsTab === 'weekly' ? 'Semana de ' + getWeekRangeFromDate(analyticsSelectedDate) : 'Mês: ' + selectedMonth}</span></div>
+                                        <div><span className="block text-xs uppercase font-bold text-gray-400 mb-1">Data de Emissão</span><span className="text-lg font-bold text-gray-800">{new Date().toLocaleDateString()}</span></div>
+                                    </div>
+
+                                    <div className="mb-10">
+                                        <h2 className="text-xl font-black uppercase border-b-2 border-gray-200 pb-2 mb-4 text-gray-800">1. Resumo Executivo da Operação</h2>
+                                        <p className="text-gray-700 leading-relaxed text-justify">{analytics.summaryText}</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+                                        <div className="bg-white border-2 border-gray-200 p-6 rounded-xl text-center shadow-sm">
+                                            <div className="text-4xl font-black text-gray-800 mb-1">{analytics.avgScore}%</div>
+                                            <div className="text-xs uppercase font-bold text-gray-500">Média Geral</div>
+                                        </div>
+                                        <div className="bg-yellow-50 border-2 border-yellow-200 p-6 rounded-xl text-center shadow-sm">
+                                            <div className="text-4xl font-black text-yellow-700 mb-1">{analytics.avgBonusScore}%</div>
+                                            <div className="text-xs uppercase font-bold text-yellow-800">Média (Gratificação)</div>
+                                        </div>
+                                        <div className="bg-white border-2 border-gray-200 p-6 rounded-xl text-center shadow-sm">
+                                            <div className="text-4xl font-black text-gray-800 mb-1">{analytics.ranking.length}</div>
+                                            <div className="text-xs uppercase font-bold text-gray-500">Setores Auditados</div>
+                                        </div>
+                                        <div className="bg-white border-2 border-gray-200 p-6 rounded-xl text-center shadow-sm">
+                                            <div className="text-3xl font-black text-red-600 mb-1 leading-tight flex items-center justify-center h-[40px]">{analytics.pieCategory.length > 0 ? analytics.pieCategory[0].value : 0}</div>
+                                            <div className="text-xs uppercase font-bold text-gray-500">Pior Categoria (NCs)</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-10">
+                                        <h2 className="text-xl font-black uppercase border-b-2 border-gray-200 pb-2 mb-4 text-gray-800">2. Ranking de Performance (Geral)</h2>
+                                        <div className="overflow-hidden border-2 border-gray-200 rounded-xl">
+                                            <table className="w-full text-left text-sm">
+                                                <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
+                                                    <tr>
+                                                        <th className="p-4 font-bold text-center w-16">Pos.</th>
+                                                        <th className="p-4 font-bold">Setor</th>
+                                                        <th className="p-4 font-bold text-right">Nota Final</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-200 bg-white">
+                                                    {analytics.ranking.map((r, i) => (
+                                                        <tr key={i} className="hover:bg-gray-50 transition-colors">
+                                                            <td className="p-4 text-center font-mono font-bold text-gray-500">{i + 1}º</td>
+                                                            <td className="p-4 font-bold text-gray-900">{r.setor}</td>
+                                                            <td className={`p-4 text-right font-black text-lg ${r.score >= 85 ? 'text-green-600' : 'text-red-600'}`}>{r.score}%</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    <div className="h-10"></div>
+                                </div>
+
+                                {/* SEÇÃO NOVA: ANÁLISE DETALHADA POR SETOR (COM QUEBRA DE PÁGINA) */}
+                                {Object.entries(analytics.sectorAnalysisData).filter(([_, data]) => data.count > 0).map(([setor, data]) => {
+                                    
+                                    // Agrupa os problemas para criar uma tabelinha "Grupo vs NCs" específica do setor
+                                    const gruposNoSetor = Object.entries(data.ncByCategory).sort((a,b) => b[1] - a[1]);
+
+                                    return (
+                                    <div key={setor} className="p-4 md:p-8 border border-gray-300 print:border-none print:p-0 mb-8 page-break-before relative">
+                                        <div className="bg-gray-800 text-white p-4 rounded-t-xl flex justify-between items-center mb-6 print:bg-transparent print:text-black print:border-b-4 print:border-black print:rounded-none print:p-0 print:pb-2">
+                                            <h2 className="text-2xl font-black uppercase tracking-wider">{setor}</h2>
+                                            <span className="text-sm font-bold opacity-80 uppercase tracking-widest">Relatório Analítico</span>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-4 mb-8">
+                                            <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg text-center print:border-2">
+                                                <div className="text-xs font-bold text-gray-500 uppercase mb-1">Score do Setor</div>
+                                                <div className={`text-3xl font-black ${data.avgScore >= 85 ? 'text-green-600' : 'text-red-600'}`}>{data.avgScore}%</div>
+                                            </div>
+                                            <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg text-center print:border-2">
+                                                <div className="text-xs font-bold text-gray-500 uppercase mb-1">Nº Inspeções</div>
+                                                <div className="text-3xl font-black text-gray-800">{data.count}</div>
+                                            </div>
+                                            <div className="bg-red-50 border border-red-200 p-4 rounded-lg text-center print:border-2">
+                                                <div className="text-xs font-bold text-red-800 uppercase mb-1">Total Penalidades</div>
+                                                <div className="text-3xl font-black text-red-600">{data.totalNC}</div>
+                                            </div>
+                                        </div>
+
+                                        {data.totalNC > 0 ? (
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                                {/* Tabela de Resumo por Grupo */}
+                                                <div className="md:col-span-1">
+                                                    <h3 className="font-bold text-sm uppercase text-gray-600 border-b border-gray-300 pb-2 mb-4">Gargalos (Por Tipo)</h3>
+                                                    <table className="w-full text-sm border-collapse border border-gray-200">
+                                                        <thead className="bg-gray-100 text-gray-600 text-[10px] uppercase">
+                                                            <tr>
+                                                                <th className="p-2 text-left font-bold border-b border-gray-200">Classificação</th>
+                                                                <th className="p-2 text-center font-bold border-b border-gray-200">Qtd (NC)</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-gray-100">
+                                                            {gruposNoSetor.map(([grupo, qtd]) => (
+                                                                <tr key={grupo}>
+                                                                    <td className="p-2 font-bold text-gray-800 text-xs">{grupo}</td>
+                                                                    <td className="p-2 text-center font-black text-red-600">{qtd}</td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                {/* Lista detalhada das Perguntas */}
+                                                <div className="md:col-span-2">
+                                                    <h3 className="font-bold text-sm uppercase text-gray-600 border-b border-gray-300 pb-2 mb-4 flex items-center gap-2"><Icons.Alert /> Detalhamento de Falhas</h3>
+                                                    <div className="space-y-4">
+                                                        {data.ncs.map((nc, idx) => (
+                                                            <div key={idx} className="border-l-4 border-red-500 bg-gray-50 p-4 rounded-r shadow-sm print:border print:border-l-4 print:border-gray-300 no-break">
+                                                                <div className="flex gap-2 items-center mb-1">
+                                                                    <span className="text-[10px] bg-white border border-gray-300 text-gray-600 px-2 py-0.5 rounded font-bold uppercase">{nc.grupo}</span>
+                                                                    {nc.qty > 1 && <span className="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded font-black uppercase">x{nc.qty} Penalidades</span>}
+                                                                </div>
+                                                                <p className="font-bold text-sm text-gray-900 leading-snug">{nc.pergunta}</p>
+                                                                <p className="text-xs text-gray-600 mt-2 bg-white p-2 border border-gray-200 rounded"><span className="font-bold text-gray-800">Apontamento:</span> {nc.obs || 'Sem observação documentada.'}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="bg-green-50 border-2 border-green-200 p-8 rounded-xl text-center my-8">
+                                                <div className="text-green-500 flex justify-center mb-4 scale-150"><Icons.Check /></div>
+                                                <p className="font-black text-green-700 text-xl mb-2">Setor Livre de Não Conformidades!</p>
+                                                <p className="text-green-600">O {setor} atingiu a conformidade máxima nas auditorias do período.</p>
+                                            </div>
+                                        )}
+
+                                        {/* Espaço para Assinatura do Líder e Planejamento */}
+                                        <div className="mt-12 pt-6 border-t border-dashed border-gray-300 no-break">
+                                            <h3 className="font-bold text-sm uppercase text-gray-600 mb-4">Feedback e Plano de Ação (A ser preenchido pelo Líder do {setor})</h3>
+                                            <div className="w-full h-24 bg-gray-50 border border-gray-200 rounded mb-8 print:border-black"></div>
+                                            <div className="flex justify-between items-end px-10">
+                                                <div className="text-center w-64">
+                                                    <div className="border-t border-black pt-2 text-xs font-bold uppercase text-gray-500">Data de Recebimento</div>
+                                                </div>
+                                                <div className="text-center w-64">
+                                                    <div className="border-t border-black pt-2 text-xs font-bold uppercase text-gray-500">Assinatura Responsável ({setor})</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )})}
+
                             </div>
                         </div>
                     )}
 
-                    {/* MODAIS */}
-                    {isSigning && <SignaturePad onSave={handleSaveSignature} onCancel={() => setIsSigning(false)} initialData={signature} />}
-                    
-                    {/* Modal Criar/Editar Pergunta Normal */}
+                    {/* MODAIS (Criação de Pergunta) */}
                     {isModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
-                            <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6">
-                                <h2 className="text-lg font-bold mb-4 text-yellow-600">{editingQ ? 'Editar' : 'Nova'} Pergunta</h2>
-                                <form onSubmit={handleSaveQuestion} className="space-y-4">
-                                    <div><label className="block text-xs font-bold text-stone-500 uppercase mb-1">Setor</label><input name="setor" defaultValue={editingQ?.setor || ''} list="setores-list" className="w-full p-3 bg-stone-50 border rounded-lg outline-none" required /><datalist id="setores-list">{allSetors.map(s => <option key={s} value={s} />)}</datalist></div>
-                                    <div><label className="block text-xs font-bold text-stone-500 uppercase mb-1">Grupo</label><input name="grupo" defaultValue={editingQ?.grupo || ''} className="w-full p-3 bg-stone-50 border rounded-lg outline-none" required /></div>
-                                    <div><label className="block text-xs font-bold text-stone-500 uppercase mb-1">Pergunta</label><textarea name="pergunta" defaultValue={editingQ?.pergunta || ''} className="w-full p-3 bg-stone-50 border rounded-lg h-24 resize-none outline-none" required /></div>
-                                    <div className="flex gap-4"><div className="flex-1"><label className="block text-xs font-bold text-stone-500 uppercase mb-1">Peso</label><input type="number" name="weight" defaultValue={editingQ?.weight || 1} min="1" className="w-full p-3 bg-stone-50 border rounded-lg outline-none" /></div></div>
-                                    <div className="flex gap-2 pt-2"><button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-3 border rounded-lg font-bold">Cancelar</button><button type="submit" className="flex-1 py-3 bg-yellow-500 text-white rounded-lg font-bold">Salvar na Nuvem</button></div>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay backdrop-blur-sm">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-fade-in">
+                                <h2 className="text-xl font-black mb-6 text-yellow-600 uppercase tracking-tight">{editingQ ? 'Editar Pergunta' : 'Criar Nova Pergunta'}</h2>
+                                <form onSubmit={handleSaveQuestion} className="space-y-5">
+                                    <div><label className="block text-xs font-bold text-stone-500 uppercase mb-2">Setor Destino</label><input name="setor" defaultValue={editingQ?.setor || ''} list="setores-list" className="w-full p-4 bg-stone-50 border border-stone-300 rounded-xl outline-none focus:ring-2 focus:ring-yellow-500 transition-all font-bold uppercase" required placeholder="Ex: ESTOQUE" /><datalist id="setores-list">{allSetors.map(s => <option key={s} value={s} />)}</datalist></div>
+                                    <div><label className="block text-xs font-bold text-stone-500 uppercase mb-2">Categoria/Grupo da Pergunta</label><input name="grupo" defaultValue={editingQ?.grupo || ''} className="w-full p-4 bg-stone-50 border border-stone-300 rounded-xl outline-none focus:ring-2 focus:ring-yellow-500 transition-all font-bold uppercase" required placeholder="Ex: LIMPEZA, ORGANIZAÇÃO, ESTRUTURAL..." /></div>
+                                    <div><label className="block text-xs font-bold text-stone-500 uppercase mb-2">A Pergunta (Checklist)</label><textarea name="pergunta" defaultValue={editingQ?.pergunta || ''} className="w-full p-4 bg-stone-50 border border-stone-300 rounded-xl h-28 resize-none outline-none focus:ring-2 focus:ring-yellow-500 transition-all text-sm leading-relaxed" required placeholder="O que o auditor deve verificar?" /></div>
+                                    
+                                    <div className="flex gap-4 items-center bg-stone-50 p-4 rounded-xl border border-stone-200">
+                                        <div className="w-1/3">
+                                            <label className="block text-xs font-bold text-stone-500 uppercase mb-2">Peso (Pts)</label>
+                                            <input type="number" name="weight" defaultValue={editingQ?.weight || 1} min="1" className="w-full p-3 bg-white border border-stone-300 rounded-lg outline-none focus:ring-2 focus:ring-yellow-500 font-bold text-center" />
+                                        </div>
+                                        <div className="flex-1 flex items-center justify-center gap-3 pt-4 cursor-pointer">
+                                            <input type="checkbox" name="critical" id="critical" defaultChecked={editingQ?.critical} className="w-6 h-6 text-red-600 rounded cursor-pointer" />
+                                            <label htmlFor="critical" className="text-sm font-black text-red-700 uppercase cursor-pointer">Item Crítico</label>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-3 pt-4"><button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 border-2 border-stone-200 text-stone-600 rounded-xl font-bold hover:bg-stone-50 transition-colors">Cancelar</button><button type="submit" className="flex-1 py-4 bg-yellow-500 text-white rounded-xl font-bold hover:bg-yellow-600 shadow-md transition-colors">Salvar no Banco</button></div>
                                 </form>
                             </div>
                         </div>
@@ -1276,30 +1528,30 @@
 
                     {/* MODAL DIDÁTICO: CLONAR SETOR */}
                     {isCloneModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
-                            <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 animate-fade-in">
-                                <div className="flex items-center gap-2 text-yellow-600 mb-4">
-                                    <Icons.Copy />
-                                    <h2 className="text-lg font-bold">Clonar Setor</h2>
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay backdrop-blur-sm">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 animate-fade-in">
+                                <div className="flex items-center gap-3 text-stone-800 mb-4">
+                                    <div className="p-3 bg-yellow-100 text-yellow-700 rounded-lg"><Icons.Copy /></div>
+                                    <h2 className="text-xl font-black uppercase">Clonar Setor Inteiro</h2>
                                 </div>
-                                <p className="text-xs text-stone-500 mb-6">Crie um novo setor inteiro copiando todas as perguntas de um setor que já existe. Isso economiza tempo e é mais prático!</p>
+                                <p className="text-sm text-stone-500 mb-8 leading-relaxed">Crie um novo setor do zero, copiando automaticamente **todas** as perguntas, categorias e pesos de um setor que já existe no sistema.</p>
                                 
-                                <form onSubmit={handleCloneSector} className="space-y-4">
+                                <form onSubmit={handleCloneSector} className="space-y-6">
                                     <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase mb-1">1. Copiar do Setor (Origem)</label>
-                                        <select value={cloneSourceSector} onChange={e => setCloneSourceSector(e.target.value)} required className="w-full p-3 bg-stone-50 border rounded-lg outline-none focus:border-yellow-500">
-                                            <option value="">Selecione um setor...</option>
+                                        <label className="block text-xs font-bold text-stone-500 uppercase mb-2">1. Selecione o Setor de Origem (Copiar de...)</label>
+                                        <select value={cloneSourceSector} onChange={e => setCloneSourceSector(e.target.value)} required className="w-full p-4 bg-stone-50 border border-stone-300 rounded-xl outline-none focus:ring-2 focus:ring-yellow-500 font-bold uppercase text-sm">
+                                            <option value="">Clique para escolher...</option>
                                             {allSetors.map(s => <option key={s} value={s}>{s}</option>)}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase mb-1">2. Nome do Novo Setor (Destino)</label>
-                                        <input type="text" value={cloneTargetSector} onChange={e => setCloneTargetSector(e.target.value)} required placeholder="Ex: ESTOQUE FILIAL 2" className="w-full p-3 bg-stone-50 border rounded-lg outline-none focus:border-yellow-500 uppercase" />
+                                        <label className="block text-xs font-bold text-stone-500 uppercase mb-2">2. Nome do NOVO Setor (Destino)</label>
+                                        <input type="text" value={cloneTargetSector} onChange={e => setCloneTargetSector(e.target.value)} required placeholder="Ex: ESTOQUE FILIAL 2" className="w-full p-4 bg-white border border-stone-300 rounded-xl outline-none focus:ring-2 focus:ring-yellow-500 uppercase font-bold text-sm shadow-inner" />
                                     </div>
                                     
-                                    <div className="flex gap-2 pt-4">
-                                        <button type="button" onClick={() => setIsCloneModalOpen(false)} className="flex-1 py-3 border rounded-lg font-bold text-stone-600 hover:bg-stone-50">Cancelar</button>
-                                        <button type="submit" className="flex-1 py-3 bg-stone-900 text-white rounded-lg font-bold hover:bg-stone-800 shadow-md">Clonar Setor</button>
+                                    <div className="flex gap-3 pt-4">
+                                        <button type="button" onClick={() => setIsCloneModalOpen(false)} className="flex-1 py-4 border-2 border-stone-200 text-stone-600 rounded-xl font-bold hover:bg-stone-50 transition-colors">Cancelar</button>
+                                        <button type="submit" className="flex-1 py-4 bg-stone-900 text-white rounded-xl font-bold hover:bg-stone-800 shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"><Icons.Copy /> Executar Clone</button>
                                     </div>
                                 </form>
                             </div>
