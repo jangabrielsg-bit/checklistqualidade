@@ -100,19 +100,11 @@
                 const docRef = db.collection('config').doc('main');
                 await docRef.set({ [key]: val }, { merge: true });
             },
-            getAllQuestions: async () => {
-                const snapshot = await db.collection('questions').get();
-                return snapshot.docs.map(doc => doc.data());
-            },
             saveQuestion: async (q) => {
                 await db.collection('questions').doc(q.id).set(q);
             },
             deleteQuestion: async (id) => {
                 await db.collection('questions').doc(id).delete();
-            },
-            getAllInspections: async () => {
-                const snapshot = await db.collection('inspections').get();
-                return snapshot.docs.map(doc => doc.data());
             },
             saveInspection: async (inspection) => {
                 await db.collection('inspections').doc(inspection.id).set(inspection);
@@ -432,28 +424,39 @@
                 if (!authLoaded) return;
                 if (!user) { setView('login'); return; }
 
+                let unsubQuestions;
+                let unsubInspections;
+
                 const loadData = async () => {
                     try {
                         setView('loading');
-                        const q = await DB.getAllQuestions();
-                        if (!q || q.length === 0) {
-                            for (let p of STATIC_DB_PERGUNTAS) await DB.saveQuestion(p);
-                            setQuestions(STATIC_DB_PERGUNTAS);
-                        } else {
-                            setQuestions(q);
-                        }
+                        
+                        // SNAPSHOT PARA MULTIPLOS DISPOSITIVOS! Sincronização em Tempo Real das Perguntas
+                        unsubQuestions = db.collection('questions').onSnapshot(snap => {
+                            const qList = snap.docs.map(doc => doc.data());
+                            if (qList.length === 0 && !window.hasSeededQuestions) {
+                                window.hasSeededQuestions = true;
+                                STATIC_DB_PERGUNTAS.forEach(p => DB.saveQuestion(p));
+                            } else {
+                                setQuestions(qList);
+                            }
+                        });
+
+                        // SNAPSHOT PARA MULTIPLOS DISPOSITIVOS! Sincronização em Tempo Real das Inspeções
+                        unsubInspections = db.collection('inspections').onSnapshot(snap => {
+                            const iList = snap.docs.map(doc => doc.data());
+                            setInspections(iList);
+                        });
 
                         const l = await DB.getConfig('logo');
                         const b = await DB.getConfig('lastBackup');
                         const wo = await DB.getConfig('weekOffset');
-                        const insps = await DB.getAllInspections();
 
                         setLogo(l);
                         setLastBackup(b);
                         setWeekOffset(wo || 0);
-                        setInspections(insps || []);
 
-                        // Draft no LocalStorage
+                        // Draft no LocalStorage (Mantém a inspeção salva em caso de fechamento do navegador)
                         const draftStr = localStorage.getItem('imac_current_draft');
                         if (draftStr) {
                             const draft = JSON.parse(draftStr);
@@ -482,7 +485,14 @@
                         setView('dashboard');
                     }
                 };
+                
                 loadData();
+
+                // Cleanup function
+                return () => {
+                    if (unsubQuestions) unsubQuestions();
+                    if (unsubInspections) unsubInspections();
+                };
             }, [user, authLoaded]);
 
             // Save Draft to LocalStorage
@@ -585,7 +595,7 @@
             const handleDeleteAudit = async (id) => {
                 if (!confirm("Tem certeza que deseja apagar este registro do sistema (Nuvem)?")) return;
                 await DB.deleteInspection(id);
-                setInspections(prev => prev.filter(i => i.id !== id));
+                // setInspections não é mais necessário aqui, o onSnapshot cuida da atualização em tempo real
                 toast("Inspeção apagada com sucesso.");
             };
 
@@ -657,12 +667,6 @@
 
                     await DB.saveInspection(newInspection);
                     localStorage.removeItem('imac_current_draft'); 
-
-                    if (editingInspectionId) {
-                        setInspections(prev => prev.map(i => i.id === editingInspectionId ? newInspection : i));
-                    } else {
-                        setInspections(prev => [...prev, newInspection]);
-                    }
                     
                     const ncs = Object.entries(newInspection.respostas).filter(([_, v]) => v === 'NC');
                     let sugestao = "Parabéns! Nenhuma não conformidade detectada.";
@@ -705,8 +709,6 @@
                 };
                 
                 await DB.saveQuestion(newQ);
-                let newQuestions = editingQ ? questions.map(q => q.id === editingQ.id ? newQ : q) : [...questions, newQ];
-                setQuestions(newQuestions);
                 setIsModalOpen(false);
                 setEditingQ(null);
                 toast("Pergunta salva na Nuvem.");
@@ -733,7 +735,6 @@
                 }
 
                 toast("Clonando setor, aguarde...");
-                const duplicatedQuestions = [];
 
                 try {
                     for (let q of sourceQuestions) {
@@ -743,13 +744,11 @@
                             setor: newSectorName
                         };
                         await DB.saveQuestion(newQ);
-                        duplicatedQuestions.push(newQ);
                     }
-                    setQuestions(prev => [...prev, ...duplicatedQuestions]);
                     setIsCloneModalOpen(false);
                     setCloneSourceSector('');
                     setCloneTargetSector('');
-                    toast(`Setor ${newSectorName} criado com ${duplicatedQuestions.length} perguntas!`, "success");
+                    toast(`Setor ${newSectorName} criado com as perguntas!`, "success");
                 } catch (err) {
                     console.error(err);
                     toast("Erro ao clonar perguntas.", "error");
@@ -759,7 +758,6 @@
             const handleDeleteQuestion = async (id) => {
                 if(confirm("Tem certeza que deseja apagar essa pergunta definitivamente?")) {
                     await DB.deleteQuestion(id);
-                    setQuestions(prev => prev.filter(q => q.id !== id));
                     toast("Pergunta apagada.");
                 }
             };
@@ -771,6 +769,44 @@
                     setWeekOffset(newOffset);
                     toast("Nova semana iniciada!", 'success');
                 }
+            };
+
+            // LÓGICA DE MIGRAÇÃO DO BACKUP ANTIGO (JSON) PARA A NUVEM
+            const handleRestoreBackup = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    try {
+                        toast("Sincronizando dados com a nuvem... Isso pode levar alguns segundos.", "success");
+                        const data = JSON.parse(event.target.result);
+                        
+                        // Envia as perguntas antigas para o Firebase
+                        if (data.questions && Array.isArray(data.questions)) {
+                            for (const q of data.questions) {
+                                await DB.saveQuestion(q);
+                            }
+                        }
+                        
+                        // Envia as inspeções antigas para o Firebase
+                        if (data.inspections && Array.isArray(data.inspections)) {
+                            for (const insp of data.inspections) {
+                                await DB.saveInspection(insp);
+                            }
+                        }
+
+                        if (data.logo) { await DB.setConfig('logo', data.logo); setLogo(data.logo); }
+                        if (data.weekOffset !== undefined) { await DB.setConfig('weekOffset', data.weekOffset); setWeekOffset(data.weekOffset); }
+                        
+                        toast("Backup antigo migrado para a Nuvem com sucesso!", "success");
+                    } catch (err) {
+                        console.error(err);
+                        toast("Erro ao restaurar backup. Arquivo inválido.", 'error');
+                    }
+                };
+                reader.readAsText(file);
+                e.target.value = null; // Reseta o input de arquivo
             };
 
             const handleExportCSV = () => {
@@ -1073,9 +1109,19 @@
                             <main className="flex-1 p-6 pb-24 space-y-4">
                                 {settingsTab === 'system' && (
                                     <div className="space-y-6 animate-fade-in">
+                                        
+                                        <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                                            <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Icons.Upload /> Migrar Backup Antigo (JSON)</h2>
+                                            <p className="text-xs text-stone-500 mb-4">Selecione o arquivo de backup (.json) da versão anterior para enviar todas as suas inspeções e perguntas antigas para a nuvem.</p>
+                                            <label className="w-full py-3 bg-stone-800 text-white font-bold rounded-lg shadow hover:bg-stone-700 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95">
+                                                <Icons.Upload /> Selecionar Arquivo JSON
+                                                <input type="file" accept=".json" className="hidden" onChange={handleRestoreBackup} />
+                                            </label>
+                                        </div>
+
                                         <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
                                             <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Icons.Database /> Banco em Nuvem Ativo</h2>
-                                            <p className="text-xs text-stone-500">Seus dados estão protegidos e sendo salvos no Firebase do IMAC.</p>
+                                            <p className="text-xs text-stone-500">Seus dados estão protegidos e sendo salvos e sincronizados no Firebase do IMAC em tempo real.</p>
                                         </div>
                                         <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
                                             <h2 className="font-bold text-stone-800 mb-4 flex items-center gap-2"><Icons.Excel /> Exportação de Dados</h2>
